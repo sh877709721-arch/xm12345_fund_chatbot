@@ -145,7 +145,8 @@ class VoteService:
         size: int = 10,
         vote_type: Optional[VoteEnum] = None,
         start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None
+        end_date: Optional[datetime] = None,
+        search_keyword: Optional[str] = None
     ) -> List[VoteWithMessage]:
         """获取带问题和答案的投票列表（支持按类型和时间过滤）"""
         offset = (page - 1) * size
@@ -203,7 +204,7 @@ class VoteService:
         params = {"limit": size, "offset": offset}
 
         if vote_type:
-            conditions.append("AND a.vote_type = :vote_type")
+            conditions.append("AND c.vote_type = :vote_type")
             params["vote_type"] = vote_type.value
 
         if start_date:
@@ -213,6 +214,10 @@ class VoteService:
         if end_date:
             conditions.append("AND a.created_at <= :end_date")
             params["end_date"] = end_date
+
+        if search_keyword:
+            conditions.append("AND (a.content ILIKE :search_keyword OR user_latest.content ILIKE :search_keyword)")
+            params["search_keyword"] = f"%{search_keyword}%"
 
         # 组装完整查询
         full_query = base_query + " ".join(conditions) + " ORDER BY a.created_at DESC LIMIT :limit OFFSET :offset"
@@ -235,25 +240,25 @@ class VoteService:
         self,
         vote_type: Optional[VoteEnum] = None,
         start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None
+        end_date: Optional[datetime] = None,
+        search_keyword: Optional[str] = None
     ) -> int:
         """获取带问题和答案的投票总数（用于分页）"""
 
-        # 构建基础查询
+        # 构建基础查询（与 get_votes_with_messages 保持一致）
         base_query = """
-            SELECT COUNT(DISTINCT a.vote_id) as total
-            FROM chatbot.vote a
-            LEFT JOIN chatbot.messages b ON a.message_id = b.id
+            SELECT COUNT(DISTINCT a.id) as total
+            FROM chatbot.messages a
             LEFT JOIN LATERAL (
-                SELECT *
-                FROM chatbot.messages
-                WHERE chat_id = b.chat_id
-                AND message_role_enum = 'user'
-                AND id < b.id
-                ORDER BY created_at DESC
-                LIMIT 1
+                SELECT id,chat_id,message_role_enum,content,created_at 
+                FROM chatbot.messages 
+                WHERE chat_id = a.chat_id
+                AND message_role_enum = 'assistant'
+                AND id < a.id
+                ORDER BY created_at DESC LIMIT 1
             ) user_latest ON true
-            WHERE 1=1
+            LEFT JOIN chatbot.vote c ON user_latest.id = c.message_id 
+            WHERE a.message_role_enum = 'user'
         """
 
         # 构建条件参数
@@ -261,16 +266,20 @@ class VoteService:
         params = {}
 
         if vote_type:
-            conditions.append("AND a.vote_type = :vote_type")
+            conditions.append("AND c.vote_type = :vote_type")
             params["vote_type"] = vote_type.value
 
         if start_date:
-            conditions.append("AND a.updated_at >= :start_date")
+            conditions.append("AND a.created_at >= :start_date")
             params["start_date"] = start_date
 
         if end_date:
-            conditions.append("AND a.updated_at <= :end_date")
+            conditions.append("AND a.created_at <= :end_date")
             params["end_date"] = end_date
+
+        if search_keyword:
+            conditions.append("AND (a.content ILIKE :search_keyword OR user_latest.content ILIKE :search_keyword)")
+            params["search_keyword"] = f"%{search_keyword}%"
 
         # 组装完整查询
         full_query = base_query + " ".join(conditions)

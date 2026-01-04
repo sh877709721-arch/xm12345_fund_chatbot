@@ -159,24 +159,38 @@ export function VoteStatsTableOptimized({ className }: VoteStatsTableOptimizedPr
 
   // 本地搜索状态（用于防抖）
   const [localSearchKeyword, setLocalSearchKeyword] = React.useState(searchParams.searchKeyword || "");
+  
+  // 防抖 timer ref
+  const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  // 防抖搜索
-  const debouncedSearch = React.useCallback(
-    (keyword: string) => {
-      const timeoutId = setTimeout(() => {
-        handleSearch(keyword);
-      }, 300);
-      return () => clearTimeout(timeoutId);
-    },
-    [handleSearch]
-  );
+  // 同步本地搜索关键词与 searchParams
+  React.useEffect(() => {
+    setLocalSearchKeyword(searchParams.searchKeyword || "");
+  }, [searchParams.searchKeyword]);
 
-  // 处理搜索输入变化
+  // 处理搜索输入变化（带防抖）
   const handleSearchInputChange = (value: string) => {
     setLocalSearchKeyword(value);
-    const cancelDebounce = debouncedSearch(value);
-    return cancelDebounce;
+    
+    // 清除之前的定时器
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    
+    // 设置新的防抖定时器
+    debounceTimerRef.current = setTimeout(() => {
+      handleSearch(value);
+    }, 300);
   };
+  
+  // 清理定时器
+  React.useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   // 列定义
   const columns: ColumnDef<VoteWithMessage>[] = [
@@ -289,56 +303,63 @@ export function VoteStatsTableOptimized({ className }: VoteStatsTableOptimizedPr
   return (
     <div className={cn("w-full h-full flex flex-col", className)}>
       {/* 搜索栏和操作按钮 */}
-      <div className="flex items-center justify-between px-4 lg:px-6 py-2 flex-shrink-0">
-        <div className="text-sm text-muted-foreground">
-          投票消息管理
-        </div>
-        <div className="w-2/3 flex items-center gap-3">
-          <div className="relative flex-1">
+      <div className="py-2 flex-shrink-0">
+        <div className="flex flex-wrap gap-3">
+          <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="搜索问题或回答..."
               value={localSearchKeyword}
               onChange={(event) => {
-                const cancelDebounce = handleSearchInputChange(event.target.value);
-                return () => cancelDebounce();
+                handleSearchInputChange(event.target.value);
               }}
               className="pl-8 h-8"
             />
           </div>
 
-          <Select value={searchParams.vote_type} onValueChange={handleVoteTypeChange}>
-            <SelectTrigger className="w-28 h-8">
-              <SelectValue placeholder="投票类型" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部</SelectItem>
-              <SelectItem value="good">好评</SelectItem>
-              <SelectItem value="medium">中评</SelectItem>
-              <SelectItem value="bad">差评</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">投票类型：</span>
+            <Select value={searchParams.vote_type} onValueChange={handleVoteTypeChange}>
+              <SelectTrigger className="w-28 h-8">
+                <SelectValue placeholder="投票类型" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部</SelectItem>
+                <SelectItem value="good">好评</SelectItem>
+                <SelectItem value="medium">中评</SelectItem>
+                <SelectItem value="bad">差评</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-          <DateTimePicker
-            value={searchParams.start_date}
-            onChange={(value) => handleDateRangeChange(value || "", searchParams.end_date)}
-            placeholder="开始日期时间"
-          />
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">开始日期时间：</span>
+            <DateTimePicker
+              value={searchParams.start_date}
+              onChange={(value) => handleDateRangeChange(value || "", searchParams.end_date)}
+              placeholder="开始日期时间"
+            />
+          </div>
 
-          <DateTimePicker
-            value={searchParams.end_date}
-            onChange={(value) => handleDateRangeChange(searchParams.start_date, value || "")}
-            placeholder="结束日期时间"
-          />
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">结束日期时间：</span>
+            <DateTimePicker
+              value={searchParams.end_date}
+              onChange={(value) => handleDateRangeChange(searchParams.start_date, value || "")}
+              placeholder="结束日期时间"
+            />
+          </div>
 
-          <Button onClick={handleRefresh} disabled={loading} className="h-8">
-            <RefreshCw className={cn("h-3 w-3 mr-1", loading && "animate-spin")} />
-            刷新
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={handleRefresh} disabled={loading} className="h-8">
+              <RefreshCw className={cn("h-3 w-3 mr-1", loading && "animate-spin")} />
+              刷新
+            </Button>
 
-          <Button variant="secondary" onClick={handleReset} className="h-8">
-            重置
-          </Button>
+            <Button variant="secondary" onClick={handleReset} className="h-8">
+              重置
+            </Button>
+          </div>
         </div>
       </div>
 

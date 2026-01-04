@@ -69,6 +69,7 @@ export interface VoteStatsQuery {
   vote_type?: VoteType | null; // 投票类型过滤
   start_date?: string | null;  // 开始时间 (YYYY-MM-DD HH:MM:SS)
   end_date?: string | null;    // 结束时间 (YYYY-MM-DD HH:MM:SS)
+  searchKeyword?: string | null; // 搜索关键词（搜索问题和回答）
 }
 
 // 对assistant消息进行投票
@@ -180,6 +181,9 @@ export async function getVotesWithMessages(
     }
     if (query.end_date) {
       params.append('end_date', query.end_date);
+    }
+    if (query.searchKeyword) {
+      params.append('searchKeyword', query.searchKeyword);
     }
 
     const response = await instance.get<PaginatedResponse<VoteWithMessage>>(

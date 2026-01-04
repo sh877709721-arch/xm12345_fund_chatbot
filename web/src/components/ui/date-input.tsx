@@ -1,4 +1,4 @@
-import React, { forwardRef, useState } from "react";
+import React, { forwardRef, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Calendar, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -67,6 +67,21 @@ export const DateTimePicker = ({ value, onChange, placeholder = "选择日期时
   const [time, setTime] = useState(
     value ? new Date(value).toTimeString().slice(0, 5) : "00:00"
   );
+
+  // 同步外部 value 变化到内部状态
+  useEffect(() => {
+    if (value) {
+      const dateValue = new Date(value);
+      if (!isNaN(dateValue.getTime())) {
+        setDate(dateValue);
+        setTime(dateValue.toTimeString().slice(0, 5));
+      }
+    } else {
+      // 如果 value 为空，清空内部状态
+      setDate(undefined);
+      setTime("00:00");
+    }
+  }, [value]);
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {

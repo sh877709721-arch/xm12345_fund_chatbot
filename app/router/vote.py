@@ -41,6 +41,7 @@ async def get_votes_with_messages(
     vote_type: Optional[str] = Query(None, description="投票类型过滤 (good/medium/bad)"),
     start_date: Optional[datetime] = Query(None, description="开始时间 (YYYY-MM-DD HH:MM:SS)"),
     end_date: Optional[datetime] = Query(None, description="结束时间 (YYYY-MM-DD HH:MM:SS)"),
+    searchKeyword: Optional[str] = Query(None, description="搜索关键词（搜索问题和回答）"),
     vote_service: VoteService = Depends(get_vote_service)
 ):
     """
@@ -49,6 +50,7 @@ async def get_votes_with_messages(
     - **vote_type**: 投票类型过滤 (good/medium/bad)
     - **start_date**: 开始时间过滤
     - **end_date**: 结束时间过滤
+    - **searchKeyword**: 搜索关键词（搜索问题和回答）
     """
     from app.model.vote import VoteEnum
 
@@ -64,14 +66,16 @@ async def get_votes_with_messages(
             size=size,
             vote_type=vote_enum,
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
+            search_keyword=searchKeyword
         )
 
         # 获取总数
         total = vote_service.get_votes_with_messages_count(
             vote_type=vote_enum,
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
+            search_keyword=searchKeyword
         )
 
         # 构建分页响应

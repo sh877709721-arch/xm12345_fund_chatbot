@@ -41,10 +41,7 @@ export function useVoteData() {
     vote_type: "all",
     page: 1,
     size: 10,
-    start_date: React.useMemo(() => {
-      const today = new Date();
-      return today.toISOString().split('T')[0];
-    }, []),
+    start_date: new Date().toISOString().split('T')[0],
     end_date: "",
     searchKeyword: "",
   });
@@ -60,6 +57,7 @@ export function useVoteData() {
       size: params.size,
       start_date: params.start_date,
       end_date: params.end_date,
+      searchKeyword: params.searchKeyword,
     });
   }, []);
 
@@ -89,25 +87,16 @@ export function useVoteData() {
         vote_type: searchParams.vote_type === "all" ? undefined : searchParams.vote_type,
         start_date: searchParams.start_date || undefined,
         end_date: searchParams.end_date || undefined,
+        searchKeyword: searchParams.searchKeyword || undefined,
       };
 
-      const result:any = await getVotesWithMessages(query);
-
-      // 本地过滤搜索关键词
-      let filteredItems = result.items;
-      if (searchParams.searchKeyword) {
-        const keyword = searchParams.searchKeyword.toLowerCase();
-        filteredItems = result.items.filter((item: VoteWithMessage) =>
-          item.question.toLowerCase().includes(keyword) ||
-          item.answer.toLowerCase().includes(keyword)
-        );
-      }
+      const result: any = await getVotesWithMessages(query);
 
       // 更新缓存
       setCachedQueries((prev) => new Map(prev).set(cacheKey, result));
 
       setVoteData({
-        items: filteredItems,
+        items: result.items,
         total: result.total,
         page: searchParams.page,
         size: searchParams.size,
@@ -148,10 +137,7 @@ export function useVoteData() {
       vote_type: "all",
       page: 1,
       size: 10,
-      start_date: React.useMemo(() => {
-        const today = new Date();
-        return today.toISOString().split('T')[0];
-      }, []),
+      start_date: new Date().toISOString().split('T')[0], // 直接计算当前日期
       end_date: "",
       searchKeyword: "",
     });
