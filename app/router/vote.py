@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime
@@ -229,3 +230,55 @@ async def get_user_vote_for_message(
     """获取用户对指定消息的投票"""
     vote = vote_service.get_user_vote_for_message(message_id, user_id)
     return BaseResponse(data=vote)
+
+
+@router.get("/export/excel")
+async def export_votes_to_excel(
+    vote_type: Optional[str] = Query(None, description="投票类型过滤 (good/medium/bad)"),
+    start_date: Optional[datetime] = Query(None, description="开始时间 (YYYY-MM-DD HH:MM:SS)"),
+    end_date: Optional[datetime] = Query(None, description="结束时间 (YYYY-MM-DD HH:MM:SS)"),
+    searchKeyword: Optional[str] = Query(None, description="搜索关键词（搜索问题和回答）"),
+    vote_service: VoteService = Depends(get_vote_service)
+):
+    """
+    导出投票数据到Excel
+
+    - **vote_type**: 投票类型过滤 (good/medium/bad)
+    - **start_date**: 开始时间过滤
+    - **end_date**: 结束时间过滤
+    - **searchKeyword**: 搜索关键词（搜索问题和回答）
+    """
+    from app.model.vote import VoteEnum
+
+    try:
+        # 解析投票类型
+        vote_enum = None
+        if vote_type:
+            vote_enum = VoteEnum(vote_type)
+
+        # 生成Excel文件
+        excel_file = vote_service.export_votes_to_excel(
+            vote_type=vote_enum,
+            start_date=start_date,
+            end_date=end_date,
+            search_keyword=searchKeyword
+        )
+
+        # 生成文件名（使用ASCII文件名避免编码问题）
+        from datetime import datetime as dt
+        from urllib.parse import quote
+        filename_ascii = f"vote_data_{dt.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        filename_utf8 = f"问答数据_{dt.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+
+        return StreamingResponse(
+            excel_file,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                # 使用RFC 5987编码支持中文文件名
+                "Content-Disposition": f"attachment; filename={filename_ascii}; filename*=UTF-8''{quote(filename_utf8)}"
+            }
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"导出失败: {str(e)}")

@@ -196,3 +196,88 @@ export async function getVotesWithMessages(
     throw error;
   }
 }
+
+// 导出投票数据到Excel
+export async function exportVotesToExcel(
+  query: VoteStatsQuery = {}
+): Promise<void> {
+  try {
+    const params = new URLSearchParams();
+
+    // 添加过滤条件（如果存在）
+    if (query.vote_type) {
+      params.append('vote_type', query.vote_type);
+    }
+    if (query.start_date) {
+      params.append('start_date', query.start_date);
+    }
+    if (query.end_date) {
+      params.append('end_date', query.end_date);
+    }
+    if (query.searchKeyword) {
+      params.append('searchKeyword', query.searchKeyword);
+    }
+
+    // 使用axios直接请求，避免响应拦截器处理blob
+    const axios = (await import('axios')).default;
+    const baseURL = import.meta.env.VITE_BACKEND_URL || '';
+    const token = localStorage.getItem('access_token');
+    
+    const response = await axios.get(
+      `${baseURL}/v1/vote/export/excel?${params.toString()}`,
+      {
+        responseType: 'blob', // 重要：指定响应类型为blob
+        headers: token ? {
+          Authorization: `Bearer ${token}`
+        } : {},
+      }
+    );
+
+    // 从响应头获取文件名，如果没有则使用默认名称
+    const contentDisposition = response.headers['content-disposition'];
+    let filename = `问答数据_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.xlsx`;
+    
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      if (filenameMatch && filenameMatch[1]) {
+        filename = filenameMatch[1].replace(/['"]/g, '');
+        // 处理URL编码的文件名
+        try {
+          filename = decodeURIComponent(filename);
+        } catch (e) {
+          // 如果解码失败，使用原始文件名
+        }
+      }
+    }
+
+    // 创建下载链接
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+
+    toast.success('导出成功');
+  } catch (error: any) {
+    console.error('导出投票数据失败:', error);
+    // 如果是blob错误响应，尝试解析错误信息
+    if (error.response?.data instanceof Blob) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const errorText = JSON.parse(reader.result as string);
+          toast.error(errorText.detail || '导出失败');
+        } catch {
+          toast.error('导出失败');
+        }
+      };
+      reader.readAsText(error.response.data);
+    } else {
+      toast.error(error.response?.data?.detail || error.message || '导出失败');
+    }
+    throw error;
+  }
+}

@@ -18,6 +18,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Download,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { VoteWithMessage } from "@/utils/request/vote";
+import { exportVotesToExcel } from "@/utils/request/vote";
 import { useVoteData } from "@/hooks/use-vote-data";
 import { cn } from "@/lib/utils";
 
@@ -300,6 +302,21 @@ export function VoteStatsTableOptimized({ className }: VoteStatsTableOptimizedPr
     handlePageSizeChange(Number(size));
   };
 
+  // 处理导出Excel
+  const handleExportExcel = async () => {
+    try {
+      const query = {
+        vote_type: searchParams.vote_type === "all" ? undefined : searchParams.vote_type,
+        start_date: searchParams.start_date || undefined,
+        end_date: searchParams.end_date || undefined,
+        searchKeyword: searchParams.searchKeyword || undefined,
+      };
+      await exportVotesToExcel(query);
+    } catch (error) {
+      console.error("导出失败:", error);
+    }
+  };
+
   return (
     <div className={cn("w-full h-full flex flex-col", className)}>
       {/* 搜索栏和操作按钮 */}
@@ -358,6 +375,16 @@ export function VoteStatsTableOptimized({ className }: VoteStatsTableOptimizedPr
 
             <Button variant="secondary" onClick={handleReset} className="h-8">
               重置
+            </Button>
+
+            <Button 
+              onClick={handleExportExcel} 
+              disabled={loading} 
+              variant="outline"
+              className="h-8"
+            >
+              <Download className="h-3 w-3 mr-1" />
+              导出Excel
             </Button>
           </div>
         </div>

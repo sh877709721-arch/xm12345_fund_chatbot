@@ -2,6 +2,10 @@ from typing import List, Optional
 from datetime import datetime
 from sqlalchemy import func, text
 from sqlalchemy.orm import Session
+from io import BytesIO
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, PatternFill
+from openpyxl.utils import get_column_letter
 
 from app.model.vote import Vote, VoteEnum
 from app.schema.vote import VoteCreate, VoteRead, VoteStats, VoteUpdate, VoteWithMessage
@@ -327,5 +331,161 @@ class VoteService:
             answer=row.answer,
             chat_id=row.chat_id
         ) for row in rows]
+
+    def get_all_votes_with_messages(
+        self,
+        vote_type: Optional[VoteEnum] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        search_keyword: Optional[str] = None
+    ) -> List[VoteWithMessage]:
+        """获取所有带问题和答案的投票列表（不分页，用于导出）"""
+        # 构建基础查询（与 get_votes_with_messages 保持一致，但去掉分页）
+        base_query = """
+            select 
+                a.id as message_id,
+                a.chat_id,
+                a.content as question,
+                user_latest.content as answer,
+                a.created_at as created_at,
+                coalesce(c.vote_type,'unknown') vote_type,
+                c.vote_id,
+                c.feedback feedback,
+                c.updated_at updated_at
+            from chatbot.messages a
+            left join lateral (
+                select id,chat_id,message_role_enum,content,created_at 
+                from chatbot.messages 
+                where chat_id = a.chat_id
+                and message_role_enum = 'assistant'
+                and id < a.id
+                order by created_at desc limit 1
+            ) user_latest ON true
+            left join chatbot.vote c on user_latest.id = c.message_id 
+            where a.message_role_enum = 'user'
+        """
+        # 构建条件参数
+        conditions = []
+        params = {}
+
+        if vote_type:
+            conditions.append("AND c.vote_type = :vote_type")
+            params["vote_type"] = vote_type.value
+
+        if start_date:
+            conditions.append("AND a.created_at >= :start_date")
+            params["start_date"] = start_date
+
+        if end_date:
+            conditions.append("AND a.created_at <= :end_date")
+            params["end_date"] = end_date
+
+        if search_keyword:
+            conditions.append("AND (a.content ILIKE :search_keyword OR user_latest.content ILIKE :search_keyword)")
+            params["search_keyword"] = f"%{search_keyword}%"
+
+        # 组装完整查询（不分页）
+        full_query = base_query + " ".join(conditions) + " ORDER BY a.created_at DESC"
+
+        result = self.db.execute(text(full_query), params)
+        rows = result.fetchall()
+
+        return [VoteWithMessage(
+            vote_id=row.vote_id,
+            message_id=row.message_id,
+            vote_type=row.vote_type,
+            feedback=row.feedback,
+            created_at=row.created_at,
+            question=row.question,
+            answer=row.answer,
+            chat_id=row.chat_id
+        ) for row in rows]
+
+    def export_votes_to_excel(
+        self,
+        vote_type: Optional[VoteEnum] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        search_keyword: Optional[str] = None
+    ) -> BytesIO:
+        """导出投票数据到Excel"""
+        # 获取所有数据
+        votes = self.get_all_votes_with_messages(
+            vote_type=vote_type,
+            start_date=start_date,
+            end_date=end_date,
+            search_keyword=search_keyword
+        )
+
+        # 创建Excel工作簿
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "投票数据"
+
+        # 定义表头（移除聊天ID列）
+        headers = [
+            "投票类型",
+            "消息ID",
+            "用户问题",
+            "AI回答",
+            "反馈内容",
+            "消息时间"
+        ]
+
+        # 设置表头样式
+        header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+        header_font = Font(bold=True, color="FFFFFF", size=11)
+        header_alignment = Alignment(horizontal="center", vertical="center")
+
+        # 写入表头
+        for col_idx, header in enumerate(headers, start=1):
+            cell = ws.cell(row=1, column=col_idx, value=header)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = header_alignment
+
+        # 写入数据
+        vote_type_map = {
+            "good": "好评",
+            "medium": "中评",
+            "bad": "差评",
+            "unknown": "未知"
+        }
+
+        for row_idx, vote in enumerate(votes, start=2):
+            # 确保所有值都转换为Excel可以处理的类型（字符串、数字、日期）
+            # 处理投票类型：如果是枚举对象，获取其value；如果是字符串，直接使用
+            vote_type_value = vote.vote_type.value if hasattr(vote.vote_type, 'value') else str(vote.vote_type) if vote.vote_type else "unknown"
+            ws.cell(row=row_idx, column=1, value=vote_type_map.get(vote_type_value, "未知"))
+            ws.cell(row=row_idx, column=2, value=int(vote.message_id) if vote.message_id else "")
+            ws.cell(row=row_idx, column=3, value=str(vote.question) if vote.question else "")
+            ws.cell(row=row_idx, column=4, value=str(vote.answer) if vote.answer else "")
+            ws.cell(row=row_idx, column=5, value=str(vote.feedback) if vote.feedback else "")
+            # 格式化日期时间（移除chat_id列，直接使用第6列）
+            if vote.created_at:
+                if isinstance(vote.created_at, str):
+                    dt = datetime.fromisoformat(vote.created_at.replace('Z', '+00:00'))
+                else:
+                    dt = vote.created_at
+                ws.cell(row=row_idx, column=6, value=dt.strftime("%Y-%m-%d %H:%M:%S"))
+            else:
+                ws.cell(row=row_idx, column=6, value="")
+
+        # 设置列宽（移除chat_id列，调整为6列）
+        column_widths = [12, 12, 50, 80, 50, 20]
+        for col_idx, width in enumerate(column_widths, start=1):
+            ws.column_dimensions[get_column_letter(col_idx)].width = width
+
+        # 设置文本换行和对齐
+        for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+            for cell in row:
+                cell.alignment = Alignment(vertical="top", wrap_text=True)
+
+        # 保存到BytesIO
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+
+        return output
     
     
