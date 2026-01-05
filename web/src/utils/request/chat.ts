@@ -95,14 +95,17 @@ export async function resetChatSession(): Promise<ChatSession> {
 
 /**
  * 获取历史消息
+ * 注意：由于 axios 响应拦截器已返回 response.data，
+ * 且后端返回结构为 {code, message, data: Message[]}，
+ * 所以这里再次访问 .data 得到的是 Message[] 数组
  */
 export async function getRecentMessages(chatId: string): Promise<Message[]> {
   try {
     const response = await instance.post(
-      `/v1/chat/get_resent_messages?chat_id=${chatId}`,
-      ""
-    ) as unknown as Message[];
-    return response;
+      `/v1/chat/get_resent_messages?chat_id=${chatId}`,""
+    );
+
+    return response.data;
   } catch (error: any) {
     toast.error(error.message || "获取历史消息失败");
     throw error;

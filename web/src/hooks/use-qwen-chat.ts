@@ -47,9 +47,11 @@ export function useQwenChat(
             setSession(parsed);
             // try to load recent messages for this chat id from server
             try {
-              const fetchedMessages = await apiGetRecentMessages(parsed.id);
-              const messages: Message[] = Array.isArray(fetchedMessages)
-                ? fetchedMessages.map((m: any) => ({
+              const response = await apiGetRecentMessages(parsed.id);
+              console.log('🔍 [resetChatSession] API Response:', response);
+
+              const messages: Message[] = Array.isArray(response)
+                ? response.map((m: any) => ({
                     id: m.id,
                     role: (m.role as Message['role']) ?? (m.from as Message['role']) ?? "assistant",
                     content: (m.content as string) ?? m.text ?? m.message ?? JSON.stringify(m),
@@ -58,6 +60,7 @@ export function useQwenChat(
                   }))
                 : [];
 
+              console.log('🔍 [resetChatSession] Setting messages:', messages);
               setMessages(messages);
             } catch (e) {
               // ignore fetch errors and fallback
@@ -218,11 +221,11 @@ export function useQwenChat(
         if (currentSession?.id) body.chat_id = currentSession.id;
 
         // 使用封装好的流式 API
+        
         const { controller } = await streamChatCompletionV2(body, {
           onMessageId: (data) => {
             setMessages((prev) => {
               const copy = [...prev];
-
               if (data.user_message_id) {
                 const userMessageIndex = findMessageIndexByTempId(copy, "user");
                 if (userMessageIndex >= 0) {
@@ -295,6 +298,7 @@ export function useQwenChat(
           },
 
           onContentChunk: (content) => {
+            setStatus("streaming");
             setMessages((prev) => {
               const copy = [...prev];
               const lastIndex = copy.length - 1;
@@ -419,6 +423,7 @@ export function useQwenChat(
 
         // 保存 controller 用于 stop 功能
         controllerRef.current = controller;
+        
       } catch (err) {
         setStatus("error");
         throw err;
@@ -456,9 +461,8 @@ export function useQwenChat(
             setSession(parsed);
             // try to fetch recent messages for this session and initialize messages
             try {
-              const fetchedMessages = await apiGetRecentMessages(parsed.id);
-              const messages: Message[] = Array.isArray(fetchedMessages)
-                ? fetchedMessages.map((m: any) => ({
+              const data = await apiGetRecentMessages(parsed.id);
+              const messages: Message[] = Array.isArray(data)? data.map((m: any) => ({
                     id: m.id,
                     role: (m.role as Message['role']) ?? (m.from as Message['role']) ?? "assistant",
                     content: (m.content as string) ?? m.text ?? m.message ?? JSON.stringify(m),
@@ -498,8 +502,10 @@ export function useQwenChat(
                   }))
                 : [];
 
+
               setMessages(() => [...initMessages, ...messages]);
             } catch (e) {
+              console.log(e)
               setMessages(initMessages);
             }
           }else{

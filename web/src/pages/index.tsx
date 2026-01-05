@@ -90,6 +90,7 @@ const ChatBotDemo = () => {
                 <MessageContent messageId={message.id} isUser={message.role === "user"} sources={message.sources}>
                   {content.replace(/<a href="([^"]+)">([^<]+)<\/a>/g, '[$2]($1)')
                     .replace(/\[来源: (?:\[doc_\d+\]\(doc_\d+\)(?:,\s*)?)+\]/g, '')
+                    .replace(/\[来源:(?:\[doc_\d+\]\(doc_\d+\)(?:,\s*)?)+\]/g, '')
                     .replace(/\[来源:\s+doc_\d+\]/g, '')
                     .replace(/\[来源:\[doc_\d+\]\]/g, '')}
                 </MessageContent>

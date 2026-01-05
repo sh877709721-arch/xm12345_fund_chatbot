@@ -184,13 +184,13 @@ def reset_chat_session(request: Request,db = Depends(get_db)):
 
 
 
-@router.post("/get_resent_messages")
+@router.post("/get_resent_messages", response_model=BaseResponse)
 def get_recent_messages(chat_id: str,db = Depends(get_db)):
     '''
         重置聊天会话，清空消息
     '''
     messages = get_chat_messages(chat_id,db)
-    return messages
+    return BaseResponse(data=messages)
 
 
 @router.post("/get_similary_qa")

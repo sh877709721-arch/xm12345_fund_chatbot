@@ -275,7 +275,7 @@ export const MarkdownContent = ({
                     rel={isUrl ? "noopener noreferrer" : undefined}
                     className="text-primary hover:underline ml-1"
                   >
-                    访问链接
+                    {href}
                   </a>
                 )}
 
