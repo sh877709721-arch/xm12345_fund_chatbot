@@ -1,7 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime
+from app.service.auth import get_current_user
 
 from app.service.feedback import FeedbackService
 from app.schema.feedback import FeedbackCreate, FeedbackRead, FeedbackUpdate, ImageUploadResponse
@@ -62,6 +64,11 @@ async def create_feedback(
 async def get_all_feedbacks(
     page: int = Query(1, ge=1, description="页码"),
     size: int = Query(10, ge=1, le=100, description="每页数量"),
+    content: Optional[str] = Query(None, description="反馈内容模糊搜索"),
+    phone: Optional[str] = Query(None, description="手机号模糊搜索"),
+    start_date: Optional[datetime] = Query(None, description="开始时间"),
+    end_date: Optional[datetime] = Query(None, description="结束时间"),
+    _: str = Depends(get_current_user),
     feedback_service: FeedbackService = Depends(get_feedback_service)
 ):
     """
@@ -71,8 +78,20 @@ async def get_all_feedbacks(
     - **size**: 每页数量 (1-100)
     """
     try:
-        feedbacks = feedback_service.get_all_feedbacks(page=page, size=size)
-        total = feedback_service.get_total_feedbacks_count()
+        feedbacks = feedback_service.get_all_feedbacks(
+            page=page,
+            size=size,
+            content_keyword=content,
+            phone_keyword=phone,
+            start_date=start_date,
+            end_date=end_date
+        )
+        total = feedback_service.get_total_feedbacks_count(
+            content_keyword=content,
+            phone_keyword=phone,
+            start_date=start_date,
+            end_date=end_date
+        )
 
         page_response = PageResponse(
             items=feedbacks,
@@ -131,3 +150,40 @@ async def delete_feedback(
         return BaseResponse(data=result)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/export/excel")
+async def export_feedbacks_to_excel(
+    content: Optional[str] = Query(None, description="反馈内容模糊搜索"),
+    phone: Optional[str] = Query(None, description="手机号模糊搜索"),
+    start_date: Optional[datetime] = Query(None, description="开始时间"),
+    end_date: Optional[datetime] = Query(None, description="结束时间"),
+    _: str = Depends(get_current_user),
+    feedback_service: FeedbackService = Depends(get_feedback_service)
+):
+    """
+    导出反馈数据到Excel
+    """
+    from datetime import datetime as dt
+    from urllib.parse import quote
+
+    try:
+        excel_file = feedback_service.export_feedbacks_to_excel(
+            content_keyword=content,
+            phone_keyword=phone,
+            start_date=start_date,
+            end_date=end_date
+        )
+
+        filename_ascii = f"feedback_{dt.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        filename_utf8 = f"反馈数据_{dt.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+
+        return StreamingResponse(
+            excel_file,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename_ascii}; filename*=UTF-8''{quote(filename_utf8)}"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"导出失败: {str(e)}")

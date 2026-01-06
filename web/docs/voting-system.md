@@ -108,7 +108,7 @@ const userVote = await voteApi.getUserVoteForMessage(123, 'user123');
 | GET | `/vote/message/{message_id}` | 获取消息的所有投票 |
 | PUT | `/vote/{vote_id}` | 更新投票 |
 | DELETE | `/vote/{vote_id}` | 删除投票 |
-| GET | `/vote/stats/message/{message_id}` | 获取消息投票统计 |
+| GET | `/vote/stats/message/{message_id}` | 获取问答查询统计 |
 | GET | `/vote/stats/overview` | 获取总体投票统计 |
 | GET | `/vote/user/message/{message_id}` | 获取用户对消息的投票 |
 

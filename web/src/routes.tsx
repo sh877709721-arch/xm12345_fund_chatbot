@@ -32,10 +32,12 @@ const KnowledgeSearch = lazy(
   () => import("@/pages/admin/knowledge/knowledge-search")
 );
 
-//机器人管理界面
+//后台管理界面
 const TestingBotPage = lazy(() => import("@/pages/admin/bot/testing"));
 const VoteMessages = lazy(() => import("@/pages/admin/bot/vote-messages"));
 const InstructionPage = lazy(() => import("@/pages/admin/bot/instruction"));
+const FeedbackPage = lazy(() => import("@/pages/admin/bot/feedback"));
+
 //主界面
 import { AppLayout } from "@/components/app/app-layout";
 
@@ -76,6 +78,10 @@ const routes = [
       {
         path: "vote-messages",
         element: <VoteMessages />,
+      },
+      {
+        path: "feedback",
+        element: <FeedbackPage />,
       },
       {
         path: "bot-testing",

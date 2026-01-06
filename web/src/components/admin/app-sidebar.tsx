@@ -45,17 +45,21 @@ export const data = {
       ],
     },
     {
-      title: "机器人",
+      title: "后台管理",
       url: "#",
       icon: IconRobot,
       items: [
+        // {
+        //   title: "指令微调",
+        //   url: "/admin/bot-instruction",
+        // },
         {
-          title: "指令微调",
-          url: "/admin/bot-instruction",
+          title: "问答查询",
+          url: "/admin/vote-messages",
         },
         {
-          title: "消息投票",
-          url: "/admin/vote-messages",
+          title: "留言反馈",
+          url: "/admin/feedback",
         },
         // {
         //   title: "标注日志",

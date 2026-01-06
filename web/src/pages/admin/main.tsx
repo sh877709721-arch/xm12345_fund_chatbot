@@ -12,7 +12,7 @@ export default function DashboardMain() {
     { id: 1, title: "项目搭建", status: "completed" },
     { id: 2, title: "知识库管理", status: "completed" },
     { id: 3, title: "知识测试", status: "completed" },
-    { id: 4, title: "机器人", status: "in-progress" },
+    { id: 4, title: "后台管理", status: "in-progress" },
     { id: 5, title: "用户管理", status: "completed" },
     { id: 6, title: "设置页面", status: "completed" },
   ];
