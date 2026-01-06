@@ -68,7 +68,7 @@ import type {
   KnowledgeCatalog,
   CatalogTreeNode,
 } from "@/utils/request/knowledge-catalog";
-import { type SearchParams } from "@/hooks/use-knowledge-data";
+import { type SearchParams as SearchParamsType } from "@/hooks/use-knowledge-data";
 
 export type DialogStateType = "add" | "edit";
 
@@ -117,7 +117,7 @@ export function DataTable({
   };
   selectedCatalog: any;
   loading: boolean;
-  searchParams: SearchParams;
+  searchParams: SearchParamsType;
   onSearch: (
     name?: string,
     knowledgeType?: KnowledgeType | "all",
@@ -367,18 +367,18 @@ export function DataTable({
         const orderby = id as 'id' | 'created_at' | 'updated_at';
         const order = desc ? 'desc' : 'asc';
         onSearch(
-          searchParams.name,
-          searchParams.knowledge_type,
-          searchParams.status,
+          searchParams.name ?? undefined,
+          searchParams.knowledge_type ?? undefined,
+          searchParams.status ?? undefined,
           orderby,
           order
         );
       } else {
         // 取消排序时，恢复默认排序
         onSearch(
-          searchParams.name,
-          searchParams.knowledge_type,
-          searchParams.status,
+          searchParams.name ?? undefined,
+          searchParams.knowledge_type ?? undefined,
+          searchParams.status ?? undefined,
           'id',
           'desc'
         );
@@ -391,7 +391,11 @@ export function DataTable({
   });
 
   /* ---------------- 事件 ---------------- */
-  const handleSearch = () => onSearch(searchName, knowledgeType, status);
+  const handleSearch = () => onSearch(
+    searchName ?? undefined,
+    knowledgeType ?? undefined,
+    status
+  );
   const handleKeyDown = (e: React.KeyboardEvent) =>
     e.key === "Enter" && handleSearch();
 
@@ -487,7 +491,7 @@ export function DataTable({
             onValueChange={(v: KnowledgeType | "all") => {
               setKnowledgeType(v);
               // 当类型改变时自动触发搜索
-              onSearch(searchName, v, status);
+              onSearch(searchName ?? undefined, v, status);
             }}>
             <SelectTrigger className="w-32">
               <SelectValue placeholder="类型" />
@@ -504,7 +508,7 @@ export function DataTable({
             onValueChange={(v: string) => {
               setStatus(v);
               // 当状态改变时自动触发搜索
-              onSearch(searchName, knowledgeType, v);
+              onSearch(searchName ?? undefined, knowledgeType ?? undefined, v);
             }}>
             <SelectTrigger className="w-32">
               <SelectValue placeholder="状态" />

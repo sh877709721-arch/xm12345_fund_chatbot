@@ -1,0 +1,1 @@
+import{j as e}from"./index-C6OZPxUm.js";function s(){return e.jsx("div",{className:"flex gap-2 h-full",children:e.jsx("div",{className:"flex-1 flex flex-col p-6",children:"Instruction"})})}export{s as default};
