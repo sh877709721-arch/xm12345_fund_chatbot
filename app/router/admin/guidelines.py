@@ -31,35 +31,6 @@ def create_guideline(
 ):
     """
     创建指南
-
-    ## 请求示例
-    ```json
-    {
-        "title": "高血压管理指南",
-        "condition": "患者被诊断为高血压",
-        "action": "提供高血压管理建议",
-        "prompt_template": "基于患者的高血压诊断，提供以下建议...",
-        "status": "D"
-    }
-    ```
-
-    ## 响应示例
-    ```json
-    {
-        "code": 200,
-        "message": "success",
-        "data": {
-            "id": 1,
-            "title": "高血压管理指南",
-            "condition": "患者被诊断为高血压",
-            "action": "提供高血压管理建议",
-            "prompt_template": "基于患者的高血压诊断，提供以下建议...",
-            "status": "D",
-            "created_time": "2025-01-05T10:00:00",
-            "updated_time": "2025-01-05T10:00:00"
-        }
-    }
-    ```
     """
     try:
         result = service.create_guideline(
@@ -67,8 +38,10 @@ def create_guideline(
             condition=request.condition,
             action=request.action,
             prompt_template=request.prompt_template,
+            priority=request.priority,
             status=request.status
         )
+        service.build_index_by_guideline_id(result.id)
         return BaseResponse(code=200, message="success", data=result)
     except Exception as e:
         logger.error(f"创建指南失败: {e}")
@@ -81,52 +54,7 @@ def search_guidelines(
     service: GuidelinesService = Depends(get_guideline_service)
 ):
     """
-    搜索指南（支持分页和多条件查询）
-
-    ## 查询参数说明
-    - **title**: 指南标题（模糊匹配）
-    - **condition**: 触发条件（模糊匹配）
-    - **action**: 执行动作（模糊匹配）
-    - **status**: 状态（精确匹配：A/I/D/X）
-    - **page**: 页码（从1开始）
-    - **size**: 每页大小
-
-    ## 请求示例
-    ```json
-    {
-        "title": "高血压",
-        "status": "A",
-        "page": 1,
-        "size": 10
-    }
-    ```
-
-    ## 响应示例
-    ```json
-    {
-        "code": 200,
-        "message": "success",
-        "data": {
-            "items": [
-                {
-                    "id": 1,
-                    "title": "高血压管理指南",
-                    "condition": "患者被诊断为高血压",
-                    "action": "提供高血压管理建议",
-                    "prompt_template": "基于患者的高血压诊断...",
-                    "status": "A",
-                    "created_time": "2025-01-05T10:00:00",
-                    "updated_time": "2025-01-05T10:00:00"
-                }
-            ],
-            "total": 1,
-            "page": 1,
-            "size": 10,
-            "has_next": false,
-            "has_prev": false
-        }
-    }
-    ```
+    搜索指南（支持分页、多条件查询和排序）
     """
     try:
         result = service.search_guidelines(
@@ -134,6 +62,10 @@ def search_guidelines(
             condition=request.condition,
             action=request.action,
             status=request.status,
+            priority_min=request.priority_min,
+            priority_max=request.priority_max,
+            orderby=request.orderby,
+            order=request.order,
             page=request.page,
             size=request.size
         )
@@ -193,36 +125,6 @@ def update_guideline(
 ):
     """
     更新指南
-
-    ## 路径参数
-    - **guideline_id**: 指南ID
-
-    ## 请求示例
-    ```json
-    {
-        "title": "高血压管理指南（更新版）",
-        "action": "提供全面的高血压管理建议",
-        "status": "A"
-    }
-    ```
-
-    ## 响应示例
-    ```json
-    {
-        "code": 200,
-        "message": "success",
-        "data": {
-            "id": 1,
-            "title": "高血压管理指南（更新版）",
-            "condition": "患者被诊断为高血压",
-            "action": "提供全面的高血压管理建议",
-            "prompt_template": "基于患者的高血压诊断...",
-            "status": "A",
-            "created_time": "2025-01-05T10:00:00",
-            "updated_time": "2025-01-05T10:05:00"
-        }
-    }
-    ```
     """
     try:
         result = service.update_guideline(
@@ -231,6 +133,7 @@ def update_guideline(
             condition=request.condition,
             action=request.action,
             prompt_template=request.prompt_template,
+            priority=request.priority,
             status=request.status
         )
         service.build_index_by_guideline_id(guideline_id)

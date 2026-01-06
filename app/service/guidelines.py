@@ -32,6 +32,7 @@ class GuidelinesService:
                          condition: str,
                          action: str,
                          prompt_template: Optional[str] = None,
+                         priority: int = 1,
                          status: str = GuidelinesStatusEnum.draft.value) -> GuidelinesRead:
         """
         创建指南
@@ -41,6 +42,7 @@ class GuidelinesService:
             condition: 触发条件
             action: 执行动作
             prompt_template: 提示词模板
+            priority: 优先级（默认1，范围0-9999）
             status: 状态
 
         Returns:
@@ -52,12 +54,13 @@ class GuidelinesService:
                 condition=condition,
                 action=action,
                 prompt_template=prompt_template,
+                priority=priority,
                 status=status
             )
             self.db.add(guideline)
             self.db.commit()
             self.db.refresh(guideline)
-            logger.info(f"Created guideline with id: {guideline.id}")
+            logger.info(f"Created guideline with id: {guideline.id}, priority: {priority}")
             return GuidelinesRead.model_validate(guideline)
         except Exception as e:
             self.db.rollback()
@@ -85,14 +88,14 @@ class GuidelinesService:
 
     def get_guidelines(self) -> List[GuidelinesRead]:
         """
-        获取所有未删除的指南
+        获取所有未删除的指南（按优先级降序排列）
 
         Returns:
             指南列表
         """
         guidelines = self.db.query(Guidelines).filter(
             Guidelines.status != GuidelinesStatusEnum.deleted.value
-        ).order_by(Guidelines.id.desc()).all()
+        ).order_by(Guidelines.priority.desc(), Guidelines.id.desc()).all()
 
         return [GuidelinesRead.model_validate(g) for g in guidelines]
     
@@ -112,6 +115,7 @@ class GuidelinesService:
                          condition: Optional[str] = None,
                          action: Optional[str] = None,
                          prompt_template: Optional[str] = None,
+                         priority: Optional[int] = None,
                          status: Optional[str] = None) -> GuidelinesRead:
         """
         更新指南
@@ -122,6 +126,7 @@ class GuidelinesService:
             condition: 条件
             action: 动作
             prompt_template: 提示词模板
+            priority: 优先级（可选）
             status: 状态
 
         Returns:
@@ -145,6 +150,8 @@ class GuidelinesService:
                 update_values['action'] = action
             if prompt_template is not None:
                 update_values['prompt_template'] = prompt_template
+            if priority is not None:
+                update_values['priority'] = priority
             if status is not None:
                 update_values['status'] = status
 
@@ -157,7 +164,7 @@ class GuidelinesService:
                 self.db.execute(stmt)
                 self.db.commit()
                 self.db.refresh(guideline)
-                logger.info(f"Updated guideline with id: {guideline_id}")
+                logger.info(f"Updated guideline with id: {guideline_id}, priority change: {priority}")
 
             return GuidelinesRead.model_validate(guideline)
         except ValueError:
@@ -208,16 +215,24 @@ class GuidelinesService:
                           condition: Optional[str] = None,
                           action: Optional[str] = None,
                           status: Optional[str] = None,
+                          priority_min: Optional[int] = None,
+                          priority_max: Optional[int] = None,
+                          orderby: Optional[str] = None,
+                          order: Optional[str] = None,
                           page: int = 1,
                           size: int = 10) -> PageResponse:
         """
-        搜索指南（支持分页和多条件查询）
+        搜索指南（支持分页、多条件查询和排序）
 
         Args:
             title: 标题（模糊匹配）
             condition: 条件（模糊匹配）
             action: 动作（模糊匹配）
             status: 状态（精确匹配）
+            priority_min: 最小优先级
+            priority_max: 最大优先级
+            orderby: 排序字段
+            order: 排序方向
             page: 页码（从1开始）
             size: 每页大小
 
@@ -242,12 +257,42 @@ class GuidelinesService:
         if status:
             query = query.filter(Guidelines.status == status)
 
+        # 优先级范围过滤
+        if priority_min is not None:
+            query = query.filter(Guidelines.priority >= priority_min)
+
+        if priority_max is not None:
+            query = query.filter(Guidelines.priority <= priority_max)
+
         # 计算总数
         total = query.count()
 
-        # 应用分页
+        # 验证排序字段，防止SQL注入
+        valid_orderby_fields = {
+            'id': Guidelines.id,
+            'priority': Guidelines.priority,
+            'created_time': Guidelines.created_time,
+            'updated_time': Guidelines.updated_time
+        }
+
+        # 获取排序字段，默认使用 priority，无效值则使用默认值
+        if orderby and orderby in valid_orderby_fields:
+            order_field = valid_orderby_fields[orderby]
+        else:
+            order_field = Guidelines.priority
+
+        # 验证排序方向，防止非法值
+        if order and order.lower() in ['asc', 'desc']:
+            order_direction = order.lower()
+        else:
+            order_direction = 'desc'
+
+        # 应用分页和排序（动态选择升序或降序）
         offset = (page - 1) * size
-        paginated_query = query.order_by(Guidelines.id.desc()).offset(offset).limit(size)
+        if order_direction == 'asc':
+            paginated_query = query.order_by(order_field.asc()).offset(offset).limit(size)
+        else:
+            paginated_query = query.order_by(order_field.desc()).offset(offset).limit(size)
 
         results = paginated_query.all()
         items = [GuidelinesRead.model_validate(guideline) for guideline in results]
