@@ -158,8 +158,8 @@ def handle_chat_data(request: ChatRequest, db = Depends(get_db)):
             user_message_id=str(user_message_id) if user_message_id else "",
             assistant_message_id=str(assistant_message_id)
         )
-    elif model=='intent_bot':
-        pass
+    elif model=='guideline_bot':
+        bot = agent_factory.get_agent('guideline_bot')
     # agent模式也使用优化版本 #rag_bot qwen_rag_bot
     return agent_stream_response_optimized(chat_id, query, bot, agent_messages, user_message_id, assistant_message_id)
 

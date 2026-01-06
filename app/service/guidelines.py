@@ -1,17 +1,21 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple, Dict
 import logging
-from sqlalchemy import update
+from sqlalchemy import update, text
 from sqlalchemy.orm import Session
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from app.model.guidelines import Guidelines
 from app.schema.guideline import (
     GuidelinesRead,
     GuidelinesCreate,
     GuidelinesUpdate,
-    GuidelinesStatusEnum
+    GuidelinesStatusEnum,
+    GuidelinesMatchResult,
+    GuidelinesMatchRequest
 )
 from app.schema.base import PageResponse
-from app.config.llm_client import embedding_client
+from app.config.llm_client import embedding_client, chat_client_bot
+from app.core.embeddings_utils import get_text_embeddings
 
 logger = logging.getLogger(__name__)
 
@@ -355,3 +359,333 @@ class GuidelinesService:
         except Exception as e:
             error_msg = f"Failed to build index for guideline {guideline_id}: {str(e)}"
             raise Exception(error_msg)
+
+    def match_guideline_by_context(
+        self,
+        context: str,
+        candidate_top_k: int = 5,
+        vector_top_k: int = 20,
+        bm25_top_k: int = 20,
+        similarity_threshold: float = 0.7,
+        use_llm_refinement: bool = True
+    ) -> Optional[GuidelinesMatchResult]:
+        """
+        根据对话上下文智能匹配最合适的指南（两阶段混合检索 + LLM 精选）
+
+        Args:
+            context: 对话上下文（用户查询或对话历史）
+            candidate_top_k: 返回给 LLM 精选的候选数量（默认 5）
+            vector_top_k: 向量检索返回的候选数量（默认 20）
+            bm25_top_k: BM25 检索返回的候选数量（默认 20）
+            similarity_threshold: 向量相似度阈值（默认 0.7）
+            use_llm_refinement: 是否使用 LLM 精选（默认 True）
+
+        Returns:
+            GuidelinesMatchResult 包含匹配的指南和相关信息，如果没有匹配则返回 None
+        """
+        try:
+            logger.info(f"开始指南匹配，上下文: {context[:100]}...")
+
+            # 阶段 1：粗粒度检索（多路召回）
+            candidates_with_scores = self._hybrid_search(
+                context=context,
+                vector_top_k=vector_top_k,
+                bm25_top_k=bm25_top_k,
+                candidate_top_k=candidate_top_k,
+                similarity_threshold=similarity_threshold
+            )
+
+            if not candidates_with_scores:
+                logger.warning("未找到匹配的指南")
+                return None
+
+            # 提取候选指南对象
+            candidates = [item['guideline'] for item in candidates_with_scores]
+
+            # 阶段 2：细粒度精选（LLM 语义理解）
+            if use_llm_refinement:
+                from app.service.guideline_matcher import GuidelineMatcher
+
+                matcher = GuidelineMatcher(self.db, chat_client_bot)
+                selected_guideline, confidence, _ = matcher.refine_with_llm(
+                    context=context,
+                    candidates=candidates
+                )
+
+                if selected_guideline is None:
+                    logger.warning("LLM 未能选择指南，使用 RRF 第一名")
+                    selected_guideline = candidates[0]
+                    confidence = candidates_with_scores[0]['rrf_score']
+                    match_method = "rrf_fallback"
+                    match_score = candidates_with_scores[0]['rrf_score']
+                else:
+                    match_method = "llm"
+                    match_score = confidence
+
+                logger.info(f"LLM 选择了指南 {selected_guideline.id}，置信度: {confidence}")
+            else:
+                # 不使用 LLM，直接返回第一名
+                selected_guideline = candidates[0]
+                confidence = candidates_with_scores[0]['rrf_score']
+                match_method = "rrf"
+                match_score = candidates_with_scores[0]['rrf_score']
+
+                logger.info(f"未使用 LLM，直接返回 RRF 第一名: {selected_guideline.id}")
+
+            # 构造返回结果
+            result = GuidelinesMatchResult(
+                guideline_id=selected_guideline.id,
+                title=selected_guideline.title,
+                condition=selected_guideline.condition,
+                action=selected_guideline.action,
+                prompt_template=selected_guideline.prompt_template,
+                priority=selected_guideline.priority,
+                match_score=match_score,
+                match_method=match_method,
+                confidence=confidence
+            )
+
+            return result
+
+        except Exception as e:
+            logger.error(f"指南匹配失败: {e}", exc_info=True)
+            return None
+
+    def _hybrid_search(
+        self,
+        context: str,
+        vector_top_k: int = 20,
+        bm25_top_k: int = 20,
+        candidate_top_k: int = 5,
+        similarity_threshold: float = 0.7
+    ) -> List[Dict]:
+        """
+        混合检索：向量检索 + BM25 检索 + RRF 融合
+
+        Args:
+            context: 查询上下文
+            vector_top_k: 向量检索返回数量
+            bm25_top_k: BM25 检索返回数量
+            candidate_top_k: 最终返回候选数量
+            similarity_threshold: 向量相似度阈值
+
+        Returns:
+            候选指南列表，每个元素包含 {'guideline': Guidelines, 'rrf_score': float}
+        """
+        # 并行执行向量检索和 BM25 检索
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            vector_future = executor.submit(
+                self._vector_search_with_priority,
+                context,
+                vector_top_k,
+                similarity_threshold
+            )
+            bm25_future = executor.submit(
+                self._bm25_search_with_priority,
+                context,
+                bm25_top_k
+            )
+
+            vector_results = vector_future.result()
+            bm25_results = bm25_future.result()
+
+        logger.info(f"向量检索找到 {len(vector_results)} 条，BM25 检索找到 {len(bm25_results)} 条")
+
+        # RRF 融合
+        merged_results = self._merge_with_rrf(
+            vector_results=vector_results,
+            bm25_results=bm25_results,
+            k=60,
+            weight_vector=0.6,
+            weight_bm25=0.4
+        )
+
+        # 按 priority 排序（RRF 分数相同时，高优先级排前面）
+        merged_results.sort(key=lambda x: (x['rrf_score'], x['guideline'].priority), reverse=True)
+
+        # 返回前 N 条
+        return merged_results[:candidate_top_k]
+
+    def _vector_search_with_priority(
+        self,
+        context: str,
+        top_k: int = 20,
+        similarity_threshold: float = 0.7
+    ) -> List[Dict]:
+        """
+        向量语义检索（考虑 priority）
+
+        Args:
+            context: 查询文本
+            top_k: 返回数量
+            similarity_threshold: 相似度阈值
+
+        Returns:
+            [{'guideline': Guidelines, 'similarity': float}, ...]
+        """
+        try:
+            # 1. 生成查询的 embedding
+            embedding = get_text_embeddings(embedding_client, context)
+            emb_str = f'[{",".join(map(str, embedding))}]'
+            
+            
+
+            # 2. 构造 SQL 查询
+            sql = text(f"""
+                SELECT
+                    id,
+                    1 - (condition_embedding <=> :emb) AS similarity
+                FROM chatbot.guidelines
+                WHERE
+                    1 - (condition_embedding <=> :emb) >= :threshold
+                    AND status != 'X'
+                ORDER BY similarity DESC, priority DESC
+                LIMIT :top_k
+            """)
+
+            result = self.db.execute(
+                sql,
+                {"emb": emb_str, "threshold": similarity_threshold, "top_k": top_k}
+            )
+            rows = result.fetchall()
+
+            if not rows:
+                return []
+
+            # 3. 获取完整的指南对象
+            guideline_ids = [row.id for row in rows]
+            guidelines = self.db.query(Guidelines).filter(
+                Guidelines.id.in_(guideline_ids)
+            ).all()
+
+            # 创建 ID 到指南的映射
+            guideline_map = {g.id: g for g in guidelines}
+
+            # 4. 构造结果，保持 SQL 查询的排序
+            results = []
+            for row in rows:
+                if row.id in guideline_map:
+                    results.append({
+                        'guideline': guideline_map[row.id],
+                        'similarity': float(row.similarity)
+                    })
+
+            logger.info(f"向量检索完成，找到 {len(results)} 条结果")
+            return results
+
+        except Exception as e:
+            logger.error(f"向量检索失败: {e}", exc_info=True)
+            return []
+
+    def _bm25_search_with_priority(
+        self,
+        context: str,
+        top_k: int = 20
+    ) -> List[Dict]:
+        """
+        BM25 全文检索（考虑 priority）
+
+        Args:
+            context: 查询文本
+            top_k: 返回数量
+
+        Returns:
+            [{'guideline': Guidelines, 'rank': float}, ...]
+        """
+        try:
+            # 1. 构造 SQL 查询（使用 PostgreSQL 全文搜索）
+            sql = text(f"""
+                SELECT
+                    id,
+                    ts_rank(condition_fts, websearch_to_tsquery('zhparsercfg', :query)) AS rank
+                FROM chatbot.guidelines
+                WHERE
+                    condition_fts @@ websearch_to_tsquery('zhparsercfg', :query)
+                    AND status != 'X'
+                ORDER BY rank DESC, priority DESC
+                LIMIT :top_k
+            """)
+
+            result = self.db.execute(
+                sql,
+                {"query": context, "top_k": top_k}
+            )
+            rows = result.fetchall()
+
+            if not rows:
+                return []
+
+            # 2. 获取完整的指南对象
+            guideline_ids = [row.id for row in rows]
+            guidelines = self.db.query(Guidelines).filter(
+                Guidelines.id.in_(guideline_ids)
+            ).all()
+
+            # 创建 ID 到指南的映射
+            guideline_map = {g.id: g for g in guidelines}
+
+            # 3. 构造结果，保持 SQL 查询的排序
+            results = []
+            for row in rows:
+                if row.id in guideline_map:
+                    results.append({
+                        'guideline': guideline_map[row.id],
+                        'rank': float(row.rank) if row.rank else 0.0
+                    })
+
+            logger.info(f"BM25 检索完成，找到 {len(results)} 条结果")
+            return results
+
+        except Exception as e:
+            logger.error(f"BM25 检索失败: {e}", exc_info=True)
+            return []
+
+    def _merge_with_rrf(
+        self,
+        vector_results: List[Dict],
+        bm25_results: List[Dict],
+        k: int = 60,
+        weight_vector: float = 0.6,
+        weight_bm25: float = 0.4
+    ) -> List[Dict]:
+        """
+        使用 RRF (Reciprocal Rank Fusion) 算法融合向量检索和 BM25 检索结果
+
+        Args:
+            vector_results: 向量检索结果
+            bm25_results: BM25 检索结果
+            k: RRF 平滑参数
+            weight_vector: 向量检索权重
+            weight_bm25: BM25 检索权重
+
+        Returns:
+            融合后的结果列表 [{'guideline': Guidelines, 'rrf_score': float}, ...]
+        """
+        doc_scores = {}
+        doc_guidelines = {}
+
+        # 向量结果评分
+        for rank, item in enumerate(vector_results, 1):
+            guideline_id = item['guideline'].id
+            rrf_score = 1.0 / (k + rank)
+            doc_scores[guideline_id] = doc_scores.get(guideline_id, 0) + weight_vector * rrf_score
+            doc_guidelines[guideline_id] = item['guideline']
+
+        # BM25 结果评分
+        for rank, item in enumerate(bm25_results, 1):
+            guideline_id = item['guideline'].id
+            rrf_score = 1.0 / (k + rank)
+            doc_scores[guideline_id] = doc_scores.get(guideline_id, 0) + weight_bm25 * rrf_score
+            if guideline_id not in doc_guidelines:
+                doc_guidelines[guideline_id] = item['guideline']
+
+        # 排序并构造结果
+        merged_results = []
+        for guideline_id, rrf_score in sorted(doc_scores.items(), key=lambda x: x[1], reverse=True):
+            merged_results.append({
+                'guideline': doc_guidelines[guideline_id],
+                'rrf_score': rrf_score
+            })
+
+        logger.info(f"RRF 融合完成，合并后 {len(merged_results)} 条不重复结果")
+        return merged_results

@@ -7,6 +7,7 @@ from sqlalchemy.sql import operators
 
 import datetime
 
+
 class Vector(UserDefinedType):
     def __init__(self, dimensions=None):
         self.dimensions = dimensions

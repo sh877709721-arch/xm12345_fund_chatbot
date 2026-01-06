@@ -101,22 +101,44 @@ class WorkerAgent(FnCallAgent):
              messages: List[Message],
              lang: Literal['en', 'zh'] = 'zh',
              knowledge: str = '',
+             system_message: Optional[str] = None,
              **kwargs) -> Iterator[List[Message]]:
         """Q&A with RAG and tool use abilities.
 
         Args:
             knowledge: If an external knowledge string is provided,
               it will be used directly without retrieving information from files in messages.
+            system_message: Custom system message (from _build_system_message)
 
         """
 
-        new_messages = self._prepend_knowledge_prompt(messages=messages, lang=lang, knowledge=knowledge, **kwargs)
+        new_messages = self._prepend_knowledge_prompt(
+            messages=messages,
+            lang=lang,
+            knowledge=knowledge,
+            system_message=system_message,
+            **kwargs
+        )
         return super()._run(messages=new_messages, lang=lang, **kwargs)
+
 
     def _prepend_knowledge_prompt(self,
                                   messages: List[Message],
                                   knowledge: str = '',
+                                  system_message: Optional[str] = None,
                                   **kwargs) -> List[Message]:
+        """
+        在消息前添加知识提示词（重构版 - 支持自定义系统消息）
+
+        Args:
+            messages: 消息列表
+            knowledge: 知识库内容
+            system_message: 自定义系统消息（来自 _build_system_message）
+            **kwargs: 其他参数
+
+        Returns:
+            修改后的消息列表
+        """
         messages = copy.deepcopy(messages)
         response_keywords = []
         query = None
@@ -136,7 +158,7 @@ class WorkerAgent(FnCallAgent):
 
             if knowledge_data:
                 knowledge = KnowledgeSearchService.format_knowledge_for_prompt(knowledge_data)
-                
+
         if knowledge:
             knowledge_prompt = format_knowledge_to_source_and_content(knowledge)
         else:
@@ -163,25 +185,29 @@ class WorkerAgent(FnCallAgent):
         # 如果有意图提示词，优先使用意图提示词；否则使用关键词提示词
         if intent_prompt:
             keyword_prompt = intent_prompt
-            
+
         else:
             keyword_prompt = KNOWLEDGE_KEY_WORDS.format(keywords=",".join(set(response_keywords)))
         #logger.info(f"材料中出现关键信息: {keyword_prompt}")
 
+        # 构建系统消息
+        final_system_message = system_message or DEFAULT_SYSTEM_MESSAGE
+
         if knowledge_prompt:
             if messages and messages[0][ROLE] == SYSTEM:
                 if isinstance(messages[0][CONTENT], str):
-                    messages[0][CONTENT] += '\n\n' + knowledge_prompt + '\n\n' + keyword_prompt
+                    messages[0][CONTENT] = final_system_message + '\n\n' + knowledge_prompt + '\n\n' + keyword_prompt
                 else:
                     assert isinstance(messages[0][CONTENT], list)
                     messages[0][CONTENT] += [ContentItem(text='\n\n' + knowledge_prompt + '\n\n' + keyword_prompt)]
             else:
-                messages = [Message(role=SYSTEM, content=f"{DEFAULT_SYSTEM_MESSAGE}\n\n{knowledge_prompt}\n\n{keyword_prompt}"),
+                messages = [Message(role=SYSTEM, content=f"{final_system_message}\n\n{knowledge_prompt}\n\n{keyword_prompt}"),
                             messages[-1]]
         self.source = references
 
         logger.info(f'最后提示词:{messages[0][CONTENT]}')
         return messages
+
     
 
 
@@ -193,17 +219,27 @@ class WorkerAgent(FnCallAgent):
         messages: List[Message],
         lang: Literal['en', 'zh'] = 'zh',
         knowledge: str = '',
+        system_message: Optional[str] = None,
         **kwargs
     ) -> Iterator[str]:
         """Q&A with RAG and tool use abilities in OpenAI format.
 
         Args:
-            knowledge: If an external knowledge string is provided,
-              it will be used directly without retrieving information from files in messages.
-
+            messages: Message list
+            lang: Language
+            knowledge: Knowledge base content
+            system_message: Custom system message (from _build_system_message)
+            **kwargs: Other parameters
         """
         # 使用与 _run 相同的逻辑
-        new_messages = self._prepend_knowledge_prompt(messages=messages, lang=lang, knowledge=knowledge, **kwargs)
+        new_messages = self._prepend_knowledge_prompt(
+            messages=messages,
+            lang=lang,
+            knowledge=knowledge,
+            system_message=system_message,
+            **kwargs
+        )
+
 
         chunk_id = f"chatcmpl-{uuid.uuid4().hex}"
         created = int(time.time())
@@ -371,40 +407,50 @@ class WorkerAgent(FnCallAgent):
         query: str,
         sources: List[Dict],
         intent: Dict,
+        custom_prompt: Optional[str] = None,
         **kwargs
     ) -> Dict:
         """
-        使用预检索的语料生成答案
+        使用预检索的语料生成答案（重构版 - 支持 Guideline 提示词）
 
         Args:
             query: 用户查询
             sources: 预检索的语料列表
             intent: 意图识别结果
+            custom_prompt: 自定义提示词（来自 Orchestrator.get_prompt_by_intent()）
             **kwargs: 其他参数
 
         Returns:
             Dict: 生成的答案和元数据
         """
         from qwen_agent.llm.schema import Message
-        
+
         # 构建 messages
         messages = [Message(role="user", content=query)]
-        
+
         # 调用 _run，传入 knowledge（避免重复检索）
         knowledge_text = self._format_sources_to_knowledge(sources)
-        
+
+        # 构建系统消息（支持自定义提示词）
+        system_message = self._build_system_message(
+            custom_prompt=custom_prompt,
+            intent=intent,
+            knowledge=knowledge_text
+        )
+
         response_iterator = self._run(
             messages=messages,
             knowledge=knowledge_text,
+            system_message=system_message,
             **kwargs
         )
-        
+
         # 提取最终回复
         final_response = None
         for response_batch in response_iterator:
             if response_batch and response_batch[-1]:
                 final_response = response_batch[-1]
-        
+
         return {
             "content": final_response.get("content", "") if final_response else "",
             "sources": sources,
@@ -412,31 +458,89 @@ class WorkerAgent(FnCallAgent):
             "source_count": len(sources)
         }
 
+
     def run_stream_with_sources(
         self,
         query: str,
         sources: List[Dict],
         intent: Dict,
+        custom_prompt: Optional[str] = None,
         **kwargs
     ) -> Iterator[str]:
         """
-        使用预检索的语料流式生成答案
+        使用预检索的语料流式生成答案（重构版 - 支持 Guideline 提示词）
+
+        Args:
+            query: 用户查询
+            sources: 预检索的语料列表
+            intent: 意图识别结果
+            custom_prompt: 自定义提示词（来自 Orchestrator.get_prompt_by_intent()）
+            **kwargs: 其他参数
 
         Yields:
             str: 生成的文本片段
         """
         from qwen_agent.llm.schema import Message
-        
+
         messages = [Message(role="user", content=query)]
         knowledge_text = self._format_sources_to_knowledge(sources)
-        
+
+        # 构建系统消息（支持自定义提示词）
+        system_message = self._build_system_message(
+            custom_prompt=custom_prompt,
+            intent=intent,
+            knowledge=knowledge_text
+        )
+
         # 使用 _run_openai_format 的流式逻辑
         for chunk in self._run_openai_format(
             messages=messages,
             knowledge=knowledge_text,
+            system_message=system_message,
             **kwargs
         ):
             yield chunk
+
+    def _build_system_message(
+        self,
+        custom_prompt: Optional[str],
+        intent: Dict,
+        knowledge: str
+    ) -> str:
+        """
+        构建系统消息
+
+        优先级：
+        1. custom_prompt (来自 Orchestrator)
+        2. guideline.action
+        3. 默认系统消息
+
+        Args:
+            custom_prompt: 自定义提示词（来自 Orchestrator.get_prompt_by_intent()）
+            intent: 意图识别结果
+            knowledge: 知识库内容
+
+        Returns:
+            系统消息字符串
+        """
+        # 优先使用 custom_prompt
+        if custom_prompt:
+            return f"{DEFAULT_SYSTEM_MESSAGE}\n\n# 特定指令\n{custom_prompt}"
+
+        # 尝试从 guideline 获取 action
+        if intent.get("matched") and intent.get("guideline_match"):
+            guideline = intent["guideline_match"]
+            action = guideline.get("action", "")
+            if action:
+                return f"""{DEFAULT_SYSTEM_MESSAGE}
+
+# 操作指南
+{action}
+
+请严格按照上述指南回答用户问题。"""
+
+        # 使用默认系统消息
+        return DEFAULT_SYSTEM_MESSAGE
 
     def _format_sources_to_knowledge(self, sources: List[Dict]) -> str:
         """
@@ -444,6 +548,7 @@ class WorkerAgent(FnCallAgent):
 
         复用 knowledge_search 的格式化逻辑
         """
+
         import json
         
         # 转换为标准格式

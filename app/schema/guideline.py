@@ -2,6 +2,7 @@ from typing import Optional
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from enum import Enum as PyEnum
+import logging
 
 
 class GuidelinesStatusEnum(PyEnum):
@@ -95,3 +96,29 @@ class GuidelinesSearchRequest(BaseModel):
         if v.lower() not in {'asc', 'desc'}:
             raise ValueError('order 必须是 asc 或 desc')
         return v.lower()
+
+
+class GuidelinesMatchRequest(BaseModel):
+    """指南匹配请求模型"""
+    context: str = Field(..., min_length=1, description="对话上下文或用户查询")
+    candidate_top_k: int = Field(default=5, ge=1, le=10, description="返回给 LLM 精选的候选数量")
+    vector_top_k: int = Field(default=20, ge=1, le=100, description="向量检索返回的候选数量")
+    bm25_top_k: int = Field(default=20, ge=1, le=100, description="BM25 检索返回的候选数量")
+    similarity_threshold: float = Field(default=0.7, ge=0.0, le=1.0, description="向量相似度阈值")
+    use_llm_refinement: bool = Field(default=True, description="是否使用 LLM 精选")
+
+
+class GuidelinesMatchResult(BaseModel):
+    """指南匹配结果模型"""
+    guideline_id: int
+    title: str
+    condition: str
+    action: str
+    prompt_template: Optional[str] = None
+    priority: Optional[int] = None
+    match_score: float = Field(..., ge=0.0, le=1.0, description="匹配分数")
+    match_method: str = Field(..., description="匹配方法：vector/bm25/rrf/llm")
+    confidence: float = Field(..., ge=0.0, le=1.0, description="置信度")
+
+    class Config:
+        from_attributes = True

@@ -34,6 +34,7 @@ from app.core.agents.factory import AgentFactory
 __all__ = [
     'bot',           # 医保助手
     'rag_bot',       # 基础助手
+    'guideline_bot',
     'qwen_rag_bot',  # RAG助手
     'AgentFactory',  # 工厂类
     'agent_factory'  # 全局工厂实例

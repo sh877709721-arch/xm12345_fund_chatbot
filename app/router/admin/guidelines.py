@@ -10,6 +10,8 @@ from app.schema.guideline import (
     GuidelinesCreate,
     GuidelinesUpdate,
     GuidelinesSearchRequest,
+    GuidelinesMatchRequest,
+    GuidelinesMatchResult,
     GuidelinesStatusEnum
 )
 import logging
@@ -182,6 +184,82 @@ def delete_guideline(
     except Exception as e:
         logger.error(f"删除指南失败: {e}")
         raise HTTPException(status_code=500, detail="删除指南失败")
+
+
+@router.post("/match", response_model=BaseResponse)
+def match_guideline(
+    request: GuidelinesMatchRequest,
+    service: GuidelinesService = Depends(get_guideline_service)
+):
+    """
+    根据对话上下文智能匹配最合适的指南
+
+    使用两阶段混合检索 + LLM 精选策略：
+    1. 粗粒度检索：向量语义搜索 + BM25 全文搜索 + RRF 融合
+    2. 细粒度精选：使用 LLM 从 Top-K 候选中选择最匹配的指南
+
+    ## 请求参数说明
+    - **context**: 对话上下文或用户查询（必填）
+    - **candidate_top_k**: 返回给 LLM 精选的候选数量（默认5，范围1-10）
+    - **vector_top_k**: 向量检索返回的候选数量（默认20，范围1-100）
+    - **bm25_top_k**: BM25 检索返回的候选数量（默认20，范围1-100）
+    - **similarity_threshold**: 向量相似度阈值（默认0.7，范围0-1）
+    - **use_llm_refinement**: 是否使用 LLM 精选（默认true）
+
+    ## 请求示例
+    ```json
+    {
+        "context": "患者被诊断为高血压，需要饮食建议",
+        "candidate_top_k": 5,
+        "use_llm_refinement": true
+    }
+    ```
+
+    ## 响应示例
+    ```json
+    {
+        "code": 200,
+        "message": "success",
+        "data": {
+            "guideline_id": 1,
+            "title": "高血压管理指南",
+            "condition": "患者被诊断为高血压",
+            "action": "提供高血压管理建议",
+            "prompt_template": "基于患者的高血压诊断...",
+            "priority": 5,
+            "match_score": 0.92,
+            "match_method": "llm",
+            "confidence": 0.92
+        }
+    }
+    ```
+
+    ## 匹配方法说明
+    - **llm**: 使用 LLM 语义理解精选
+    - **rrf**: 直接使用 RRF 融合结果第一名
+    - **rrf_fallback**: LLM 失败，降级使用 RRF 结果
+    """
+    try:
+        result = service.match_guideline_by_context(
+            context=request.context,
+            candidate_top_k=request.candidate_top_k,
+            vector_top_k=request.vector_top_k,
+            bm25_top_k=request.bm25_top_k,
+            similarity_threshold=request.similarity_threshold,
+            use_llm_refinement=request.use_llm_refinement
+        )
+
+        if result is None:
+            return BaseResponse(
+                code=404,
+                message="未找到匹配的指南",
+                data=None
+            )
+
+        return BaseResponse(code=200, message="success", data=result)
+    except Exception as e:
+        logger.error(f"指南匹配失败: {e}")
+        raise HTTPException(status_code=500, detail="指南匹配失败")
 
 
 @router.get("", response_model=BaseResponse[list[GuidelinesRead]])

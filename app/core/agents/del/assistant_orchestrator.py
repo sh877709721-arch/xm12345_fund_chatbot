@@ -36,42 +36,46 @@ class OrchestratorAgent:
         query: str,
         strategy: Literal["graph", "baseline"] = "graph",
         top_k: Optional[int] = None,
+        enable_guideline_match: bool = True,
         **kwargs
     ) -> Dict:
         """
-        处理用户查询的完整流程
+        处理用户查询的完整流程（重构版 - 集成 Guideline）
 
         流程：
-        1. IntentAgent.call(query, strategy) → 意图 + 搜索结果
+        1. IntentAgent.call(query) → 意图 + Guideline + 搜索结果
         2. _merge_search_results() 合并 top_k_results + graph_sources
-        3. WorkerAgent.run_with_sources(query, sources, intent) → 生成答案
-        4. 返回完整结果
+        3. get_prompt_by_intent() → 获取提示词
+        4. WorkerAgent.run_with_sources(query, sources, intent, custom_prompt) → 生成答案
+        5. 返回完整结果
 
         Args:
             query: 用户查询
             strategy: 搜索策略（None 则使用默认策略）
             top_k: 返回结果数量（None 则使用默认值）
+            enable_guideline_match: 是否启用 Guideline 匹配
             **kwargs: 其他参数（传递给 IntentAgent 和 WorkerAgent）
 
         Returns:
-            Dict: 包含意图分类和生成答案的完整结果
+            Dict: 包含意图分类、Guideline 和生成答案的完整结果
         """
         strategy = strategy or self.default_strategy
         top_k = top_k or self.default_top_k
 
         self.logger.info(f"处理查询: {query}, 策略: {strategy}")
 
-        # Step 1: 意图识别 + 搜索
+        # Step 1: 意图识别 + Guideline 匹配 + 搜索
         intent_result = self.intent_agent.call(
             query=query,
             strategy=strategy,
             top_k=top_k,
+            enable_guideline_match=enable_guideline_match,
             **kwargs
         )
 
         self.logger.info(
-            f"意图识别结果: {intent_result['main_category']}/"
-            f"{intent_result['sub_category']}, "
+            f"意图识别结果: {intent_result['main_category']}, "
+            f"Guideline匹配: {intent_result['matched']}, "
             f"置信度: {intent_result['confidence']}"
         )
 
@@ -87,22 +91,28 @@ class OrchestratorAgent:
 
         self.logger.info(f"合并后搜索结果数量: {len(knowledge_sources)}")
 
-        # Step 3: WorkerAgent 生成答案
+        # Step 3: 获取提示词（新增）
+        prompt = self.get_prompt_by_intent(intent_result)
+
+        # Step 4: WorkerAgent 生成答案（传递 custom_prompt）
         answer_result = self.worker_agent.run_with_sources(
             query=query,
             sources=knowledge_sources,
             intent=intent_result,
+            custom_prompt=prompt,
             **kwargs
         )
 
-        # Step 4: 返回完整结果
+        # Step 5: 返回完整结果
         return {
             "query": query,
+            "guideline": intent_result.get("guideline_match"),  # 新增
             "intent": {
                 "main_category": intent_result["main_category"],
                 "sub_category": intent_result["sub_category"],
                 "detail_category": intent_result["detail_category"],
                 "confidence": intent_result["confidence"],
+                "matched": intent_result["matched"],  # 新增
                 "reason": intent_result["reason"],
                 "search_strategy": intent_result["search_strategy"]
             },
@@ -110,15 +120,17 @@ class OrchestratorAgent:
             "answer": answer_result
         }
 
+
     def process_stream(
         self,
         query: str,
         strategy: Literal["graph", "baseline"] = None,
         top_k: Optional[int] = None,
+        enable_guideline_match: bool = True,
         **kwargs
     ) -> Iterator[Dict]:
         """
-        流式处理查询（支持流式输出）
+        流式处理查询（重构版 - 集成 Guideline）
 
         Yields:
             Dict: 包含状态更新的流式数据
@@ -136,6 +148,7 @@ class OrchestratorAgent:
             query=query,
             strategy=strategy,
             top_k=top_k,
+            enable_guideline_match=enable_guideline_match,
             **kwargs
         )
 
@@ -144,7 +157,9 @@ class OrchestratorAgent:
             "data": {
                 "main_category": intent_result["main_category"],
                 "sub_category": intent_result["sub_category"],
-                "confidence": intent_result["confidence"]
+                "confidence": intent_result["confidence"],
+                "matched": intent_result["matched"],  # 新增
+                "guideline": intent_result.get("guideline_match")  # 新增
             }
         }
 
@@ -157,11 +172,15 @@ class OrchestratorAgent:
             search_results["graph_sources"]
         )
 
-        # 流式调用 WorkerAgent
+        # 获取提示词
+        prompt = self.get_prompt_by_intent(intent_result)
+
+        # 流式调用 WorkerAgent（传递 custom_prompt）
         for chunk in self.worker_agent.run_stream_with_sources(
             query=query,
             sources=knowledge_sources,
             intent=intent_result,
+            custom_prompt=prompt,
             **kwargs
         ):
             yield {"type": "answer_chunk", "data": chunk}
@@ -210,15 +229,45 @@ class OrchestratorAgent:
 
 
     
-    def get_prompt_by_intent(self, intent_result: IntentResult) -> str:
+    def get_prompt_by_intent(self, intent_result: Dict) -> str:
         """
-        根据意图分类结果获取对应的提示词
+        根据意图识别结果获取对应的提示词
+
+        优先级：
+        1. guideline.prompt_template
+        2. guideline.action
+        3. 默认提示词
 
         Args:
-            intent_result: 意图分类结果
+            intent_result: 意图识别结果字典（来自 IntentAssistant.call()）
 
         Returns:
-            对应的提示词字符串
+            提示词字符串
         """
-        # 根据置信度选择最合适的意图
-        pass
+        # 检查是否匹配到 Guideline
+        if intent_result.get("matched") and intent_result.get("guideline_match"):
+            guideline_match = intent_result["guideline_match"]
+
+            # 优先使用 prompt_template
+            if guideline_match.get("prompt_template"):
+                self.logger.info(f"使用 Guideline 自定义提示词: {guideline_match['title']}")
+                return guideline_match["prompt_template"]
+
+            # 否则基于 action 构建提示词
+            action = guideline_match.get("action", "")
+            if action:
+                self.logger.info(f"使用 Guideline action 构建提示词: {guideline_match['title']}")
+                return f"""# 操作指南
+{action}
+
+请严格按照上述指南回答用户问题。"""
+
+        # 降级：使用默认提示词
+        self.logger.warning("未匹配到 Guideline，使用默认提示词")
+        return """你是厦门市医保政务服务助手。请基于提供的知识库内容准确回答用户问题。
+
+注意事项：
+1. 如果知识库中没有相关信息，请直接说明无法回答
+2. 不要编造超出知识库范围的信息
+3. 回答要准确、清晰、有条理
+4. 必要时引用知识库来源"""

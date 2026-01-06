@@ -21,6 +21,7 @@
 from typing import Dict, Union, Optional
 from app.core.agents.react_chat import ReActChat
 from app.core.agents.assistant import Assistant
+from app.core.agents.assistant_guideline import GuidelineAssistant
 from .definitions import (
     llm_cfg,
     MEDICAL_SYSTEM_MESSAGE,
@@ -36,7 +37,7 @@ class AgentFactory:
     """
 
     _instance: Optional['AgentFactory'] = None
-    _agents: Dict[str, Union[ReActChat, Assistant]]
+    _agents: Dict[str, Union[ReActChat, Assistant,GuidelineAssistant]]
 
     def __new__(cls) -> 'AgentFactory':
         """单例模式实现"""
@@ -62,6 +63,10 @@ class AgentFactory:
     def _create_rag_bot(self) -> Assistant:
         """创建基础助手实例"""
         return Assistant(llm=llm_cfg)
+    
+    def _create_guideline_rag_bot(self) -> GuidelineAssistant:
+        """带有行动指南的Agent"""
+        return GuidelineAssistant(llm=llm_cfg)
 
 
     def _register_agents(self):
@@ -69,14 +74,16 @@ class AgentFactory:
         # 创建机器人实例
         bot_instance = self._create_bot()
         rag_bot_instance = self._create_rag_bot()
+        guideline_bot_instance = self._create_guideline_rag_bot()
 
         self._agents = {
             # 原始键名
             'bot': bot_instance,
-            'rag_bot': rag_bot_instance
+            'rag_bot': rag_bot_instance,
+            'guideline_bot': guideline_bot_instance,
         }
 
-    def get_agent(self, agent_key: str) -> Union[ReActChat, Assistant]:
+    def get_agent(self, agent_key: str) -> Union[ReActChat, Assistant, GuidelineAssistant]:
         """
         根据键名获取对应的机器人实例
 
@@ -95,7 +102,7 @@ class AgentFactory:
 
         return self._agents[agent_key]
 
-    def get_agent_safe(self, agent_key: str, default_agent: str = 'bot') -> Union[ReActChat, Assistant]:
+    def get_agent_safe(self, agent_key: str, default_agent: str = 'bot') -> Union[ReActChat, Assistant,GuidelineAssistant]:
         """
         安全获取机器人实例，如果键名不存在则返回默认机器人
 
@@ -147,7 +154,7 @@ class AgentFactory:
             'type': agent_class
         }
 
-    def __getitem__(self, key: str) -> Union[ReActChat, Assistant]:
+    def __getitem__(self, key: str) -> Union[ReActChat, Assistant, GuidelineAssistant]:
         """支持字典式访问 agent_factory['bot']"""
         return self.get_agent(key)
 

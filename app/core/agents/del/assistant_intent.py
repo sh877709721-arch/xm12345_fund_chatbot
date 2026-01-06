@@ -5,18 +5,26 @@
 import time
 import logging
 import json
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Optional
 from dataclasses import dataclass
+from sqlalchemy.orm import Session
 
 from app.config.llm_client import chat_client_bot
 
 
 @dataclass
 class IntentResult:
-    """意图识别结果"""
-    main_category: str          # 一级分类
-    sub_category: str           # 二级分类
-    detail_category: str        # 三级分类
+    """意图识别结果（重构版 - 集成 Guideline 匹配）"""
+
+    # ===== 新增字段：Guideline 匹配 =====
+    guideline_match: Optional[Dict]  # Guideline 匹配结果（如果成功）
+    matched: bool                    # 是否成功匹配到 Guideline
+    fallback_mode: bool              # 是否使用降级模式
+
+    # ===== 保留字段：向后兼容 =====
+    main_category: str          # 一级分类（映射 guideline.title）
+    sub_category: str           # 二级分类（映射 guideline.title）
+    detail_category: str        # 三级分类（映射 guideline.action）
     confidence: float           # 置信度
     reason: str                 # 分类理由
     search_strategy: str        # 使用的搜索策略
@@ -31,19 +39,28 @@ class IntentResult:
 
 class IntentAssistant:
     """
-    意图识别 Agent
+    意图识别 Agent（重构版 - 集成 Guideline 匹配）
 
     功能：
-    1. 支持两种搜索策略：graph / baseline
-    2. 返回意图分类 + 搜索结果
-    3. 封装搜索逻辑，保持简单
+    1. 支持 Guideline 智能匹配
+    2. 支持两种搜索策略：graph / baseline
+    3. 返回意图分类 + 搜索结果
+    4. 封装搜索逻辑，保持简单
     """
 
-    def __init__(self):
+    def __init__(self, db: Optional[Session] = None):
+        """
+        初始化 IntentAgent
+
+        Args:
+            db: 数据库会话（可选，延迟初始化）
+        """
         self.logger = logging.getLogger(__name__)
         self.client = chat_client_bot
+        self._db = db  # 数据库会话（延迟初始化）
+        self._guideline_service = None  # GuidelinesService（延迟初始化）
 
-        # 意图分类体系
+        # 意图分类体系（降级时使用）
         self.intent_categories = {
             "职工基本医疗保险": {
                 "参保缴费": ["参保对象", "缴费标准", "参保缴费方式", "参保缴费纠纷处理", "重复参保处理", "退费"],
@@ -69,11 +86,43 @@ class IntentAssistant:
             }
         }
 
+    @property
+    def db(self) -> Session:
+        """延迟获取数据库连接"""
+        if self._db is None:
+            from app.config.database import SessionLocal
+            self._db = SessionLocal()
+        return self._db
+
+    @property
+    def guideline_service(self):
+        """延迟初始化 GuidelinesService"""
+        if self._guideline_service is None:
+            from app.service.guidelines import GuidelinesService
+            self._guideline_service = GuidelinesService(self.db)
+        return self._guideline_service
+
+    def close(self):
+        """关闭数据库连接"""
+        if self._db:
+            self._db.close()
+            self._db = None
+            self._guideline_service = None
+
+    def __enter__(self):
+        """支持上下文管理器"""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """退出上下文时关闭连接"""
+        self.close()
+
     def call(
         self,
         query: str,
         strategy: Literal["graph", "baseline"] = "graph",
         top_k: int = 10,
+        enable_guideline_match: bool = True,
         **kwargs
     ) -> Dict:
         """
@@ -83,6 +132,7 @@ class IntentAssistant:
             query: 用户查询
             strategy: 搜索策略 "graph" | "baseline"
             top_k: 返回结果数量
+            enable_guideline_match: 是否启用 Guideline 匹配
             **kwargs: 其他搜索参数
 
         Returns:
@@ -93,11 +143,18 @@ class IntentAssistant:
                 query=query,
                 strategy=strategy,
                 top_k=top_k,
+                enable_guideline_match=enable_guideline_match,
                 **kwargs
             )
 
             # 转换 IntentResult 为字典
             return {
+                # Guideline 相关（新增）
+                "guideline_match": result.guideline_match,
+                "matched": result.matched,
+                "fallback_mode": result.fallback_mode,
+
+                # 向后兼容字段
                 "main_category": result.main_category,
                 "sub_category": result.sub_category,
                 "detail_category": result.detail_category,
@@ -116,6 +173,9 @@ class IntentAssistant:
         except Exception as e:
             self.logger.error(f"意图识别失败: {e}")
             return {
+                "guideline_match": None,
+                "matched": False,
+                "fallback_mode": True,
                 "main_category": "错误",
                 "sub_category": "错误",
                 "detail_category": "错误",
@@ -134,15 +194,19 @@ class IntentAssistant:
         query: str,
         strategy: Literal["graph", "baseline"] = "graph",
         top_k: int = 10,
+        enable_guideline_match: bool = True,
+        guideline_threshold: float = 0.7,
         **kwargs
     ) -> IntentResult:
         """
-        意图识别主方法
+        意图识别主方法（重构版 - 集成 Guideline 匹配）
 
         Args:
             query: 用户查询
             strategy: 搜索策略 "graph" | "baseline"
             top_k: 返回结果数量
+            enable_guideline_match: 是否启用 Guideline 匹配
+            guideline_threshold: Guideline 匹配置信度阈值
             **kwargs: 其他参数
 
         Returns:
@@ -150,23 +214,60 @@ class IntentAssistant:
         """
         start_time = time.time()
 
-        # 1. 根据策略执行搜索
+        # Step 1: 根据策略执行搜索
         if strategy == "graph":
             search_results = self._graph_search_strategy(query, top_k, **kwargs)
         else:  # baseline
             search_results = self._baseline_search_strategy(query, top_k, **kwargs)
 
-        # 2. 执行意图分类（基于搜索结果）
-        classification = self._classify_intent(
-            query,
-            search_results["context_for_classification"],
-            strategy
-        )
+        # Step 2: Guideline 匹配（新增）
+        guideline_match = None
+        matched = False
 
-        # 3. 构建返回结果
+        if enable_guideline_match:
+            try:
+                guideline_match = self.guideline_service.match_guideline_by_context(
+                    context=query,
+                    similarity_threshold=guideline_threshold,
+                    use_llm_refinement=True
+                )
+
+                if guideline_match and guideline_match.confidence >= guideline_threshold:
+                    matched = True
+                    self.logger.info(
+                        f"Guideline匹配成功: {guideline_match.title} "
+                        f"(置信度: {guideline_match.confidence:.3f})"
+                    )
+                else:
+                    confidence_val = guideline_match.confidence if guideline_match else 0.0
+                    self.logger.warning(
+                        f"Guideline匹配失败或置信度过低 "
+                        f"({confidence_val:.3f} < {guideline_threshold})"
+                    )
+            except Exception as e:
+                self.logger.error(f"Guideline匹配异常: {e}", exc_info=True)
+
+        # Step 3: 构建分类信息
+        if matched and guideline_match:
+            classification = self._build_classification_from_guideline(guideline_match)
+        else:
+            # 降级：使用原有的 LLM 分类
+            classification = self._classify_intent(
+                query,
+                search_results["context_for_classification"],
+                strategy
+            )
+
+        # Step 4: 构建返回结果
         search_time = time.time() - start_time
 
         return IntentResult(
+            # 新增字段
+            guideline_match=guideline_match.model_dump() if guideline_match else None,
+            matched=matched,
+            fallback_mode=not matched,
+
+            # 向后兼容字段
             main_category=classification["main_category"],
             sub_category=classification["sub_category"],
             detail_category=classification["detail_category"],
@@ -179,6 +280,7 @@ class IntentAssistant:
                 "entities_count": search_results.get("entities_count", 0),
                 "relationships_count": search_results.get("relationships_count", 0),
                 "total_search_time": search_time,
+                "guideline_matched": matched,
                 **search_results.get("extra_metadata", {})
             }
         )
@@ -297,6 +399,28 @@ class IntentAssistant:
                 "baseline_results": top_k_results
             },
             "extra_metadata": {}
+        }
+
+    def _build_classification_from_guideline(
+        self,
+        guideline_match
+    ) -> Dict:
+        """
+        从 Guideline 匹配结果构建向后兼容的分类信息
+
+        Args:
+            guideline_match: Guideline 匹配结果对象
+
+        Returns:
+            分类信息字典
+        """
+        return {
+            "main_category": guideline_match.title,
+            "sub_category": guideline_match.title[:50],  # 截断
+            "detail_category": guideline_match.action[:50] if guideline_match.action else "",
+            "confidence": guideline_match.confidence,
+            "reason": f"Guideline匹配成功 (方法: {guideline_match.match_method}, "
+                      f"分数: {guideline_match.match_score:.3f})"
         }
 
     def _classify_intent(
