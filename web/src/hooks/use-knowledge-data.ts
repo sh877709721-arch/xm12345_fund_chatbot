@@ -16,6 +16,8 @@ export interface SearchParams {
   name: string;
   knowledge_type: KnowledgeType | "all";
   status?:string | null;
+  orderby?: 'id' | 'created_at' | 'updated_at';  // 新增
+  order?: 'asc' | 'desc';  // 新增
   page: number;
   size: number;
 }
@@ -53,6 +55,8 @@ export function useKnowledgeData() {
     name: "",
     knowledge_type: "qa",
     status: "all",
+    orderby: "id",    // 新增：默认按 ID 排序
+    order: "desc",    // 新增：默认降序
     page: 1,
     size: 10,
   });
@@ -101,6 +105,8 @@ export function useKnowledgeData() {
         knowledge_type: searchParams.knowledge_type !== "all" ? searchParams.knowledge_type : undefined,
         name: searchParams.name || undefined,
         status: searchParams.status && searchParams.status !== "all" ? searchParams.status : undefined,
+        orderby: searchParams.orderby,  // 新增
+        order: searchParams.order,      // 新增
       });
 
       setKnowledgeData(data as KnowledgeData);
@@ -130,15 +136,26 @@ export function useKnowledgeData() {
   }, []);
 
   // 处理搜索
-  const handleSearch = React.useCallback((name?: string, knowledgeType?: KnowledgeType | "all", status?: string) => {
-    setSearchParams((prev) => ({
-      ...prev,
-      name: name !== undefined ? name : prev.name,
-      knowledge_type: knowledgeType !== undefined ? knowledgeType : prev.knowledge_type,
-      status: status !== undefined ? status : prev.status,
-      page: 1, // 搜索时重置到第一页
-    }));
-  }, []);
+  const handleSearch = React.useCallback(
+    (
+      name?: string,
+      knowledgeType?: KnowledgeType | "all",
+      status?: string,
+      orderby?: 'id' | 'created_at' | 'updated_at',  // 新增
+      order?: 'asc' | 'desc'  // 新增
+    ) => {
+      setSearchParams((prev) => ({
+        ...prev,
+        name: name !== undefined ? name : prev.name,
+        knowledge_type: knowledgeType !== undefined ? knowledgeType : prev.knowledge_type,
+        status: status !== undefined ? status : prev.status,
+        orderby: orderby ?? prev.orderby,  // 新增
+        order: order ?? prev.order,        // 新增
+        page: 1, // 搜索时重置到第一页
+      }));
+    },
+    []
+  );
 
   // 重置搜索
   const handleReset = React.useCallback(() => {
@@ -146,6 +163,8 @@ export function useKnowledgeData() {
       name: "",
       knowledge_type: "all",
       status: "all",
+      orderby: "id",    // 新增：重置为默认排序
+      order: "desc",    // 新增：重置为降序
       page: 1,
       size: 10,
     });

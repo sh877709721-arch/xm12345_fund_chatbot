@@ -224,23 +224,28 @@ class KnowledgeService:
     
 
     
-    def search_knowledges(self, 
+    def search_knowledges(self,
                         knowledge_catalog_id: List[int] =[],
                         knowledge_type: Optional[KnowledgeTypeEnum] = None,
                         knowledge_status: Optional[str] = None,
                         name: Optional[str] = None,
+                        orderby: str = "id",
+                        order: str = "desc",
                         page: int = 1,
                         size: int = 10) -> PageResponse:
         """
         搜索知识条目（支持分页和多条件查询）
-        
+
         Args:
-            knowledge_catalog_id: 知识目录ID
+            knowledge_catalog_id: 知识目录ID列表
             knowledge_type: 知识类型
+            knowledge_status: 知识状态
             name: 知识名称（模糊匹配）
+            orderby: 排序字段，支持 'id', 'created_at', 'updated_at'，默认为 'id'
+            order: 排序方向，支持 'asc' 或 'desc'，默认为 'desc'
             page: 页码（从1开始）
             size: 每页大小
-            
+
         Returns:
             分页结果字典
         """
@@ -300,10 +305,26 @@ class KnowledgeService:
         
         # 计算总数
         total = query.count()
-        
-        # 应用分页
+
+        # 验证排序字段，防止SQL注入
+        valid_orderby_fields = {
+            'id': Knowledge.id,
+            'created_at': Knowledge.created_at,
+            'updated_at': Knowledge.updated_at
+        }
+
+        # 获取排序字段，默认使用 id，无效值则使用默认值
+        order_field = valid_orderby_fields.get(orderby, Knowledge.id)
+
+        # 验证排序方向，防止非法值
+        order_direction = order.lower() if order in ['asc', 'desc'] else 'desc'
+
+        # 应用分页和排序（动态选择升序或降序）
         offset = (page - 1) * size
-        results = query.order_by(Knowledge.id.desc()).offset(offset).limit(size).all()
+        if order_direction == 'asc':
+            results = query.order_by(order_field.asc()).offset(offset).limit(size).all()
+        else:
+            results = query.order_by(order_field.desc()).offset(offset).limit(size).all()
         # 转换为包含详情和目录信息的完整对象
         knowledge_with_details_list = []
         for knowledge, catalog, detail in results:

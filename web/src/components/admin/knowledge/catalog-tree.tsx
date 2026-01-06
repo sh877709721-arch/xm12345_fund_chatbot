@@ -9,6 +9,7 @@ import type {
   CatalogTreeNode,
   KnowledgeCatalog,
 } from "@/utils/request/knowledge-catalog";
+import { useEffect } from "react";
 
 interface CatalogTreeProps {
   catalogTree: Record<string, Record<string, CatalogTreeNode[]>>;
@@ -35,6 +36,24 @@ export const CatalogTree: React.FC<CatalogTreeProps> = ({
     new Set(["root"])
   );
 
+  // 自动展开到选中的目录
+  useEffect(() => {
+    if (selectedCatalogId && catalogs.length > 0) {
+      const catalog = catalogs.find((c) => c.id === selectedCatalogId);
+      if (catalog) {
+        const level1Path = `level1-${catalog.category_level_1}`;
+        const level2Path = `level2-${catalog.category_level_1}-${catalog.category_level_2}`;
+
+        setExpandedNodes((prev) => {
+          const newSet = new Set(prev);
+          newSet.add(level1Path);
+          newSet.add(level2Path);
+          return newSet;
+        });
+      }
+    }
+  }, [selectedCatalogId, catalogs]);
+
   // 计算当前选中目录的路径（用于高亮）
   const selectedPath = React.useMemo(() => {
     if (!selectedCatalogId) return null;
@@ -44,7 +63,12 @@ export const CatalogTree: React.FC<CatalogTreeProps> = ({
   }, [selectedCatalogId, catalogs]);
 
   // 切换节点展开/收起状态
-  const toggleNode = (nodePath: string) => {
+  const toggleNode = (nodePath: string, e?: React.MouseEvent) => {
+    // 阻止事件冒泡，防止触发表单提交
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     setExpandedNodes((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(nodePath)) {
@@ -60,8 +84,14 @@ export const CatalogTree: React.FC<CatalogTreeProps> = ({
   const handleCatalogSelect = (
     level1: string,
     level2: string,
-    node: CatalogTreeNode
+    node: CatalogTreeNode,
+    e?: React.MouseEvent
   ) => {
+    // 阻止事件冒泡，防止触发表单提交
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     if (onCatalogSelect) {
       const path = `${level1}/${level2}/${node.name}`;
       onCatalogSelect({
@@ -109,14 +139,14 @@ export const CatalogTree: React.FC<CatalogTreeProps> = ({
                       ? "bg-primary text-primary-foreground"
                       : "hover:bg-accent"
                   }`}
-                  onClick={() => toggleNode(level1Path)}>
+                  onClick={(e) => toggleNode(level1Path, e)}>
                   <Button
                     variant="ghost"
                     size="sm"
                     className="h-5 w-5 p-0 mr-1"
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleNode(level1Path);
+                      toggleNode(level1Path, e);
                     }}>
                     {isLevel1Expanded ? (
                       <IconChevronDown className="h-4 w-4" />
@@ -145,14 +175,14 @@ export const CatalogTree: React.FC<CatalogTreeProps> = ({
                                   ? "bg-primary text-primary-foreground"
                                   : "hover:bg-accent"
                               }`}
-                              onClick={() => toggleNode(level2Path)}>
+                              onClick={(e) => toggleNode(level2Path, e)}>
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 className="h-5 w-5 p-0 mr-1"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  toggleNode(level2Path);
+                                  toggleNode(level2Path, e);
                                 }}>
                                 {isLevel2Expanded ? (
                                   <IconChevronDown className="h-4 w-4" />
@@ -182,11 +212,12 @@ export const CatalogTree: React.FC<CatalogTreeProps> = ({
                                             ? "bg-primary text-primary-foreground"
                                             : "hover:bg-accent"
                                         }`}
-                                        onClick={() =>
+                                        onClick={(e) =>
                                           handleCatalogSelect(
                                             level1,
                                             level2,
-                                            node
+                                            node,
+                                            e
                                           )
                                         }>
                                         <div className="w-5 h-5 mr-1" />

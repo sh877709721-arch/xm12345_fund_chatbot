@@ -122,6 +122,8 @@ class KnowledgeSearchRequest(BaseModel):
     catalog_level_3: Optional[str] = None
     status: Optional[str] = None
     name: Optional[str] = None
+    orderby: str = "id"  # 支持的值: 'id', 'created_at', 'updated_at'
+    order: str = "desc"  # 新增：支持 'asc' 或 'desc'，默认降序
     page: int = 1
     size: int = 10
 @router.post("/entries/search", response_model=BaseResponse[PageResponse[KnowledgeWithDetailsRead]])
@@ -131,16 +133,23 @@ def get_knowledges(
 ):
     """
     搜索知识条目（支持分页和多条件查询）
-    
+
     查询参数:
     - knowledge_catalog_id: 知识目录ID
     - knowledge_type: 知识类型
     - name: 知识名称（模糊匹配）
+    - orderby: 排序字段，支持 'id', 'created_at', 'updated_at'，默认为 'id'（降序）
+    - order: 排序方向，支持 'asc'（升序）或 'desc'（降序），默认为 'desc'
     - page: 页码（从1开始）
     - size: 每页大小
-    
+
     示例请求:
-    GET /knowledge/entries/search?knowledge_catalog_id=1&knowledge_type=qa&page=1&size=10
+    POST /knowledge/entries/search
+    {
+        "orderby": "updated_at",
+        "page": 1,
+        "size": 10
+    }
     
     示例响应:
     {
@@ -205,6 +214,8 @@ def get_knowledges(
             knowledge_type=knowledge_type,
             knowledge_status=knowledge_status,
             name=name,
+            orderby=request.orderby,
+            order=request.order,
             page=page,
             size=size
         )

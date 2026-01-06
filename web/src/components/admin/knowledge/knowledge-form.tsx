@@ -30,7 +30,7 @@ import type {
 import { toast } from "sonner";
 
 import { Textarea } from "@/components/ai-elements/textarea";
-import { CatalogSelector } from "./catalog-selector";
+import { CatalogTree } from "./catalog-tree";
 
 export type DialogStateType = "add" | "edit" | "row_edit";
 
@@ -95,7 +95,7 @@ export function KnowledgeDialog({
         </DialogTrigger>
 
         <DialogContent
-          className="sm:max-w-[600px]"
+          className="sm:max-w-[1400px]"
           onKeyDown={handleKeyDown}
         >
           <form
@@ -220,123 +220,131 @@ export function KnowledgeDialog({
                 setIsSubmitting(false);
               }
             }}>
-            <div className="max-w-xl flex flex-col h-[540px] p-0">
+            <DialogHeader>
+              <DialogTitle>{type === "edit" ? `编辑: ${item?.id}` : "新增"}</DialogTitle>
+              <DialogDescription>
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex gap-4 h-[720px] p-0">
               {/* 头部区域 */}
-              <DialogHeader className="px-4 pt-4 pb-4">
-                <DialogTitle>{type === "edit" ? `编辑: ${item?.id}` : "新增"}</DialogTitle>
-                <DialogDescription>
-                </DialogDescription>
-                <div className="flex flex-col gap-3">
-                  <Label htmlFor="name">名称</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    defaultValue={item?.name}
-                    required
-                    onKeyDown={handleKeyDown}
-                  />
+
+
+              {/* 两栏布局 */}
+              <div className="flex gap-4 flex-1 overflow-hidden px-4">
+                {/* 左侧:知识目录树 */}
+                <div className="w-[300px] flex-shrink-0 border-r pr-4 overflow-hidden flex flex-col">
+                  <Label htmlFor="catalog" className="mb-2">知识目录</Label>
+                  <div className="flex-1 overflow-auto border rounded-md">
+                    <CatalogTree
+                      catalogTree={catalogTree || {}}
+                      catalogs={catalogs || []}
+                      selectedCatalogId={selectedCatalogId}
+                      onCatalogSelect={(catalog) => {
+                        setSelectedCatalogId(catalog.id);
+                      }}
+                      loading={false}
+                    />
+                  </div>
                 </div>
-              </DialogHeader>
 
-              {/* 目录选择器 */}
-              <div className="px-4">
-                <div className="flex flex-col gap-3">
-                  <Label htmlFor="catalog">知识目录</Label>
-                  <CatalogSelector
-                    catalogs={catalogs || []}
-                    catalogTree={catalogTree || {}}
-                    selectedCatalogId={selectedCatalogId}
-                    onConfirm={(catalogId) => {
-                      setSelectedCatalogId(catalogId);
-
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-2 px-4">
-                <div className="flex-1 flex flex-col gap-3">
-                  <Label htmlFor="type">类型</Label>
-                  <Select name="type" defaultValue={item?.knowledge_type || "qa"}>
-                    <SelectTrigger id="type" className="w-full">
-                      <SelectValue placeholder="选择类型" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="qa">问答</SelectItem>
-                      <SelectItem value="document">文档</SelectItem>
-                      <SelectItem value="data_table">数据表</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex-1 flex flex-col gap-3">
-                  <Label htmlFor="status">状态</Label>
-                  <Select name="status" defaultValue={item?.status || "pending"}>
-                    <SelectTrigger id="status" className="w-full">
-                      <SelectValue placeholder="选择状态" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">已启用</SelectItem>
-                      <SelectItem value="pending">待审核</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-
-              {/* 可滚动的内容区域，Textarea 自动占满剩余空间 */}
-              <div className="flex-1 overflow-hidden px-4">
-                <div className="flex flex-col gap-3 h-full">
-                  <Label htmlFor="content">内容</Label>
-                  <div className="flex-1 min-h-0">
-                    <Textarea
-                      id="content"
-                      name="content"
-                      placeholder="请输入内容"
-                      defaultValue={item?.details?.content}
-                      className="h-full w-full resize-none"
+                {/* 右侧:表单字段 */}
+                <div className="flex-1 flex flex-col gap-2 overflow-hidden">
+                  {/* 名称字段 */}
+                  <div className="flex-shrink-0">
+                    <Label htmlFor="name" className="mb-2">名称</Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      defaultValue={item?.name}
                       required
                       onKeyDown={handleKeyDown}
                     />
                   </div>
+
+                  {/* 类型 & 状态选择区 (10%) */}
+                  <div className="h-[10%] min-h-[60px] flex gap-2 flex-shrink-0">
+                    <div className="flex-1 flex flex-col gap-2">
+                      <Label htmlFor="type">类型</Label>
+                      <Select name="type" defaultValue={item?.knowledge_type || "qa"}>
+                        <SelectTrigger id="type" className="w-full">
+                          <SelectValue placeholder="选择类型" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="qa">问答</SelectItem>
+                          <SelectItem value="document">文档</SelectItem>
+                          <SelectItem value="data_table">数据表</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex-1 flex flex-col gap-2">
+                      <Label htmlFor="status">状态</Label>
+                      <Select name="status" defaultValue={item?.status || "pending"}>
+                        <SelectTrigger id="status" className="w-full">
+                          <SelectValue placeholder="选择状态" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">已启用</SelectItem>
+                          <SelectItem value="pending">待审核</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* 内容输入区 (75%) */}
+                  <div className="h-[60%] flex flex-col flex-shrink-0">
+                    <Label htmlFor="content" className="mb-2">内容</Label>
+                    <div className="flex-1 min-h-0">
+                      <Textarea
+                        id="content"
+                        name="content"
+                        placeholder="请输入内容"
+                        defaultValue={item?.details?.content}
+                        className="h-full w-full resize-none"
+                        required
+                        onKeyDown={handleKeyDown}
+                      />
+                    </div>
+                  </div>
+
+                  {/* 参考资料区 (15%) */}
+                  <div className="h-[15%] min-h-[80px] flex flex-col flex-shrink-0">
+                    <Label htmlFor="reference" className="mb-2">参考资料</Label>
+                    <div className="flex-1 min-h-0">
+                      <Textarea
+                        id="reference"
+                        name="reference"
+                        placeholder="请输入参考资料链接或标识"
+                        defaultValue={item?.details?.reference || ""}
+                        className="h-full w-full resize-none"
+                        onKeyDown={handleKeyDown}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
 
-              {/* Reference 字段 */}
-              <div className="px-4">
-                <div className="flex flex-col gap-3">
-                  <Label htmlFor="reference">参考资料</Label>
-                  <Textarea
-                    id="reference"
-                    name="reference"
-                    placeholder="请输入参考资料链接或标识"
-                    defaultValue={item?.details?.reference || ""}
-                    onKeyDown={handleKeyDown}
-                  />
-                </div>
-              </div>
-
-              {/* 底部固定区域 */}
-              <DialogFooter className="px-4 py-4 border-t">
-                <div className="flex justify-end gap-4 w-full">
-                  <div className="w-24">
-                    <DialogClose asChild>
-                      <Button variant="outline" className="w-full" type="button">
-                        取消
-                      </Button>
-                    </DialogClose>
-                  </div>
-                  <div className="w-24">
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={isSubmitting}>
-                      {isSubmitting ? "保存中..." : "保存"}
-                    </Button>
-                  </div>
-                </div>
-              </DialogFooter>
             </div>
+            {/* 底部固定区域 */}
+            <DialogFooter className="px-4 py-4 border-t">
+              <div className="flex justify-end gap-4 w-full">
+                <div className="w-24">
+                  <DialogClose asChild>
+                    <Button variant="outline" className="w-full" type="button">
+                      取消
+                    </Button>
+                  </DialogClose>
+                </div>
+                <div className="w-24">
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isSubmitting}>
+                    {isSubmitting ? "保存中..." : "保存"}
+                  </Button>
+                </div>
+              </div>
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>

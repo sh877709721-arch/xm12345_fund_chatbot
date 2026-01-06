@@ -81,6 +81,8 @@ export interface SearchKnowledgeEntriesParams {
   catalog_level_2?: string;
   catalog_level_3?: string;
   status?: string;
+  orderby?: 'id' | 'created_at' | 'updated_at';  // 新增
+  order?: 'asc' | 'desc';  // 新增
 }
 
 // 创建知识条目
@@ -123,7 +125,7 @@ export async function searchKnowledgeEntries(
   params: SearchKnowledgeEntriesParams = {}
 ): Promise<PaginatedKnowledgeEntriesResponse> {
   try {
-    const { page, size, knowledge_type, name, catalog_level_1, catalog_level_2, catalog_level_3, status } = params;
+    const { page, size, knowledge_type, name, catalog_level_1, catalog_level_2, catalog_level_3, status, orderby, order } = params;
 
     const requestParams: Record<string, any> = {
       page,
@@ -153,6 +155,15 @@ export async function searchKnowledgeEntries(
 
     if (status !== undefined) {
       requestParams.status = status;
+    }
+
+    // 新增：传递排序参数
+    if (orderby !== undefined) {
+      requestParams.orderby = orderby;
+    }
+
+    if (order !== undefined) {
+      requestParams.order = order;
     }
 
     const response = await instance.post<PaginatedKnowledgeEntriesResponse>(

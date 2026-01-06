@@ -30,8 +30,6 @@ from app.core.rag.knowledge_search import (
     KnowledgeSearchService,
     format_knowledge_to_source_and_content
 )
-from app.core.rule.intent import IntentClassifier
-from app.core.agents.prompts import get_prompt_by_question
 
 #若缺少关键信息（如参保月份、原参保地、是否连续参保），请主动、礼貌地追问。
 
@@ -75,7 +73,7 @@ KNOWLEDGE_SNIPPET = """## 来自 {source} 的内容：
 
 
 
-class Assistant(FnCallAgent):
+class WorkerAgent(FnCallAgent):
     """This is a widely applicable agent integrated with RAG capabilities and function call ability."""
 
     def __init__(self,
@@ -97,7 +95,6 @@ class Assistant(FnCallAgent):
         self.full_text = ""
         self.current_knowledge = ""
         self.supp_text = ""
-        self.classifier = IntentClassifier()
 
 
     def _run(self,
@@ -157,7 +154,7 @@ class Assistant(FnCallAgent):
         intent_prompt = ""
         if query:
             try:
-                intent_prompt = get_prompt_by_question(query, self.classifier)
+                intent_prompt = ""
                 logger.info(f"意图识别提示词: {intent_prompt}")  # 记录前100个字符
             except Exception as e:
                 logger.error(f"意图分类失败: {e}")
@@ -368,3 +365,95 @@ class Assistant(FnCallAgent):
                         }]
                     }
                     yield f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
+
+    def run_with_sources(
+        self,
+        query: str,
+        sources: List[Dict],
+        intent: Dict,
+        **kwargs
+    ) -> Dict:
+        """
+        使用预检索的语料生成答案
+
+        Args:
+            query: 用户查询
+            sources: 预检索的语料列表
+            intent: 意图识别结果
+            **kwargs: 其他参数
+
+        Returns:
+            Dict: 生成的答案和元数据
+        """
+        from qwen_agent.llm.schema import Message
+        
+        # 构建 messages
+        messages = [Message(role="user", content=query)]
+        
+        # 调用 _run，传入 knowledge（避免重复检索）
+        knowledge_text = self._format_sources_to_knowledge(sources)
+        
+        response_iterator = self._run(
+            messages=messages,
+            knowledge=knowledge_text,
+            **kwargs
+        )
+        
+        # 提取最终回复
+        final_response = None
+        for response_batch in response_iterator:
+            if response_batch and response_batch[-1]:
+                final_response = response_batch[-1]
+        
+        return {
+            "content": final_response.get("content", "") if final_response else "",
+            "sources": sources,
+            "intent": intent,
+            "source_count": len(sources)
+        }
+
+    def run_stream_with_sources(
+        self,
+        query: str,
+        sources: List[Dict],
+        intent: Dict,
+        **kwargs
+    ) -> Iterator[str]:
+        """
+        使用预检索的语料流式生成答案
+
+        Yields:
+            str: 生成的文本片段
+        """
+        from qwen_agent.llm.schema import Message
+        
+        messages = [Message(role="user", content=query)]
+        knowledge_text = self._format_sources_to_knowledge(sources)
+        
+        # 使用 _run_openai_format 的流式逻辑
+        for chunk in self._run_openai_format(
+            messages=messages,
+            knowledge=knowledge_text,
+            **kwargs
+        ):
+            yield chunk
+
+    def _format_sources_to_knowledge(self, sources: List[Dict]) -> str:
+        """
+        将 sources 格式化为 knowledge 文本
+
+        复用 knowledge_search 的格式化逻辑
+        """
+        import json
+        
+        # 转换为标准格式
+        formatted_sources = []
+        for source in sources:
+            formatted_sources.append({
+                'url': source.get('reference', source.get('source', '')),
+                'text': [
+                    source.get('title', '') + '\n' + source.get('text', source.get('answer', ''))
+                ]
+            })
+        
+        return json.dumps(formatted_sources, ensure_ascii=False)

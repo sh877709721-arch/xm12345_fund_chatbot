@@ -10,6 +10,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  type SortingState,
 } from "@tanstack/react-table";
 import {
   IconChevronLeft,
@@ -20,6 +21,8 @@ import {
   IconDotsVertical,
   IconLoader,
   IconSearch,
+  IconChevronUp,
+  IconChevronDown,
 } from "@tabler/icons-react";
 
 import type { UpdateKnowledgeRequest } from "@/utils/request/knowledge-entries";
@@ -115,7 +118,13 @@ export function DataTable({
   selectedCatalog: any;
   loading: boolean;
   searchParams: SearchParams;
-  onSearch: (name: string, knowledgeType?: KnowledgeType | "all", status?: string) => void;
+  onSearch: (
+    name?: string,
+    knowledgeType?: KnowledgeType | "all",
+    status?: string,
+    orderby?: 'id' | 'created_at' | 'updated_at',
+    order?: 'asc' | 'desc'
+  ) => void;
   onReset: () => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
@@ -148,15 +157,48 @@ export function DataTable({
   const columns: ColumnDef<KnowledgeEntry>[] = [
     {
       id: "select",
-      header: () => <span className="text-muted-foreground">ID</span>,
+      header: ({ table }) => (
+        <input
+          type="checkbox"
+          checked={table.getIsAllPageRowsSelected()}
+          onChange={(e) => table.toggleAllPageRowsSelected(!!e.target.checked)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <input
+          type="checkbox"
+          checked={row.getIsSelected()}
+          onChange={(e) => row.toggleSelected(!!e.target.checked)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+      size: 50,
+    },
+    {
+      id: "id",
+      accessorKey: "id",
+      header: ({ column }) => {
+        const isSorted = column.getIsSorted();
+        return (
+          <div className="flex items-center gap-1 cursor-pointer select-none"
+            onClick={() => column.toggleSorting()}>
+            <span className="text-muted-foreground">ID</span>
+            {isSorted === 'asc' && <IconChevronUp className="size-3" />}
+            {isSorted === 'desc' && <IconChevronDown className="size-3" />}
+          </div>
+        );
+      },
       cell: ({ row }) => (
         <div className="truncate break-words leading-tight">
           {row.original.id}
         </div>
       ),
-      enableSorting: false,
+      enableSorting: true,
       enableHiding: false,
-      size: 50,
+      size: 80,
     },
     {
       accessorKey: "name",
@@ -213,14 +255,47 @@ export function DataTable({
     },
     {
       accessorKey: "created_at",
-      header: "创建时间",
+      header: ({ column }) => {
+        const isSorted = column.getIsSorted();
+        return (
+          <div className="flex items-center gap-1 cursor-pointer select-none"
+            onClick={() => column.toggleSorting()}>
+            <span>创建时间</span>
+            {isSorted === 'asc' && <IconChevronUp className="size-3" />}
+            {isSorted === 'desc' && <IconChevronDown className="size-3" />}
+          </div>
+        );
+      },
       cell: ({ row }) => (
         <span className="text-muted-foreground">
           {formatDate(row.original.created_at)}
         </span>
       ),
       sortingFn: "datetime",
-      size: 60,
+      enableSorting: true,
+      size: 100,
+    },
+    {
+      accessorKey: "updated_at",
+      header: ({ column }) => {
+        const isSorted = column.getIsSorted();
+        return (
+          <div className="flex items-center gap-1 cursor-pointer select-none"
+            onClick={() => column.toggleSorting()}>
+            <span>更新时间</span>
+            {isSorted === 'asc' && <IconChevronUp className="size-3" />}
+            {isSorted === 'desc' && <IconChevronDown className="size-3" />}
+          </div>
+        );
+      },
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">
+          {formatDate(row.original.updated_at)}
+        </span>
+      ),
+      sortingFn: "datetime",
+      enableSorting: true,
+      size: 100,
     },
     {
       id: "actions",
@@ -270,12 +345,45 @@ export function DataTable({
 
   /* ---------------- table 实例 ---------------- */
   const [rowSelection, setRowSelection] = React.useState({});
+  const [sorting, setSorting] = React.useState<SortingState>([
+    { id: "id", desc: true }  // 初始状态：按 ID 降序
+  ]);
   const table = useReactTable({
     data,
     columns,
-    state: { rowSelection },
+    state: {
+      rowSelection,
+      sorting  // 新增排序状态
+    },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
+    onSortingChange: (updater) => {  // 新增排序处理
+      const newSorting = typeof updater === 'function' ? updater(sorting) : updater;
+      setSorting(newSorting);
+
+      // 将排序状态转换为 API 参数并触发搜索
+      if (newSorting && newSorting.length > 0) {
+        const { id, desc } = newSorting[0];
+        const orderby = id as 'id' | 'created_at' | 'updated_at';
+        const order = desc ? 'desc' : 'asc';
+        onSearch(
+          searchParams.name,
+          searchParams.knowledge_type,
+          searchParams.status,
+          orderby,
+          order
+        );
+      } else {
+        // 取消排序时，恢复默认排序
+        onSearch(
+          searchParams.name,
+          searchParams.knowledge_type,
+          searchParams.status,
+          'id',
+          'desc'
+        );
+      }
+    },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
