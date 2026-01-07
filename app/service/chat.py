@@ -29,9 +29,17 @@ def get_new_chat_instance(user_id: str, db: Session = Depends(get_db)) -> Chat:
         raise e
 
 
-def append_chat_message(chat_id: str, message: QwenMessage, db: Session = Depends(get_db)):
+def append_chat_message(chat_id: str, 
+                        message: QwenMessage,
+                        db: Session = Depends(get_db),
+                        meta_data:Optional[dict] = {"client":"web"} ,
+                        ):
     try:
-        message = Message(chat_id=chat_id, role=message.role, content=message.content)
+        message = Message(chat_id=chat_id, 
+                          role=message.role, 
+                          content=message.content,
+                          metadata_=meta_data
+                          )
         db.add(message)
         db.commit()
         db.refresh(message)

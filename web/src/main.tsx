@@ -7,6 +7,10 @@ import { Toaster } from "@/components/ui/sonner";
 import App from "./App";
 import "./globals.css";
 import "./index.css";
+import { initTrafficSource } from "@/utils/traffic-source";
+
+// 在渲染前初始化流量来源
+initTrafficSource();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

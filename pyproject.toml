@@ -28,6 +28,7 @@ dependencies = [
     "python-jose>=3.5.0",
     "qwen-agent[llm,mcp]>=0.0.31",
     "redis>=7.0.1",
+    "slowapi>=0.1.9",
     "spacy>=3.8.11",
     "sqlalchemy>=2.0.43",
 ]

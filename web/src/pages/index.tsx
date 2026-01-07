@@ -25,6 +25,20 @@ import { useRef, useState, useEffect } from "react";
 
 import { useChat } from "@/context/chat-context";
 import { FeedbackModal } from "@/components/feedback";
+
+function format_content(content: string) {
+  return content.replace(/<a href="([^"]+)">([^<]+)<\/a>/g, '[$2]($1)')
+    .replace(/\[来源: (?:\[doc_\d+\]\(doc_\d+\)(?:,\s*)?)+\]/g, '')
+    .replace(/\[来源:(?:\[doc_\d+\]\(doc_\d+\)(?:,\s*)?)+\]/g, '')
+    .replace(/\[来源:\s+doc_\d+\]/g, '')
+    .replace(/\[来源:\[doc_\d+\]\]/g, '')
+    .replace(/\[来源:(?:\[\d+\]\(\d+\)(?:,\s*)?)+\]/g, '')
+    .replace(/\[来源: (?:\[\d+\]\(\d+\)(?:,\s*)?)+\]/g, '')
+    .replace(/来源: (?:\d+\(\d+\)(?:,\s*)?)+\]/g, '')
+    .replace(/\[来源:\[\d+\]\]/g, '')
+    .replace(/\n\n\*\*参考出处\*\*\n\n$/, '')
+}
+
 const ChatBotDemo = () => {
   const [input, setInput] = useState("");
   const { messages, sendMessage, status, stop, updateMessageFeedback, toggleChainOfThought, recommendQa } = useChat();
@@ -88,11 +102,8 @@ const ChatBotDemo = () => {
                 sources={message.sources}
               >
                 <MessageContent messageId={message.id} isUser={message.role === "user"} sources={message.sources}>
-                  {content.replace(/<a href="([^"]+)">([^<]+)<\/a>/g, '[$2]($1)')
-                    .replace(/\[来源: (?:\[doc_\d+\]\(doc_\d+\)(?:,\s*)?)+\]/g, '')
-                    .replace(/\[来源:(?:\[doc_\d+\]\(doc_\d+\)(?:,\s*)?)+\]/g, '')
-                    .replace(/\[来源:\s+doc_\d+\]/g, '')
-                    .replace(/\[来源:\[doc_\d+\]\]/g, '')}
+
+                  {format_content(content)}
                 </MessageContent>
               </Message>
             ))}

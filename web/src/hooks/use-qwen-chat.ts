@@ -10,13 +10,14 @@ import {
   type Source,
   type ThoughtStep,
 } from "@/utils/request/chat";
+import { getTrafficSource } from "@/utils/traffic-source";
 
 // 重新导出类型，保持向后兼容
 export type { ChatSession, Message, RecommendQA, Source, ThoughtStep };
 
 export type ChatStatus = "submitted" | "streaming" | "ready" | "error";
 
-export type ModelType = "default" | "boost";
+export type ModelType = "default" | "boost" | "guideline_bot";
 
 export function useQwenChat(
   initMessages: Message[] = [],
@@ -217,7 +218,11 @@ export function useQwenChat(
       try {
         // always use the freshest messages via ref
         const convo = [...messagesRef.current, userMsg];
-        const body: any = { messages: convo, model };
+        const body: any = {
+          messages: convo,
+          model,
+          from_source: getTrafficSource()
+        };
         if (currentSession?.id) body.chat_id = currentSession.id;
 
         // 使用封装好的流式 API

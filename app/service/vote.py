@@ -197,8 +197,8 @@ class VoteService:
                 from chatbot.messages 
                 where chat_id = a.chat_id
                 and message_role_enum = 'assistant'
-                and id < a.id
-                order by created_at desc limit 1
+                and id > a.id
+                order by created_at asc limit 1
             ) user_latest ON true
             left join chatbot.vote c on user_latest.id = c.message_id 
             where a.message_role_enum = 'user'
@@ -326,7 +326,8 @@ class VoteService:
             vote_id=row.vote_id,
             message_id=row.message_id,
             vote_type=row.vote_type,
-            updated_at=row.updated_at,
+            feedback=row.feedback,
+            created_at=row.created_at,
             question=row.question,
             answer=row.answer,
             chat_id=row.chat_id
@@ -358,8 +359,8 @@ class VoteService:
                 from chatbot.messages 
                 where chat_id = a.chat_id
                 and message_role_enum = 'assistant'
-                and id < a.id
-                order by created_at desc limit 1
+                and id > a.id
+                order by created_at asc limit 1
             ) user_latest ON true
             left join chatbot.vote c on user_latest.id = c.message_id 
             where a.message_role_enum = 'user'

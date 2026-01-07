@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException,Request, Depends, BackgroundTasks
 from fastapi.responses import StreamingResponse
+from app.middleware.api_rate_limiter import limiter
 import json
 from app.service.search_service import SearchService
 from app.core.agents.factory import agent_factory
@@ -12,6 +13,7 @@ from app.core.util import qa_stream_response_optimized, agent_stream_response_op
 from app.model.message import MessageRead
 from app.utils.circuit_breaker import database_circuit_breaker
 from app.schema.base import BaseResponse
+from app.middleware.api_rate_limiter import limiter, get_rate_limit_key_by_ip
 import logging
 
 
@@ -76,6 +78,7 @@ class ChatRequest(BaseModel):
     messages: List[ChatMessage] = []
     max_tokens: int = 8192
     temperature: float = 0.2
+    from_source: Optional[str] = 'web'  # 流量入口：web/miniprogram/mp/h5等
 
 class ChatRefRequest(BaseModel):
     message_id: int
@@ -89,11 +92,14 @@ class GraphQueryRequest(BaseModel):
 # API endpoint
 @router.post("/completions")
 @database_circuit_breaker
-def handle_chat_data(request: ChatRequest, db = Depends(get_db)):
+@limiter.limit("20/minute", key_func=get_rate_limit_key_by_ip)
+def handle_chat_data(request:Request,
+                     chat_request:ChatRequest, 
+                     db = Depends(get_db)):
 
     # 从请求体中提取消息
-    messages = request.messages
-    chat_id = request.chat_id
+    messages = chat_request.messages
+    chat_id = chat_request.chat_id
 
     # guard: ensure messages provided
     if not messages:
@@ -108,15 +114,29 @@ def handle_chat_data(request: ChatRequest, db = Depends(get_db)):
     if messages and messages[-1].role == 'user':
         # 提取消息文本内容用于保存
         message_text = extract_message_content(messages[-1].content)
-        db_res = append_chat_message(chat_id, Message("user",message_text), db)
+
+        # 获取流量来源（默认为 web）
+        source = chat_request.from_source or 'web'
+
+        # 记录流量来源
+        logging.info(f"📊 流量来源: {source} | chat_id: {chat_id}")
+
+        db_res = append_chat_message(chat_id,
+                                     Message("user",message_text),
+                                     db,
+                                     meta_data={"client": source})
         saved_user_message = MessageRead.model_validate(db_res)
         user_message_id = saved_user_message.id
         messages[-1].content = [
             ContentItem(text=message_text)
             ]
-        
+
     # 插入一条空的记录
-    assistant_message = append_chat_message(chat_id, Message("assistant", " "), db)
+    source = chat_request.from_source or 'web'
+    assistant_message = append_chat_message(chat_id,
+                                            Message("assistant", " "),
+                                            db,
+                                            meta_data={"client": source})
     assistant_message_id = assistant_message.id
 
     # 🔧 **优化点1：提前释放数据库连接**
@@ -144,8 +164,8 @@ def handle_chat_data(request: ChatRequest, db = Depends(get_db)):
         # 传递消息ID而不是数据库连接，流式响应将使用后台任务更新数据库
         
         return qa_stream_response_optimized(chat_id, query ,qa_res, user_message_id, assistant_message_id)
-    
-    model = request.model
+
+    model = chat_request.model
     bot = agent_factory.get_agent('rag_bot')
     if model=='default':
         bot = agent_factory.get_agent('rag_bot')

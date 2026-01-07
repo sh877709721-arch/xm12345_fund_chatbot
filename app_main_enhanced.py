@@ -4,6 +4,8 @@ from contextlib import asynccontextmanager
 from app.router import chat
 from app.middleware.rate_limiter import ConnectionPoolLimiter
 from app.monitor.connection_monitor import connection_monitor, setup_connection_listeners
+from slowapi.errors import RateLimitExceeded
+from app.middleware.api_rate_limiter import limiter, custom_rate_limit_handler
 import logging
 
 # 配置日志
@@ -55,6 +57,11 @@ def create_app():
         max_concurrent_requests=120,  # 最大并发120，留40连接余量
         check_interval=1.0            # 每秒检查一次
     )
+
+    # 🚀 API 限流器注册
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
+    logger.info("✅ API 限流器已注册")
 
     # 注册路由
     app.include_router(chat.router, prefix="/api/v1")

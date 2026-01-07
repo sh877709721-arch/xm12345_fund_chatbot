@@ -24,6 +24,8 @@ from app.middleware.auth_logging import (
     get_username_from_request,
     get_token_validity_from_request
 )
+from slowapi.errors import RateLimitExceeded
+from app.middleware.api_rate_limiter import limiter, custom_rate_limit_handler
 # 前端部署域名，生产环境请改为具体地址，例如 ["https://app.example.com"]
 origins = ["http://127.0.0.1","http://127.0.0.1:8000","http://127.0.0.1:5173","http://localhost:5173"]
 #origins = ["http://172.21.33.8","http://172.21.33.8:8000","http://172.21.33.8:8888"]
@@ -71,6 +73,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
 
 app.include_router(chat_router, prefix="/znkfzs/v1", tags=["chat"])
 app.include_router(vote_router, prefix="/znkfzs/v1", tags=["vote"])

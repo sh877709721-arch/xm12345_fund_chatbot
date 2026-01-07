@@ -6,8 +6,11 @@ import {
   IconListDetails,
   IconSearch,
   IconSettings,
-  IconRobot,
+  //IconRobot,
 } from "@tabler/icons-react";
+import {
+  MessageCircle
+} from 'lucide-react'
 import { NavMain } from "@/components/admin/nav-main";
 //import { NavSecondary } from "@/components/admin/nav-secondary";
 import { NavUser } from "@/components/admin/nav-user";
@@ -45,14 +48,10 @@ export const data = {
       ],
     },
     {
-      title: "后台管理",
+      title: "消息查询",
       url: "#",
-      icon: IconRobot,
+      icon: MessageCircle,
       items: [
-        // {
-        //   title: "指令微调",
-        //   url: "/admin/bot-instruction",
-        // },
         {
           title: "问答查询",
           url: "/admin/vote-messages",
@@ -61,12 +60,27 @@ export const data = {
           title: "留言反馈",
           url: "/admin/feedback",
         },
-        // {
-        //   title: "标注日志",
-        //   url: "/admin/bot-testing",
-        // },
       ],
     },
+    // {
+    //   title: "指令微调",
+    //   url: "#",
+    //   icon: IconRobot,
+    //   items: [
+    //     {
+    //       title: "Guideline 管理",
+    //       url: "/admin/bot-instruction",
+    //     },
+    //     {
+    //       title: "匹配测试",
+    //       url: "/admin/guideline-match-test",
+    //     },
+    //     {
+    //       title: "问答",
+    //       url: "/admin/bot-chat",
+    //     },
+    //   ],
+    // },
     {
       title: "关于",
       url: "/admin/about",

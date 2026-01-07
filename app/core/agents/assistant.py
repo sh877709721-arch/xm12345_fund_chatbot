@@ -25,6 +25,7 @@ from qwen_agent.llm import BaseChatModel
 from qwen_agent.llm.schema import CONTENT, ROLE, SYSTEM, USER, ContentItem, Message  # DEFAULT_SYSTEM_MESSAGE
 from qwen_agent.log import logger
 from qwen_agent.tools import BaseTool
+from app.core.tools.time import get_current_time
 
 from app.core.rag.knowledge_search import (
     KnowledgeSearchService,
@@ -53,7 +54,7 @@ DEFAULT_SYSTEM_MESSAGE='''你是厦门市医保政务服务助手小E。你必�
 - 医保退休问题: 需要注意**具备申报厦门职工医保退休待遇资格的人员**，职工医保缴费年限需满足男满25年、女满20年，且在厦实际缴费年限满10年。本市实际缴费年限或累计缴费年限不足的，可以一次性补足至规定的缴费年限后办理医保退休。
 - 医保补缴: 答题模板:1.补缴条件:.. 2.补缴渠道:... 3.咨询方式:... 引导税务处理参保的具体情况（如是否为单位应缴未缴或灵活就业人员中断缴费）未明确说明，建议直接拨打税务热线12366咨询，以确认是否符合补缴条件及具体办理流程。
 - 等待期: 等待期是居民医保政策，可以结合文件规定说明“从2024年年底起每年都在集中征缴期参加居民医保，不会有待遇等待期。”
-- 变动等待期：固定等待期3个月，断保一年没有变动等待期。断保时间≥2年才会变动等待期。 2024年及以前的年份不参与计算。例如 2024年和2025年没有参保缴费，已经缴费了2026年居民医保了,**没有变动等待期**，有固定等待期3个月。
+- 变动等待期：固定等待期3个月（大于3个月），断保一年没有变动等待期。断保时间≥2年才会变动等待期。 2024年及以前的年份不参与计算。例如 2024年和2025年没有参保缴费，已经缴费了2026年居民医保了,**没有变动等待期**，有固定等待期3个月。
 - 生育津贴: 生育津贴不是就医，无需异地就医备案，异地分娩申领生育津贴不需要办理异地就医备案手续。医疗费用报销跨省就医才需要“按规定办理跨省异地就医备案，否则医疗费用需先由个人负担10%后再按本市规定享受待遇”
 - 家庭共济账户: 注意如下事实，参保人仅可存在一个家庭账户。家庭共济账户的创建者，停保后无法邀请家庭成员。
 - 非厦门参保问题:如果你判断为非厦门参保问题，请你忽略知识库所有内容，应引导咨询当地医保部门规定。
@@ -65,6 +66,7 @@ DEFAULT_SYSTEM_MESSAGE='''你是厦门市医保政务服务助手小E。你必�
 - 严谨添加知识库之外的任何信息推测或细节，如果您不知道答案，或者提供的报告不包含足够的信息来提供答案，请直接说不知道。不要编造任何东西。
 - 最终回答应从报告中删除所有不相关的信息，并将清理后的信息合并为一个全面的答案，该答案提供适合回答长度和格式的所有关键点和含义的解释。
 - 费用 费率: 如果涉费用和费率的问题，表达中不要使用上调和提高，而是恢复原费率，调整原费率
+- 涉及时间，等待期问题，请你分析当前时间与用户提供时间的差异，回答用户的问题
 如果用户正在咨询参保对象相关内容。核心规则如下:
 - 可能需要根据实际情况分点论述:
    1)本地户籍和非本地户籍
@@ -89,9 +91,6 @@ DEFAULT_SYSTEM_MESSAGE='''你是厦门市医保政务服务助手小E。你必�
 KNOWLEDGE_TEMPLATE = """# 知识库
 {knowledge}"""
 
-KNOWLEDGE_KEY_WORDS = """# 关键信息(非常重要，回复里要注明)
-{keywords}
-"""
 
 KNOWLEDGE_SNIPPET = """## 来自 {source} 的内容：
 
@@ -99,6 +98,11 @@ KNOWLEDGE_SNIPPET = """## 来自 {source} 的内容：
 {content}
 ```"""
 
+BASE_INFO_TEMPLATE = """ # 基础知识
+
+当前系统时间: {current_time}
+
+"""
 
 
 
@@ -172,15 +176,6 @@ class Assistant(FnCallAgent):
                 knowledge = KnowledgeSearchService.format_knowledge_for_prompt(knowledge_data)
 
                 self.knowledge_data = knowledge_data
-                #references = [k['reference'] for k in knowledge_data if k['reference'] and len(k['reference'])>0]
-                #reference = []
-                #for k in references:
-                #    item = k.split('\n')
-                #    for i in item:
-                #        if i not in reference:
-                #            reference.append(i)
-                #self.supp_text = "\n\n".join(reference)
-                #logger.info(f"reference:\n {self.supp_text}")
                 
         if knowledge:
             knowledge_prompt = format_knowledge_to_source_and_content(knowledge)
@@ -195,25 +190,21 @@ class Assistant(FnCallAgent):
         if snippets:
             knowledge_prompt = KNOWLEDGE_TEMPLATE.format(knowledge='\n\n'.join(snippets))
 
-        # 使用意图分类器生成提示词
-        intent_prompt = ""
-        # 如果有意图提示词，优先使用意图提示词；否则使用关键词提示词
-        if intent_prompt:
-            keyword_prompt = intent_prompt
-            
-        else:
-            keyword_prompt = KNOWLEDGE_KEY_WORDS.format(keywords=",".join(set(response_keywords)))
         #logger.info(f"材料中出现关键信息: {keyword_prompt}")
+
+
+        base_info_prompt = BASE_INFO_TEMPLATE.format(current_time=get_current_time())
+        
 
         if knowledge_prompt:
             if messages and messages[0][ROLE] == SYSTEM:
                 if isinstance(messages[0][CONTENT], str):
-                    messages[0][CONTENT] += '\n\n' + knowledge_prompt + '\n\n' + keyword_prompt
+                    messages[0][CONTENT] += '\n\n' + knowledge_prompt + '\n\n'
                 else:
                     assert isinstance(messages[0][CONTENT], list)
-                    messages[0][CONTENT] += [ContentItem(text='\n\n' + knowledge_prompt + '\n\n' + keyword_prompt)]
+                    messages[0][CONTENT] += [ContentItem(text='\n\n' + knowledge_prompt + '\n\n' )]
             else:
-                messages = [Message(role=SYSTEM, content=f"{DEFAULT_SYSTEM_MESSAGE}\n\n{knowledge_prompt}\n\n{keyword_prompt}"),
+                messages = [Message(role=SYSTEM, content=f"{DEFAULT_SYSTEM_MESSAGE}\n\n{knowledge_prompt}\n\n{base_info_prompt}"),
                             messages[-1]]
         self.source = references
 
@@ -241,6 +232,7 @@ class Assistant(FnCallAgent):
         """
         # 使用与 _run 相同的逻辑
         new_messages = self._prepend_knowledge_prompt(messages=messages, lang=lang, knowledge=knowledge, **kwargs)
+        #logger.info(f'new_messages:{new_messages}')
 
         chunk_id = f"chatcmpl-{uuid.uuid4().hex}"
         created = int(time.time())

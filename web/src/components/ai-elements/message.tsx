@@ -62,7 +62,7 @@ export const Message = ({
 
     {/* 消息内容 */}
     <div className={cn(
-      "flex flex-col max-w-[100%]",
+      "flex flex-col max-w-[90%]",
       from === "user" && "items-end"
     )}>
       {/* Chain-of-Thought - 只在助手消息上显示 */}
@@ -107,7 +107,7 @@ export const Message = ({
           <div className="mt-2 space-y-2">
             <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted/50 border border-border/50">
               <p className="text-xs text-muted-foreground leading-relaxed">
-                以上信息仅供参考，医保政策解读及业务办理以现行政策和厦门市医保机构最终审核结果为准，试运行期间，若有不明请至窗口或拨打12345人工服务
+                以上信息仅供参考，医保政策解读及业务办理以现行政策和厦门市医保机构最终审核结果为准，试运行期间，若有不明请至窗口或拨打12345人工服务。
               </p>
             </div>
             <MessageActions

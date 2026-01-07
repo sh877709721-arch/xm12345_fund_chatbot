@@ -1,29 +1,45 @@
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-      <div className="text-center max-w-md">
-        <h1 className="text-9xl font-bold text-indigo-600 mb-4">404</h1>
-        <h2 className="text-3xl font-semibold text-gray-800 mb-6">
-          页面未找到
-        </h2>
-        <p className="text-gray-600 mb-8 text-lg">
-          抱歉，您查找的页面不存在或已被移动。
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link
-            to="/"
-            className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition-colors shadow-md">
-            返回主页
-          </Link>
-          <Link
-            to="/admin"
-            className="px-6 py-3 bg-white text-indigo-600 font-medium rounded-md hover:bg-gray-100 transition-colors shadow-md border border-indigo-200">
-            返回控制台
-          </Link>
-        </div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
+      <Card className="w-full max-w-md text-center">
+        <CardHeader className="space-y-4">
+          {/* 大号 404 数字 */}
+          <div className="text-[120px] font-bold text-primary leading-none">
+            404
+          </div>
+
+          {/* 标题 */}
+          <CardTitle className="text-3xl">
+            页面未找到
+          </CardTitle>
+
+          {/* 描述文本 */}
+          <CardDescription className="text-base">
+            抱歉，您查找的页面不存在或已被移动。
+          </CardDescription>
+        </CardHeader>
+
+        {/* 操作按钮 */}
+        <CardContent className="space-y-3">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button asChild variant="default" className="flex-1">
+              <Link to="/">
+                返回主页
+              </Link>
+            </Button>
+
+            <Button asChild variant="outline" className="flex-1">
+              <Link to="/admin">
+                返回控制台
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

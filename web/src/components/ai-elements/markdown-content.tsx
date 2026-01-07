@@ -264,7 +264,7 @@ export const MarkdownContent = ({
             const isUrl = isWebUrl(href);
 
             return (
-              <span className="inline-flex items-center gap-1">
+              <span className="items-center gap-1">
                 {/* 保留原有的 children 显示 */}
                 {/* {children || JSON.stringify(href)} */}
 
@@ -273,7 +273,7 @@ export const MarkdownContent = ({
 
                     target={isUrl ? "_blank" : undefined}
                     rel={isUrl ? "noopener noreferrer" : undefined}
-                    className="text-primary hover:underline ml-1"
+                    className="text-primary hover:underline ml-1 break-words"
                   >
                     {href}
                   </a>

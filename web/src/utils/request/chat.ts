@@ -58,6 +58,7 @@ export interface ChatCompletionRequest {
   model?: string;
   chat_id?: string;
   stream?: boolean;
+  from_source?: string; // 流量来源参数
 }
 
 export interface ChatRefRequest {
