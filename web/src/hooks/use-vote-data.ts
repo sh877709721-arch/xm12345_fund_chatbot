@@ -23,6 +23,7 @@ interface SearchParams {
   start_date?: string;
   end_date?: string;
   searchKeyword?: string;
+  client_type?: string;
 }
 
 export function useVoteData() {
@@ -44,6 +45,7 @@ export function useVoteData() {
     start_date: new Date().toISOString().split('T')[0],
     end_date: "",
     searchKeyword: "",
+    client_type: "",
   });
 
   // 缓存数据，避免重复请求
@@ -58,6 +60,7 @@ export function useVoteData() {
       start_date: params.start_date,
       end_date: params.end_date,
       searchKeyword: params.searchKeyword,
+      client_type: params.client_type,
     });
   }, []);
 
@@ -88,6 +91,7 @@ export function useVoteData() {
         start_date: searchParams.start_date || undefined,
         end_date: searchParams.end_date || undefined,
         searchKeyword: searchParams.searchKeyword || undefined,
+        client_type: searchParams.client_type || undefined,
       };
 
       const result: any = await getVotesWithMessages(query);
@@ -140,6 +144,7 @@ export function useVoteData() {
       start_date: new Date().toISOString().split('T')[0], // 直接计算当前日期
       end_date: "",
       searchKeyword: "",
+      client_type: "",
     });
   }, []);
 
@@ -159,6 +164,15 @@ export function useVoteData() {
       start_date: startDate,
       end_date: endDate,
       page: 1, // 日期变化时重置到第一页
+    }));
+  }, []);
+
+  // 处理请求来源变化
+  const handleClientTypeChange = React.useCallback((clientType: string) => {
+    setSearchParams((prev) => ({
+      ...prev,
+      client_type: clientType === "all" ? "" : clientType,
+      page: 1, // 请求来源变化时重置到第一页
     }));
   }, []);
 
@@ -212,6 +226,7 @@ export function useVoteData() {
     handleReset,
     handleVoteTypeChange,
     handleDateRangeChange,
+    handleClientTypeChange,
     handlePageChange,
     handlePageSizeChange,
     handleRefresh,

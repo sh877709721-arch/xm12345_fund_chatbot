@@ -154,6 +154,7 @@ export function VoteStatsTableOptimized({ className }: VoteStatsTableOptimizedPr
     handleReset,
     handleVoteTypeChange,
     handleDateRangeChange,
+    handleClientTypeChange,
     handlePageChange,
     handlePageSizeChange,
     handleRefresh,
@@ -198,7 +199,7 @@ export function VoteStatsTableOptimized({ className }: VoteStatsTableOptimizedPr
   const columns: ColumnDef<VoteWithMessage>[] = [
     {
       accessorKey: "vote_type",
-      header: "投票类型",
+      header: () => <div className="pl-6">投票类型</div>,
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           {getVoteIcon(row.original.vote_type) || <div className="w-4 h-4" />}
@@ -209,6 +210,17 @@ export function VoteStatsTableOptimized({ className }: VoteStatsTableOptimizedPr
       ),
       size: 120,
       enableSorting: true,
+    },
+    {
+      accessorKey: "client_type",
+      header: "请求来源",
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {row.original.client_type || "未知"}
+        </span>
+      ),
+      size: 120,
+      enableSorting: false,
     },
     {
       accessorKey: "message_id",
@@ -254,17 +266,6 @@ export function VoteStatsTableOptimized({ className }: VoteStatsTableOptimizedPr
       size: 180,
       enableSorting: false,
     },
-    // {
-    //   accessorKey: "chat_id",
-    //   header: "聊天ID",
-    //   cell: ({ row }) => (
-    //     <span className="font-mono text-xs text-muted-foreground block max-w-[150px]" title={row.original.chat_id}>
-    //       {row.original.chat_id}
-    //     </span>
-    //   ),
-    //   size: 180,
-    //   enableSorting: false,
-    // },
     {
       accessorKey: "updated_at",
       header: "消息时间",
@@ -310,6 +311,7 @@ export function VoteStatsTableOptimized({ className }: VoteStatsTableOptimizedPr
         start_date: searchParams.start_date || undefined,
         end_date: searchParams.end_date || undefined,
         searchKeyword: searchParams.searchKeyword || undefined,
+        client_type: searchParams.client_type || undefined,
       };
       await exportVotesToExcel(query);
     } catch (error) {
@@ -345,6 +347,27 @@ export function VoteStatsTableOptimized({ className }: VoteStatsTableOptimizedPr
                 <SelectItem value="good">好评</SelectItem>
                 <SelectItem value="medium">中评</SelectItem>
                 <SelectItem value="bad">差评</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">请求来源：</span>
+            <Select 
+              value={searchParams.client_type || "all"} 
+              onValueChange={handleClientTypeChange}
+            >
+              <SelectTrigger className="w-28 h-8">
+                <SelectValue placeholder="请求来源" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部</SelectItem>
+                <SelectItem value="web">网页</SelectItem>
+                <SelectItem value="h5">H5</SelectItem>
+                <SelectItem value="miniprogram">小程序</SelectItem>
+                <SelectItem value="mp">公众号</SelectItem>
+                <SelectItem value="医保">医保</SelectItem>
+                <SelectItem value="rexian">热线</SelectItem>
               </SelectContent>
             </Select>
           </div>

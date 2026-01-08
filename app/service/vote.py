@@ -150,7 +150,8 @@ class VoteService:
         vote_type: Optional[VoteEnum] = None,
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
-        search_keyword: Optional[str] = None
+        search_keyword: Optional[str] = None,
+        client_type: Optional[str] = None
     ) -> List[VoteWithMessage]:
         """获取带问题和答案的投票列表（支持按类型和时间过滤）"""
         offset = (page - 1) * size
@@ -190,7 +191,16 @@ class VoteService:
                 coalesce(c.vote_type,'unknown') vote_type,
                 c.vote_id,
                 c.feedback feedback,
-                c.updated_at updated_at
+                c.updated_at,
+                CASE 
+                    WHEN a.metadata_->>'client' = 'web' THEN '网页'
+                    WHEN a.metadata_->>'client' = 'h5' THEN 'H5'
+                    WHEN a.metadata_->>'client' = 'miniprogram' THEN '小程序'
+                    WHEN a.metadata_->>'client' = 'mp' THEN '公众号'
+                    WHEN a.metadata_->>'client' = '医保' THEN '医保'
+                    WHEN a.metadata_->>'client' = 'rexian' THEN '热线'
+                    ELSE a.metadata_->>'client'
+                END as client_type
             from chatbot.messages a
             left join lateral (
                 select id,chat_id,message_role_enum,content,created_at 
@@ -223,6 +233,10 @@ class VoteService:
             conditions.append("AND (a.content ILIKE :search_keyword OR user_latest.content ILIKE :search_keyword)")
             params["search_keyword"] = f"%{search_keyword}%"
 
+        if client_type:
+            conditions.append("AND a.metadata_->>'client' = :client_type")
+            params["client_type"] = client_type
+
         # 组装完整查询
         full_query = base_query + " ".join(conditions) + " ORDER BY a.created_at DESC LIMIT :limit OFFSET :offset"
 
@@ -237,7 +251,8 @@ class VoteService:
             created_at=row.created_at,
             question=row.question,
             answer=row.answer,
-            chat_id=row.chat_id
+            chat_id=row.chat_id,
+            client_type=row.client_type
         ) for row in rows]
 
     def get_votes_with_messages_count(
@@ -245,7 +260,8 @@ class VoteService:
         vote_type: Optional[VoteEnum] = None,
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
-        search_keyword: Optional[str] = None
+        search_keyword: Optional[str] = None,
+        client_type: Optional[str] = None
     ) -> int:
         """获取带问题和答案的投票总数（用于分页）"""
 
@@ -258,8 +274,8 @@ class VoteService:
                 FROM chatbot.messages 
                 WHERE chat_id = a.chat_id
                 AND message_role_enum = 'assistant'
-                AND id < a.id
-                ORDER BY created_at DESC LIMIT 1
+                and id > a.id
+                order by created_at asc limit 1
             ) user_latest ON true
             LEFT JOIN chatbot.vote c ON user_latest.id = c.message_id 
             WHERE a.message_role_enum = 'user'
@@ -284,6 +300,10 @@ class VoteService:
         if search_keyword:
             conditions.append("AND (a.content ILIKE :search_keyword OR user_latest.content ILIKE :search_keyword)")
             params["search_keyword"] = f"%{search_keyword}%"
+
+        if client_type:
+            conditions.append("AND a.metadata_->>'client' = :client_type")
+            params["client_type"] = client_type
 
         # 组装完整查询
         full_query = base_query + " ".join(conditions)
@@ -338,7 +358,8 @@ class VoteService:
         vote_type: Optional[VoteEnum] = None,
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
-        search_keyword: Optional[str] = None
+        search_keyword: Optional[str] = None,
+        client_type: Optional[str] = None
     ) -> List[VoteWithMessage]:
         """获取所有带问题和答案的投票列表（不分页，用于导出）"""
         # 构建基础查询（与 get_votes_with_messages 保持一致，但去掉分页）
@@ -352,7 +373,16 @@ class VoteService:
                 coalesce(c.vote_type,'unknown') vote_type,
                 c.vote_id,
                 c.feedback feedback,
-                c.updated_at updated_at
+                c.updated_at,
+                CASE 
+                    WHEN a.metadata_->>'client' = 'web' THEN '网页'
+                    WHEN a.metadata_->>'client' = 'h5' THEN 'H5'
+                    WHEN a.metadata_->>'client' = 'miniprogram' THEN '小程序'
+                    WHEN a.metadata_->>'client' = 'mp' THEN '公众号'
+                    WHEN a.metadata_->>'client' = '医保' THEN '医保'
+                    WHEN a.metadata_->>'client' = 'rexian' THEN '热线'
+                    ELSE a.metadata_->>'client'
+                END as client_type
             from chatbot.messages a
             left join lateral (
                 select id,chat_id,message_role_enum,content,created_at 
@@ -385,6 +415,10 @@ class VoteService:
             conditions.append("AND (a.content ILIKE :search_keyword OR user_latest.content ILIKE :search_keyword)")
             params["search_keyword"] = f"%{search_keyword}%"
 
+        if client_type:
+            conditions.append("AND a.metadata_->>'client' = :client_type")
+            params["client_type"] = client_type
+
         # 组装完整查询（不分页）
         full_query = base_query + " ".join(conditions) + " ORDER BY a.created_at DESC"
 
@@ -399,7 +433,8 @@ class VoteService:
             created_at=row.created_at,
             question=row.question,
             answer=row.answer,
-            chat_id=row.chat_id
+            chat_id=row.chat_id,
+            client_type=row.client_type
         ) for row in rows]
 
     def export_votes_to_excel(
@@ -407,7 +442,8 @@ class VoteService:
         vote_type: Optional[VoteEnum] = None,
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
-        search_keyword: Optional[str] = None
+        search_keyword: Optional[str] = None,
+        client_type: Optional[str] = None
     ) -> BytesIO:
         """导出投票数据到Excel"""
         # 获取所有数据
@@ -415,7 +451,8 @@ class VoteService:
             vote_type=vote_type,
             start_date=start_date,
             end_date=end_date,
-            search_keyword=search_keyword
+            search_keyword=search_keyword,
+            client_type=client_type
         )
 
         # 创建Excel工作簿
@@ -423,13 +460,14 @@ class VoteService:
         ws = wb.active
         ws.title = "投票数据"
 
-        # 定义表头（移除聊天ID列）
+        # 定义表头（添加请求来源列）
         headers = [
             "投票类型",
             "消息ID",
             "用户问题",
             "AI回答",
             "反馈内容",
+            "请求来源",
             "消息时间"
         ]
 
@@ -462,18 +500,19 @@ class VoteService:
             ws.cell(row=row_idx, column=3, value=str(vote.question) if vote.question else "")
             ws.cell(row=row_idx, column=4, value=str(vote.answer) if vote.answer else "")
             ws.cell(row=row_idx, column=5, value=str(vote.feedback) if vote.feedback else "")
-            # 格式化日期时间（移除chat_id列，直接使用第6列）
+            ws.cell(row=row_idx, column=6, value=str(vote.client_type) if vote.client_type else "")
+            # 格式化日期时间（第7列）
             if vote.created_at:
                 if isinstance(vote.created_at, str):
                     dt = datetime.fromisoformat(vote.created_at.replace('Z', '+00:00'))
                 else:
                     dt = vote.created_at
-                ws.cell(row=row_idx, column=6, value=dt.strftime("%Y-%m-%d %H:%M:%S"))
+                ws.cell(row=row_idx, column=7, value=dt.strftime("%Y-%m-%d %H:%M:%S"))
             else:
-                ws.cell(row=row_idx, column=6, value="")
+                ws.cell(row=row_idx, column=7, value="")
 
-        # 设置列宽（移除chat_id列，调整为6列）
-        column_widths = [12, 12, 50, 80, 50, 20]
+        # 设置列宽（添加请求来源列，调整为7列）
+        column_widths = [12, 12, 50, 80, 50, 15, 20]
         for col_idx, width in enumerate(column_widths, start=1):
             ws.column_dimensions[get_column_letter(col_idx)].width = width
 
