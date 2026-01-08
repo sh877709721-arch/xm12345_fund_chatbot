@@ -28,11 +28,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { RotateCcwIcon } from "lucide-react";
 
 import { useRef, useState, useEffect } from "react";
 
 import { useChat } from "@/context/chat-context";
-import { FeedbackModal } from "@/components/feedback";
 
 function format_content(content: string) {
   return content.replace(/<a href="([^"]+)">([^<]+)<\/a>/g, '[$2]($1)')
@@ -48,7 +49,7 @@ function format_content(content: string) {
 
 const ChatBotDemo = () => {
   const [input, setInput] = useState("");
-  const { messages, sendMessage, status, stop, updateMessageFeedback, toggleChainOfThought, recommendQa, model, setModel } = useChat();
+  const { messages, sendMessage, status, stop, updateMessageFeedback, toggleChainOfThought, recommendQa, model, setModel, resetChatSession } = useChat();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -85,7 +86,7 @@ const ChatBotDemo = () => {
     setInput("");
   };
   return (
-    <div className="h-full flex flex-col min-h-0 max-w-4xl mx-auto w-full px-6 relative">
+    <div className="h-full flex flex-col min-h-0 px-6 relative">
       {/* 顶部反馈按钮区域 */}
       <div ref={scrollContainerRef} className="absolute bg-background top-[1px] bottom-[115px] left-0 right-0 overflow-y-auto">
         <Conversation className="flex-1 min-h-0 max-w-3xl mx-auto w-full">
@@ -117,87 +118,89 @@ const ChatBotDemo = () => {
           <ConversationScrollButton />
         </Conversation>
 
-        <div className="bg-background fixed left-1/2 transform -translate-x-1/2 bottom-0 w-full max-w-3xl px-2 z-20">
-          <div className="w-full max-w-2xl mx-auto">
-            <PromptInput
-              onSubmit={handleSubmit}
-              className="mt-2"
-              globalDrop
-              multiple
-            >
-              <PromptInputBody>
-                <PromptInputTextarea
-                  onChange={(e) => setInput(e.target.value)}
-                  ref={textareaRef}
-                  value={input}
+
+      </div>
+
+      <div className="bg-background absolute left-1/2 transform -translate-x-1/2 bottom-0 w-full max-w-3xl px-2 z-20">
+        <div className="w-full max-w-3xl mx-auto">
+          <PromptInput
+            onSubmit={handleSubmit}
+            className="mt-2"
+            globalDrop
+            multiple
+          >
+            <PromptInputBody>
+              <PromptInputTextarea
+                onChange={(e) => setInput(e.target.value)}
+                ref={textareaRef}
+                value={input}
+              />
+            </PromptInputBody>
+            <PromptInputFooter>
+              <PromptInputTools>
+                <PromptInputActionMenu>
+
+                  {/* 模型选择器 */}
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="model-select" className="text-sm text-muted-foreground">
+                      模型:
+                    </Label>
+                    <Select value={model} onValueChange={setModel}>
+                      <SelectTrigger id="model-select" className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="default">
+                          <div className="flex flex-col">
+                            <span className="font-medium">默认</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="boost">
+                          <div className="flex flex-col">
+                            <span className="font-medium">知识图谱</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="guideline_bot">
+                          <div className="flex flex-col">
+                            <span className="font-medium">指南模式</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </PromptInputActionMenu>
+              </PromptInputTools>
+
+
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => resetChatSession(true)}
+                  title="重置会话"
+                >
+                  <RotateCcwIcon className="w-4 h-4" />
+                </Button>
+                <PromptInputSpeechButton
+                  mode="xfyun"
+                  onTranscriptionChange={setInput}
+                  textareaRef={textareaRef}
                 />
-              </PromptInputBody>
-              <PromptInputFooter>
-                <PromptInputTools>
-                  <PromptInputActionMenu>
-
-                    <FeedbackModal />
-                  </PromptInputActionMenu>
-                </PromptInputTools>
-
-                {/* 模型选择器 */}
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="model-select" className="text-sm text-muted-foreground">
-                    模型:
-                  </Label>
-                  <Select value={model} onValueChange={setModel}>
-                    <SelectTrigger id="model-select" className="w-40">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="default">
-                        <div className="flex flex-col">
-                          <span className="font-medium">标准模式</span>
-                          <span className="text-xs text-muted-foreground">
-                            RAG 检索增强
-                          </span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="boost">
-                        <div className="flex flex-col">
-                          <span className="font-medium">增强模式</span>
-                          <span className="text-xs text-muted-foreground">
-                            GraphRAG 本地搜索
-                          </span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="guideline_bot">
-                        <div className="flex flex-col">
-                          <span className="font-medium">指南模式</span>
-                          <span className="text-xs text-muted-foreground">
-                            行动指南智能匹配
-                          </span>
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <PromptInputSpeechButton
-                    mode="xfyun"
-                    onTranscriptionChange={setInput}
-                    textareaRef={textareaRef}
-                  />
-                  <PromptInputSubmit
-                    disabled={!input && !status}
-                    status={status}
-                  />
-                </div>
-              </PromptInputFooter>
-            </PromptInput>
-            <div className="text-[10px] text-gray-400 text-center mt-1 leading-tight">
-              生成式人工智能声明：内容由AI生成，请甄别使用
-            </div>
+                <PromptInputSubmit
+                  disabled={!input && !status}
+                  status={status}
+                />
+              </div>
+            </PromptInputFooter>
+          </PromptInput>
+          <div className="text-[10px] text-gray-400 text-center mt-1 leading-tight">
+            生成式人工智能声明：内容由AI生成，请甄别使用
           </div>
         </div>
       </div>
     </div>
+
   );
 };
 

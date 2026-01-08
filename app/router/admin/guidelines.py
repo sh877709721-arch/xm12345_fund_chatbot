@@ -209,7 +209,7 @@ def match_guideline(
     ## 请求示例
     ```json
     {
-        "context": "患者被诊断为高血压，需要饮食建议",
+        "context": "为什么医保缴费变多了",
         "candidate_top_k": 5,
         "use_llm_refinement": true
     }
@@ -222,10 +222,10 @@ def match_guideline(
         "message": "success",
         "data": {
             "guideline_id": 1,
-            "title": "高血压管理指南",
-            "condition": "患者被诊断为高血压",
-            "action": "提供高血压管理建议",
-            "prompt_template": "基于患者的高血压诊断...",
+            "title": "为什么医保缴费变多了",
+            "condition": "用户提到缴费变多了",
+            "action": "回复问题要使用恢复、调整为原费率等字眼",
+            "prompt_template": "提示词:回复问题要使用恢复、调整为原费率等字眼...",
             "priority": 5,
             "match_score": 0.92,
             "match_method": "llm",

@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Button } from "@/components/ui/button";
+import type { VariantProps } from "class-variance-authority";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -50,9 +51,16 @@ export function GuidelineDialog({ item, type, onSave, onUpdateLocal }: Guideline
 
   const TriggerButton = React.forwardRef<
     HTMLButtonElement,
-    React.ButtonHTMLAttributes<HTMLButtonElement>
-  >(({ children, ...props }, ref) => (
-    <Button ref={ref} {...props}>
+    React.ComponentProps<"button"> &
+    VariantProps<typeof buttonVariants>
+  >(({ className, variant, size, children, ...props }, ref) => (
+    <Button
+      ref={ref}
+      className={className}
+      variant={variant}
+      size={size}
+      {...props}
+    >
       {children}
     </Button>
   ));
@@ -131,7 +139,7 @@ export function GuidelineDialog({ item, type, onSave, onUpdateLocal }: Guideline
                   onSave();
                 }
               } else {
-                const updated = await Promise.race([
+                const updated = await Promise.race<GuidelineItem>([
                   updateGuideline(item!.id, {
                     title,
                     condition,
@@ -140,7 +148,7 @@ export function GuidelineDialog({ item, type, onSave, onUpdateLocal }: Guideline
                     priority,
                     status,
                   }),
-                  timeoutPromise
+                  timeoutPromise as Promise<GuidelineItem>
                 ]);
 
                 if (onUpdateLocal) {
@@ -193,7 +201,7 @@ export function GuidelineDialog({ item, type, onSave, onUpdateLocal }: Guideline
                 id="condition"
                 name="condition"
                 defaultValue={item?.condition}
-                placeholder="描述触发此指南的条件,例如:患者被诊断为高血压"
+                placeholder="描述触发此指南的条件,例如:用户提问 为什么保费变多了"
                 required
                 rows={3}
               />
@@ -206,7 +214,7 @@ export function GuidelineDialog({ item, type, onSave, onUpdateLocal }: Guideline
                 id="action"
                 name="action"
                 defaultValue={item?.action}
-                placeholder="描述采取的行动,例如:提供高血压饮食建议"
+                placeholder="描述采取的行动,例如:为什么保费变多了"
                 required
                 rows={3}
               />

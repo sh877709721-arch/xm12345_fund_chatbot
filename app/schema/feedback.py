@@ -31,7 +31,7 @@ class FeedbackRead(BaseModel):
     """反馈响应模型"""
     id: int
     content: str
-    phone: str
+    phone: Optional[str]
     status: str
     images: Optional[List[ImageInfo]] = None
     created_time: datetime

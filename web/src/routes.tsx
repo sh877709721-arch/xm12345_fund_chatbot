@@ -40,11 +40,12 @@ const FeedbackPage = lazy(() => import("@/pages/admin/bot/feedback"));
 
 //Guideline 管理界面
 const GuidelineList = lazy(() => import("@/pages/admin/guideline/guideline-list-page"));
-//const GuidelineMatchTest = lazy(() => import("@/pages/admin/guideline/guideline-match-test"));
+const GuidelineMatchTest = lazy(() => import("@/pages/admin/guideline/guideline-match-test"));
 const BotChat = lazy(() => import("@/pages/admin/bot/bot-chat"));
 
 //主界面
 import { AppLayout } from "@/components/app/app-layout";
+import { ChatProviderWrapper } from "@/components/admin/chat-provider-wrapper";
 
 const routes = [
   { path: "/about", element: <About /> },
@@ -96,13 +97,19 @@ const routes = [
         path: "bot-instruction",
         element: <GuidelineList />
       },
-      // {
-      //   path: "guideline-match-test",
-      //   element: <GuidelineMatchTest />
-      // },
+      {
+        path: "guideline-match-test",
+        element: <GuidelineMatchTest />
+      },
       {
         path: "bot-chat",
-        element: <BotChat />
+        element: <ChatProviderWrapper />,
+        children: [
+          {
+            index: true,
+            element: <BotChat />
+          }
+        ]
       },
       { path: "team", element: <Team /> },
       { path: "analytics", element: <Analytics /> },

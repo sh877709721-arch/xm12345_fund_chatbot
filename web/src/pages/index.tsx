@@ -78,7 +78,7 @@ const ChatBotDemo = () => {
     setInput("");
   };
   return (
-    <div className="h-full flex flex-col min-h-0 max-w-4xl mx-auto w-full px-6 relative">
+    <div className="h-full flex flex-col min-h-0 w-full px-6 relative">
       {/* 顶部反馈按钮区域 */}
       <div ref={scrollContainerRef} className="absolute bg-background top-[1px] bottom-[115px] left-0 right-0 overflow-y-auto">
         <Conversation className="flex-1 min-h-0 max-w-3xl mx-auto w-full">
@@ -112,7 +112,7 @@ const ChatBotDemo = () => {
         </Conversation>
 
         <div className="bg-background fixed left-1/2 transform -translate-x-1/2 bottom-0 w-full max-w-3xl px-2 z-20">
-          <div className="w-full max-w-2xl mx-auto">
+          <div className="w-full max-w-3xl mx-auto">
             <PromptInput
               onSubmit={handleSubmit}
               className="mt-2"

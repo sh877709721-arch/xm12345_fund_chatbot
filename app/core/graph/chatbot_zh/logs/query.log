@@ -784,3 +784,19 @@ openai.UnprocessableEntityError: Error code: 422 - {'error': 'Model not found', 
 2025-11-29 21:46:19.0863 - DEBUG - graphrag.api.query - Executing streaming local search query: 特殊病种怎么办
 2025-11-29 21:46:21.0335 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
 2025-11-29 21:46:21.0386 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1764423979.9291096. QUERY: 特殊病种怎么办
+2026-01-08 15:03:27.0797 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\medical-agent\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2026-01-08 15:03:28.0169 - DEBUG - graphrag.api.query - Executing streaming local search query: 父母是其他城市的户口，如何才能享受厦门的医保待遇
+2026-01-08 15:03:29.0493 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2026-01-08 15:03:29.0509 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2026-01-08 15:03:29.0546 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1767855809.0931294. QUERY: 父母是其他城市的户口，如何才能享受厦门的医保待遇

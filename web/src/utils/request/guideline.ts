@@ -78,6 +78,12 @@ export interface GuidelineMatchResult {
   confidence?: number;
 }
 
+export interface GuidelineMatchResponse {
+  code: number;
+  message: string;
+  data:GuidelineMatchResult; 
+}
+
 // ==================== API 函数 ====================
 
 // 获取所有指南
@@ -169,13 +175,13 @@ export async function deleteGuideline(id: number): Promise<void> {
 // 智能匹配测试
 export async function matchGuideline(
   request: GuidelineMatchRequest
-): Promise<GuidelineMatchResult | null> {
+): Promise<GuidelineMatchResult> {
   try {
-    const response = await instance.post<{ data: GuidelineMatchResult | null }>(
+    const response = await instance.post<GuidelineMatchResult>(
       "/v1/admin/guidelines/match",
       request
     );
-    return response.data.data;
+    return response.data;
   } catch (error: any) {
     toast.error("匹配测试失败");
     throw error;
