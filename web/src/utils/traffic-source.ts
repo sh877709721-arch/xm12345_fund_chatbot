@@ -12,7 +12,7 @@
  * - miniprogram: 微信小程序
  * - mp: 微信公众号
  */
-export type TrafficSource = 'web' | 'h5' | 'miniprogram' | 'mp' | '医保' | '12345热线';
+export type TrafficSource = 'web' | 'h5' | 'miniprogram' | 'mp' | '医保' | 'rexian';
 
 // ==================== 常量定义 ====================
 
@@ -29,7 +29,7 @@ export const TRAFFIC_SOURCE_KEY = 'traffic_source';
 /**
  * 有效的流量来源列表
  */
-export const VALID_SOURCES: TrafficSource[] = ['web', 'h5', 'miniprogram', 'mp'];
+export const VALID_SOURCES: TrafficSource[] = ['web', 'h5', 'miniprogram', 'mp', '医保', 'rexian'];
 
 // ==================== 工具函数 ====================
 
