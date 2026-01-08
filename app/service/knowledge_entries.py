@@ -300,7 +300,12 @@ class KnowledgeService:
                 )
             except ValueError:
                 # 如果无法转换为整数，只匹配名称
-                query = query.filter(Knowledge.name.contains(name))
+                query = query.filter(
+                    or_(Knowledge.name.contains(name),
+                        KnowledgeDetail.filled_by.contains(name),
+                        KnowledgeDetail.content.contains(name)
+                        )
+                    )
         
         
         # 计算总数
