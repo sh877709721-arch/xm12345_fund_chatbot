@@ -12,14 +12,14 @@
  * - miniprogram: 微信小程序
  * - mp: 微信公众号
  */
-export type TrafficSource = 'web' | 'h5' | 'miniprogram' | 'mp';
+export type TrafficSource = 'web' | 'h5' | 'miniprogram' | 'mp' | '医保' | '12345热线';
 
 // ==================== 常量定义 ====================
 
 /**
  * 默认流量来源
  */
-export const DEFAULT_SOURCE: TrafficSource = 'web';
+export const DEFAULT_SOURCE: TrafficSource = '医保'; // web
 
 /**
  * localStorage 存储键名
