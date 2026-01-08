@@ -48,6 +48,7 @@ class VoteWithMessage(BaseModel):
     answer: Optional[str] = None   # AI回答
     chat_id: UUID
     created_at: Optional[datetime]
+    client_type: Optional[str]
     
 
     class Config:

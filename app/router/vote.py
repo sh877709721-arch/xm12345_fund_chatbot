@@ -43,6 +43,7 @@ async def get_votes_with_messages(
     start_date: Optional[datetime] = Query(None, description="开始时间 (YYYY-MM-DD HH:MM:SS)"),
     end_date: Optional[datetime] = Query(None, description="结束时间 (YYYY-MM-DD HH:MM:SS)"),
     searchKeyword: Optional[str] = Query(None, description="搜索关键词（搜索问题和回答）"),
+    client_type: Optional[str] = Query(None, description="请求来源过滤 (web/h5/miniprogram/mp/医保/rexian)"),
     vote_service: VoteService = Depends(get_vote_service)
 ):
     """
@@ -52,6 +53,7 @@ async def get_votes_with_messages(
     - **start_date**: 开始时间过滤
     - **end_date**: 结束时间过滤
     - **searchKeyword**: 搜索关键词（搜索问题和回答）
+    - **client_type**: 请求来源过滤 (web/h5/miniprogram/mp/医保/rexian)
     """
     from app.model.vote import VoteEnum
 
@@ -68,7 +70,8 @@ async def get_votes_with_messages(
             vote_type=vote_enum,
             start_date=start_date,
             end_date=end_date,
-            search_keyword=searchKeyword
+            search_keyword=searchKeyword,
+            client_type=client_type
         )
 
         # 获取总数
@@ -76,7 +79,8 @@ async def get_votes_with_messages(
             vote_type=vote_enum,
             start_date=start_date,
             end_date=end_date,
-            search_keyword=searchKeyword
+            search_keyword=searchKeyword,
+            client_type=client_type
         )
 
         # 构建分页响应
@@ -238,6 +242,7 @@ async def export_votes_to_excel(
     start_date: Optional[datetime] = Query(None, description="开始时间 (YYYY-MM-DD HH:MM:SS)"),
     end_date: Optional[datetime] = Query(None, description="结束时间 (YYYY-MM-DD HH:MM:SS)"),
     searchKeyword: Optional[str] = Query(None, description="搜索关键词（搜索问题和回答）"),
+    client_type: Optional[str] = Query(None, description="请求来源过滤 (web/h5/miniprogram/mp/医保/rexian)"),
     vote_service: VoteService = Depends(get_vote_service)
 ):
     """
@@ -247,6 +252,7 @@ async def export_votes_to_excel(
     - **start_date**: 开始时间过滤
     - **end_date**: 结束时间过滤
     - **searchKeyword**: 搜索关键词（搜索问题和回答）
+    - **client_type**: 请求来源过滤 (web/h5/miniprogram/mp/医保/rexian)
     """
     from app.model.vote import VoteEnum
 
@@ -261,7 +267,8 @@ async def export_votes_to_excel(
             vote_type=vote_enum,
             start_date=start_date,
             end_date=end_date,
-            search_keyword=searchKeyword
+            search_keyword=searchKeyword,
+            client_type=client_type
         )
 
         # 生成文件名（使用ASCII文件名避免编码问题）

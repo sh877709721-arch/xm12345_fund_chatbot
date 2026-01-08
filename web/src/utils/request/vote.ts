@@ -40,6 +40,7 @@ export interface VoteWithMessage {
   question: string;            // 用户问题
   answer: string;              // AI回答
   chat_id: string;             // 聊天会话ID
+  client_type?: string;        // 请求来源（已转换的中文显示）
 }
 
 // 分页响应接口
@@ -70,6 +71,7 @@ export interface VoteStatsQuery {
   start_date?: string | null;  // 开始时间 (YYYY-MM-DD HH:MM:SS)
   end_date?: string | null;    // 结束时间 (YYYY-MM-DD HH:MM:SS)
   searchKeyword?: string | null; // 搜索关键词（搜索问题和回答）
+  client_type?: string | null; // 请求来源过滤 (web/h5/miniprogram/mp/医保/rexian)
 }
 
 // 对assistant消息进行投票
@@ -185,6 +187,9 @@ export async function getVotesWithMessages(
     if (query.searchKeyword) {
       params.append('searchKeyword', query.searchKeyword);
     }
+    if (query.client_type) {
+      params.append('client_type', query.client_type);
+    }
 
     const response = await instance.get<PaginatedResponse<VoteWithMessage>>(
       `/v1/vote/with_messages?${params.toString()}`
@@ -216,6 +221,9 @@ export async function exportVotesToExcel(
     }
     if (query.searchKeyword) {
       params.append('searchKeyword', query.searchKeyword);
+    }
+    if (query.client_type) {
+      params.append('client_type', query.client_type);
     }
 
     // 使用axios直接请求，避免响应拦截器处理blob
