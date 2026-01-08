@@ -39,9 +39,9 @@ const VoteMessages = lazy(() => import("@/pages/admin/bot/vote-messages"));
 const FeedbackPage = lazy(() => import("@/pages/admin/bot/feedback"));
 
 //Guideline 管理界面
-//const GuidelineList = lazy(() => import("@/pages/admin/guideline/guideline-list-page"));
+const GuidelineList = lazy(() => import("@/pages/admin/guideline/guideline-list-page"));
 //const GuidelineMatchTest = lazy(() => import("@/pages/admin/guideline/guideline-match-test"));
-//const BotChat = lazy(() => import("@/pages/admin/bot/bot-chat"));
+const BotChat = lazy(() => import("@/pages/admin/bot/bot-chat"));
 
 //主界面
 import { AppLayout } from "@/components/app/app-layout";
@@ -92,18 +92,18 @@ const routes = [
         path: "bot-testing",
         element: <TestingBotPage />,
       },
-      // {
-      //   path: "bot-instruction",
-      //   element: <GuidelineList />
-      // },
+      {
+        path: "bot-instruction",
+        element: <GuidelineList />
+      },
       // {
       //   path: "guideline-match-test",
       //   element: <GuidelineMatchTest />
       // },
-      // {
-      //   path: "bot-chat",
-      //   element: <BotChat />
-      // },
+      {
+        path: "bot-chat",
+        element: <BotChat />
+      },
       { path: "team", element: <Team /> },
       { path: "analytics", element: <Analytics /> },
       { path: "settings", element: <Settings /> },

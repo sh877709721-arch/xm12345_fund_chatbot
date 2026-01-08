@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS chatbot.guidelines
     prompt_template TEXT,
     condition_embedding VECTOR(1024),          -- 全文搜索字段（TSVECTOR）
     condition_fts TSVECTOR,            -- 向量嵌入字段（1024维向量）
-	priority BIGINT,
+	priority BIGINT NOT NULL DEFAULT 1,
     status VARCHAR(255) NOT NULL DEFAULT 'A',
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -125,6 +125,7 @@ COMMENT ON COLUMN chatbot.guidelines.action IS '应采取的行动或建议';
 COMMENT ON COLUMN chatbot.guidelines.prompt_template IS 'AI提示词模板';
 COMMENT ON COLUMN chatbot.guidelines.condition_embedding IS '全文搜索字段（TSVECTOR类型）';
 COMMENT ON COLUMN chatbot.guidelines.condition_fts IS '向量嵌入字段（1024维向量）';
+COMMENT ON COLUMN chatbot.guidelines.priority IS '优先级(0-9999, 默认1, 越大优先级越高)';
 COMMENT ON COLUMN chatbot.guidelines.status IS '状态：A=激活, I=未激活, D=草稿, X=已删除';
 COMMENT ON COLUMN chatbot.guidelines.created_time IS '创建时间';
 COMMENT ON COLUMN chatbot.guidelines.updated_time IS '更新时间';

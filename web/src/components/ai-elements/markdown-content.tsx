@@ -270,12 +270,12 @@ export const MarkdownContent = ({
 
                 {isUrl && (
                   <a
-
+                    href={href}
                     target={isUrl ? "_blank" : undefined}
                     rel={isUrl ? "noopener noreferrer" : undefined}
                     className="text-primary hover:underline ml-1 break-words"
                   >
-                    {href}
+                    访问链接
                   </a>
                 )}
 

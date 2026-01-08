@@ -299,7 +299,21 @@ class GuidelinesService:
             paginated_query = query.order_by(order_field.desc()).offset(offset).limit(size)
 
         results = paginated_query.all()
-        items = [GuidelinesRead.model_validate(guideline) for guideline in results]
+        # 防御性编程：显式处理 priority 为 None 的情况
+        items = []
+        for guideline in results:
+            guideline_dict = {
+                'id': guideline.id,
+                'title': guideline.title,
+                'condition': guideline.condition,
+                'action': guideline.action,
+                'prompt_template': guideline.prompt_template,
+                'priority': guideline.priority if guideline.priority is not None else 1,  # 默认值 1
+                'status': guideline.status,
+                'created_time': guideline.created_time,
+                'updated_time': guideline.updated_time
+            }
+            items.append(GuidelinesRead(**guideline_dict))
 
         # 构造分页信息
         has_next = page * size < total

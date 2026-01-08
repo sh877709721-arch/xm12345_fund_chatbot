@@ -6,7 +6,7 @@ import {
   IconListDetails,
   IconSearch,
   IconSettings,
-  //IconRobot,
+  IconRobot,
 } from "@tabler/icons-react";
 import {
   MessageCircle
@@ -62,25 +62,25 @@ export const data = {
         },
       ],
     },
-    // {
-    //   title: "指令微调",
-    //   url: "#",
-    //   icon: IconRobot,
-    //   items: [
-    //     {
-    //       title: "Guideline 管理",
-    //       url: "/admin/bot-instruction",
-    //     },
-    //     {
-    //       title: "匹配测试",
-    //       url: "/admin/guideline-match-test",
-    //     },
-    //     {
-    //       title: "问答",
-    //       url: "/admin/bot-chat",
-    //     },
-    //   ],
-    // },
+    {
+      title: "指令微调",
+      url: "#",
+      icon: IconRobot,
+      items: [
+        {
+          title: "Guideline 管理",
+          url: "/admin/bot-instruction",
+        },
+        {
+          title: "匹配测试",
+          url: "/admin/guideline-match-test",
+        },
+        {
+          title: "问答",
+          url: "/admin/bot-chat",
+        },
+      ],
+    },
     {
       title: "关于",
       url: "/admin/about",

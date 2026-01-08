@@ -20,7 +20,7 @@ class GuidelinesRead(BaseModel):
     condition: str
     action: str
     prompt_template: Optional[str] = None
-    priority: int
+    priority: Optional[int] = None  # 允许 None，用于处理历史数据
     status: str
     created_time: datetime
     updated_time: datetime

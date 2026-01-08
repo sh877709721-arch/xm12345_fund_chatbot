@@ -27,7 +27,12 @@ class Guidelines(Base):
     prompt_template = Column(Text, nullable=True)
     condition_embedding = Column(Vector(1024))
     condition_fts = Column(TSVECTOR)
-    priority = Column(BIGINT, nullable=False)
+    priority = Column(
+        BIGINT,
+        nullable=False,
+        server_default='1',  # 数据库默认值
+        default=1  # Python 默认值
+    )
     status = Column(String(255), nullable=False,default='A')
     created_time = Column(DateTime, default=datetime.datetime.now)
     updated_time = Column(DateTime, default=datetime.datetime.now, onupdate= datetime.datetime.now)

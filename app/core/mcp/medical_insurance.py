@@ -12,9 +12,6 @@ def get_current_time():
     current_time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     return json5.dumps({'current_time': current_time_str}, ensure_ascii=False)
 
-@mcp.tool()
-def get_
-
 def main():
     # Initialize and run the server
     mcp.run(transport='stdio')    
