@@ -17,6 +17,7 @@
 """
 
 import os
+from typing import List, Dict, Any
 from app.config.settings import settings
 
 # Ensure qwen_agent uses a project-local workspace to avoid creating `workspace` in repo root
@@ -83,11 +84,24 @@ def get_rag_agent_system_message():
     )
 
 
-def get_medical_agent_function_list():
-    """获取医保助手的功能列表"""
-    return [
-        tools[0],
-    ]
+def get_medical_agent_function_list() -> List[Dict[str, Any]]:
+    """获取医保助手的功能列表
+
+    返回:
+        List[Dict[str, Any]]: MCP 工具配置列表，每个配置都是包含 'mcpServers' 键的字典。
+                             符合 Agent.function_list 的类型要求 (List[str | Dict | BaseTool])
+
+        Example:
+            tools = [{
+                "mcpServers": {
+                    "base_tools": {
+                        "command": "python",
+                        "args": ["-m", "app.core.mcp.base_tools"]
+                    }
+                }
+            }]
+    """
+    return tools
 
 
 # LLM 配置实例

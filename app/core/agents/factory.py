@@ -52,12 +52,12 @@ class AgentFactory:
             self._register_agents()
             self._initialized = True
 
-    def _create_bot(self) -> ReActChat:
+    def _create_react_bot(self) -> ReActChat:
         """创建医保助手实例"""
         return ReActChat(
             llm=llm_cfg,
             system_message=MEDICAL_SYSTEM_MESSAGE,
-            #function_list=MEDICAL_FUNCTIONS
+            function_list=MEDICAL_FUNCTIONS
         )
 
     def _create_rag_bot(self) -> Assistant:
@@ -67,18 +67,19 @@ class AgentFactory:
     def _create_guideline_rag_bot(self) -> GuidelineAssistant:
         """带有行动指南的Agent"""
         return GuidelineAssistant(llm=llm_cfg)
+    
 
 
     def _register_agents(self):
         """注册所有可用的机器人实例"""
         # 创建机器人实例
-        bot_instance = self._create_bot()
+        react_bot_instance = self._create_react_bot()
         rag_bot_instance = self._create_rag_bot()
         guideline_bot_instance = self._create_guideline_rag_bot()
 
         self._agents = {
             # 原始键名
-            'bot': bot_instance,
+            'react_bot': react_bot_instance,
             'rag_bot': rag_bot_instance,
             'guideline_bot': guideline_bot_instance,
         }

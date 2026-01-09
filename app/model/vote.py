@@ -21,7 +21,7 @@ class Vote(Base):
     feedback = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
-    client_type = Column(String, nullable=True)
+    #client_type = Column(String, nullable=True)
 
     def set_vote_type(self, vote_type: VoteEnum):
         self.vote_type = vote_type

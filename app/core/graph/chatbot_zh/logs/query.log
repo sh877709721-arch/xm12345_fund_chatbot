@@ -800,3 +800,49 @@ openai.UnprocessableEntityError: Error code: 422 - {'error': 'Model not found', 
 2026-01-08 15:03:29.0493 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
 2026-01-08 15:03:29.0509 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
 2026-01-08 15:03:29.0546 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1767855809.0931294. QUERY: 父母是其他城市的户口，如何才能享受厦门的医保待遇
+2026-01-08 16:35:42.0435 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\medical-agent\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2026-01-08 16:35:42.0771 - DEBUG - graphrag.api.query - Executing streaming local search query: 异地就医哪些检查可以享受医保报销
+2026-01-08 16:35:44.0389 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2026-01-08 16:35:44.0452 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2026-01-08 16:35:44.0512 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1767861344.07119. QUERY: 异地就医哪些检查可以享受医保报销
+2026-01-09 13:02:39.0133 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\medical-agent\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2026-01-09 13:02:39.0515 - DEBUG - graphrag.api.query - Executing streaming local search query: 为什么每个月会从我的个人账户扣走7元呢？
+2026-01-09 13:02:41.0010 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2026-01-09 13:02:41.0151 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1767934960.5493124. QUERY: 为什么每个月会从我的个人账户扣走7元呢？
+2026-01-09 13:05:00.0628 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\medical-agent\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2026-01-09 13:05:00.0942 - DEBUG - graphrag.api.query - Executing streaming local search query: 去年住院没有报销，现在才能报销吗
+2026-01-09 13:05:01.0403 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2026-01-09 13:05:01.0551 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1767935101.1366737. QUERY: 去年住院没有报销，现在才能报销吗

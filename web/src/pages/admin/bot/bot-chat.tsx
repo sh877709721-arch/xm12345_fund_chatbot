@@ -8,7 +8,7 @@ import {
 import {
   Message,
   MessageContent
-} from "@/components/ai-elements/message";
+} from "@/components/ai-elements/message-admin";
 import {
   PromptInput,
   PromptInputActionMenu,
@@ -36,15 +36,16 @@ import { useRef, useState, useEffect } from "react";
 import { useChat } from "@/context/chat-context";
 
 function format_content(content: string) {
-  return content.replace(/<a href="([^"]+)">([^<]+)<\/a>/g, '[$2]($1)')
-    .replace(/\[来源: (?:\[doc_\d+\]\(doc_\d+\)(?:,\s*)?)+\]/g, '')
-    .replace(/\[来源:(?:\[doc_\d+\]\(doc_\d+\)(?:,\s*)?)+\]/g, '')
-    .replace(/\[来源:\s+doc_\d+\]/g, '')
-    .replace(/\[来源:\[doc_\d+\]\]/g, '')
-    .replace(/\[来源:(?:\[\d+\]\(\d+\)(?:,\s*)?)+\]/g, '')
-    .replace(/\[来源: (?:\[\d+\]\(\d+\)(?:,\s*)?)+\]/g, '')
-    .replace(/来源: (?:\d+\(\d+\)(?:,\s*)?)+\]/g, '')
-    .replace(/\[来源:\[\d+\]\]/g, '')
+  // return content.replace(/<a href="([^"]+)">([^<]+)<\/a>/g, '[$2]($1)')
+  //   .replace(/\[来源: (?:\[doc_\d+\]\(doc_\d+\)(?:,\s*)?)+\]/g, '')
+  //   .replace(/\[来源:(?:\[doc_\d+\]\(doc_\d+\)(?:,\s*)?)+\]/g, '')
+  //   .replace(/\[来源:\s+doc_\d+\]/g, '')
+  //   .replace(/\[来源:\[doc_\d+\]\]/g, '')
+  //   .replace(/\[来源:(?:\[\d+\]\(\d+\)(?:,\s*)?)+\]/g, '')
+  //   .replace(/\[来源: (?:\[\d+\]\(\d+\)(?:,\s*)?)+\]/g, '')
+  //   .replace(/来源: (?:\d+\(\d+\)(?:,\s*)?)+\]/g, '')
+  //   .replace(/\[来源:\[\d+\]\]/g, '')
+  return content;
 }
 
 const ChatBotDemo = () => {
@@ -121,8 +122,8 @@ const ChatBotDemo = () => {
 
       </div>
 
-      <div className="bg-background absolute left-1/2 transform -translate-x-1/2 bottom-0 w-full max-w-3xl px-2 z-20">
-        <div className="w-full max-w-3xl mx-auto">
+      <div className="bg-background absolute left-0 right-0 bottom-0 z-20">
+        <div className="max-w-3xl mx-auto px-2">
           <PromptInput
             onSubmit={handleSubmit}
             className="mt-2"
@@ -163,6 +164,11 @@ const ChatBotDemo = () => {
                         <SelectItem value="guideline_bot">
                           <div className="flex flex-col">
                             <span className="font-medium">指南模式</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="react_bot">
+                          <div className="flex flex-col">
+                            <span className="font-medium">思考模式</span>
                           </div>
                         </SelectItem>
                       </SelectContent>

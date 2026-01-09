@@ -92,7 +92,7 @@ class GraphQueryRequest(BaseModel):
 # API endpoint
 @router.post("/completions")
 @database_circuit_breaker
-@limiter.limit("20/minute", key_func=get_rate_limit_key_by_ip)
+@limiter.limit("60/minute", key_func=get_rate_limit_key_by_ip)
 def handle_chat_data(request:Request,
                      chat_request:ChatRequest, 
                      db = Depends(get_db)):
@@ -180,6 +180,9 @@ def handle_chat_data(request:Request,
         )
     elif model=='guideline_bot':
         bot = agent_factory.get_agent('guideline_bot')
+    
+    elif model=='react_bot':
+        bot = agent_factory.get_agent('react_bot')
     # agent模式也使用优化版本 #rag_bot qwen_rag_bot
     return agent_stream_response_optimized(chat_id, query, bot, agent_messages, user_message_id, assistant_message_id)
 

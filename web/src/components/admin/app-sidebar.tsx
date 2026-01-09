@@ -77,7 +77,7 @@ export const data = {
         },
         {
           title: "问答",
-          url: "/admin/bot-chat",
+          url: "/admin/bot-chat?from=admin",
         },
       ],
     },

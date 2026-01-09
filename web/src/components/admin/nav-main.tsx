@@ -14,6 +14,11 @@ import {
   SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
 
+// 辅助函数：去除 URL 参数后再比较
+const getUrlWithoutParams = (url: string): string => {
+  return url.split('?')[0];
+};
+
 export function NavMain({
   items,
 }: {
@@ -34,7 +39,7 @@ export function NavMain({
   useEffect(() => {
     const initialExpanded: Record<string, boolean> = {};
     items.forEach((item) => {
-      if (item.items && item.items.some(subItem => subItem.url === location.pathname)) {
+      if (item.items && item.items.some(subItem => getUrlWithoutParams(subItem.url) === location.pathname)) {
         initialExpanded[item.title] = true;
       }
     });
@@ -81,7 +86,7 @@ export function NavMain({
                   <SidebarMenuButton
                     tooltip={item.title}
                     onClick={() => handleToggle(item.title)}
-                    isActive={item.items.some(subItem => subItem.url === location.pathname)}
+                    isActive={item.items.some(subItem => getUrlWithoutParams(subItem.url) === location.pathname)}
                   >
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
@@ -105,7 +110,7 @@ export function NavMain({
                       <SidebarMenuSubItem key={subItem.title}>
                         <SidebarMenuSubButton
                           asChild
-                          isActive={location.pathname === subItem.url}
+                          isActive={location.pathname === getUrlWithoutParams(subItem.url)}
                         >
                           <Link to={subItem.url}>
                             <span>{subItem.title}</span>
@@ -119,7 +124,7 @@ export function NavMain({
                 <SidebarMenuButton
                   tooltip={item.title}
                   asChild
-                  isActive={location.pathname === item.url}
+                  isActive={location.pathname === getUrlWithoutParams(item.url)}
                 >
                   <Link to={item.url}>
                     {item.icon && <item.icon />}
