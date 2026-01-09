@@ -4,7 +4,7 @@
 """
 
 from app.config.database import SessionLocal
-from app.config.llm_client import embedding_client,chat_client_small
+from app.config.llm_client import embedding_client #,chat_client_small
 from typing import Dict, List, Tuple
 from app.core.embeddings_utils import get_text_embeddings
 from sqlalchemy import text
@@ -12,76 +12,76 @@ from concurrent.futures import ThreadPoolExecutor
 import logging
 
 
-def query_rewrite_with_chat_client(query: str) -> List[str]:
-    """
-    使用 chat_client 根据原始查询生成两种不同的改写问法
+# def query_rewrite_with_chat_client(query: str) -> List[str]:
+#     """
+#     使用 chat_client 根据原始查询生成两种不同的改写问法
 
-    Args:
-        query: 原始查询文本
+#     Args:
+#         query: 原始查询文本
 
-    Returns:
-        包含原始查询和两种改写问法的列表，总长度为3
-    """
-    try:
-        # 构建改写提示词
-        rewrite_prompt = f"""
----Role---
-You are a helpful assistant generating a bulleted list of 3 questions about data in the tables provided.
-{query}
----Goal---
+#     Returns:
+#         包含原始查询和两种改写问法的列表，总长度为3
+#     """
+#     try:
+#         # 构建改写提示词
+#         rewrite_prompt = f"""
+# ---Role---
+# You are a helpful assistant generating a bulleted list of 3 questions about data in the tables provided.
+# {query}
+# ---Goal---
 
-Given a series of example questions provided by the user, generate a bulleted list of 3 candidates for the next question. Use - marks as bullet points.
+# Given a series of example questions provided by the user, generate a bulleted list of 3 candidates for the next question. Use - marks as bullet points.
 
-These candidate questions should represent the most important or urgent information content or themes in the data tables.
+# These candidate questions should represent the most important or urgent information content or themes in the data tables.
 
-The candidate questions should be answerable using the data tables provided, but should not mention any specific data fields or data tables in the question text.
+# The candidate questions should be answerable using the data tables provided, but should not mention any specific data fields or data tables in the question text.
 
-If the user's questions reference several named entities, then each candidate question should reference all named entities.
+# If the user's questions reference several named entities, then each candidate question should reference all named entities.
 
----Example questions---"""
+# ---Example questions---"""
 
-        # 调用 chat_client 进行查询改写
-        response = chat_client_small.chat.completions.create(
-            model="qwen3-1.7",
-            messages=[
-                {"role": "system", "content": "你是一个查询改写助手，专门帮助用户将搜索查询改写成不同的表达方式。"},
-                {"role": "user", "content": rewrite_prompt}
-            ],
-            temperature=0.7,
-            max_tokens=200
-        )
+#         # 调用 chat_client 进行查询改写
+#         response = chat_client_small.chat.completions.create(
+#             model="qwen3-1.7",
+#             messages=[
+#                 {"role": "system", "content": "你是一个查询改写助手，专门帮助用户将搜索查询改写成不同的表达方式。"},
+#                 {"role": "user", "content": rewrite_prompt}
+#             ],
+#             temperature=0.7,
+#             max_tokens=200
+#         )
 
-        # 解析响应
-        rewritten_queries = []
-        if response.choices and response.choices[0].message.content:
-            content = response.choices[0].message.content.strip()
-            # 按行分割并清理空白
-            lines = [line.strip() for line in content.split('\n') if line.strip()]
+#         # 解析响应
+#         rewritten_queries = []
+#         if response.choices and response.choices[0].message.content:
+#             content = response.choices[0].message.content.strip()
+#             # 按行分割并清理空白
+#             lines = [line.strip() for line in content.split('\n') if line.strip()]
 
-            # 取前两行作为改写结果
-            for line in lines[:2]:
-                rewritten_queries.append(line)
+#             # 取前两行作为改写结果
+#             for line in lines[:2]:
+#                 rewritten_queries.append(line)
 
-        # 确保返回格式的一致性：[原始查询, 改写1, 改写2]
-        result_queries = [query]
+#         # 确保返回格式的一致性：[原始查询, 改写1, 改写2]
+#         result_queries = [query]
 
-        # 如果成功获取改写查询，添加到结果中
-        if len(rewritten_queries) >= 2:
-            result_queries.extend(rewritten_queries[:2])
-        elif len(rewritten_queries) == 1:
-            # 如果只有一个改写结果，复制一个确保结构稳定
-            result_queries.append(rewritten_queries[0])
-            result_queries.append(rewritten_queries[0])
-        else:
-            # 如果改写失败，使用原始查询填充
-            result_queries.extend([query, query])
+#         # 如果成功获取改写查询，添加到结果中
+#         if len(rewritten_queries) >= 2:
+#             result_queries.extend(rewritten_queries[:2])
+#         elif len(rewritten_queries) == 1:
+#             # 如果只有一个改写结果，复制一个确保结构稳定
+#             result_queries.append(rewritten_queries[0])
+#             result_queries.append(rewritten_queries[0])
+#         else:
+#             # 如果改写失败，使用原始查询填充
+#             result_queries.extend([query, query])
 
-        return result_queries
+#         return result_queries
 
-    except Exception as e:
-        # 容错处理：如果改写失败，返回原始查询的副本
-        logging.error(f"查询改写失败: {e}")
-        return [query, query, query]
+#     except Exception as e:
+#         # 容错处理：如果改写失败，返回原始查询的副本
+#         logging.error(f"查询改写失败: {e}")
+#         return [query, query, query]
 
 def execute_search(sql) -> List[Dict]:
     with SessionLocal() as session:

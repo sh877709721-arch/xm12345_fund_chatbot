@@ -5,15 +5,15 @@ from app.config.settings import settings
 
 
 
-chat_client = OpenAI(
-    base_url=settings.BASE_URL + '/api/llm1/v1', 
-    api_key=settings.API_KEY or '123456'
-)
+# chat_client = OpenAI(
+#     base_url=settings.BASE_URL + '/api/llm1/v1', 
+#     api_key=settings.API_KEY or '123456'
+# )
 
-chat_client_small = OpenAI(
-    base_url=settings.BASE_URL + '/api/llm2/v1', 
-    api_key=settings.API_KEY or '123456'
-)
+# chat_client_small = OpenAI(
+#     base_url=settings.BASE_URL + '/api/llm2/v1', 
+#     api_key=settings.API_KEY or '123456'
+# )
 
 
 embedding_client = OpenAI(
