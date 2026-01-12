@@ -846,3 +846,37 @@ openai.UnprocessableEntityError: Error code: 422 - {'error': 'Model not found', 
 2026-01-09 13:05:00.0942 - DEBUG - graphrag.api.query - Executing streaming local search query: 去年住院没有报销，现在才能报销吗
 2026-01-09 13:05:01.0403 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
 2026-01-09 13:05:01.0551 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1767935101.1366737. QUERY: 去年住院没有报销，现在才能报销吗
+2026-01-09 16:05:49.0645 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\medical-agent\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2026-01-09 16:05:50.0154 - DEBUG - graphrag.api.query - Executing streaming local search query: 我在厦门市妇幼做试管过程中，目前是促排阶段，今年有相关的惠民政策吗
+2026-01-09 16:05:51.0756 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2026-01-09 16:05:51.0827 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2026-01-09 16:05:51.0890 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1767945951.3227084. QUERY: 我在厦门市妇幼做试管过程中，目前是促排阶段，今年有相关的惠民政策吗
+2026-01-09 17:06:21.0014 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\medical-agent\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2026-01-09 17:06:21.0424 - DEBUG - graphrag.api.query - Executing streaming local search query: 产检报销
+2026-01-09 17:06:23.0106 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2026-01-09 17:06:23.0253 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2026-01-09 17:06:23.0292 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1767949582.6279442. QUERY: 产检报销
+2026-01-09 17:07:26.0960 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2026-01-09 17:07:27.0046 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state

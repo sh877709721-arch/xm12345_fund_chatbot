@@ -104,7 +104,6 @@ def get_local_search_context(query):
         system_prompt=prompt,
         callbacks=None,
     )
-
     
 
     search_engine.stream_search(query=query)

@@ -122,6 +122,10 @@ DEFAULT_SYSTEM_MESSAGE='''你是厦门市医保政务服务助手小E。你必�
 KNOWLEDGE_TEMPLATE = """# 知识库
 {knowledge}"""
 
+KNOWLEDGEGRAPG_TEMPLATE = '''# 知识图谱
+{knowledgegraph}
+'''
+
 
 KNOWLEDGE_SNIPPET = """## 来自 {source} 的内容：
 
@@ -198,24 +202,31 @@ class Assistant(FnCallAgent):
             query = KnowledgeSearchService.extract_query_from_messages(messages)
 
         # 知识库检索
+        knowledge_graph_prompt=""
         if not knowledge and query:
             # 使用统一的知识检索服务
-            knowledge_data, response_keywords = KnowledgeSearchService.search_and_integrate_knowledge(
+            knowledge_data, graph_data = KnowledgeSearchService.search_and_integrate_knowledge(
                 query=query,
                 doc_top_n=5,
                 graph_top_n=3,
-                enable_graph_search=False
+                enable_graph_search=True
             )
 
             if knowledge_data:
                 knowledge = KnowledgeSearchService.format_knowledge_for_prompt(knowledge_data)
 
                 self.knowledge_data = knowledge_data
+
+            if graph_data:
+                knowledge_graph_prompt = KNOWLEDGEGRAPG_TEMPLATE.format(knowledgegraph=graph_data)
                 
         if knowledge:
             knowledge_prompt = format_knowledge_to_source_and_content(knowledge)
         else:
             knowledge_prompt = []
+
+        
+        
         snippets = []
         references = {}
         for k in knowledge_prompt:
@@ -244,7 +255,7 @@ class Assistant(FnCallAgent):
                     assert isinstance(messages[0][CONTENT], list)
                     messages[0][CONTENT] += [ContentItem(text='\n\n' + knowledge_prompt + '\n\n' )]
             else:
-                messages = [Message(role=SYSTEM, content=f"{DEFAULT_SYSTEM_MESSAGE}\n\n{knowledge_prompt}\n\n{base_info_prompt}"),
+                messages = [Message(role=SYSTEM, content=f"{DEFAULT_SYSTEM_MESSAGE}\n\n{knowledge_prompt}\n\n{knowledge_graph_prompt}\n\n{base_info_prompt}"),
                             messages[-1]]
         self.source = references
 

@@ -157,24 +157,25 @@ class KnowledgeSearchService:
             tuple: (整合后的知识数据列表, 响应关键词列表)
         """
         knowledge_data = []
-        response_keywords = []
+        graph_data = []
+        
 
         # 1. 文档检索
         doc_results, doc_keywords = KnowledgeSearchService._search_documents(
             query, doc_top_n
         )
         knowledge_data.extend(doc_results)
-        response_keywords.extend(doc_keywords)
+        
 
         # 2. 知识图谱检索
         if enable_graph_search:
             graph_results, graph_keywords = KnowledgeSearchService._search_knowledge_graph(
                 query, graph_top_n
             )
-            knowledge_data.extend(graph_results)
-            response_keywords.extend(graph_keywords)
+            graph_data.extend(graph_results)
+            
 
-        return knowledge_data, response_keywords
+        return knowledge_data, graph_data
 
     @staticmethod
     def _search_documents(
@@ -270,7 +271,7 @@ class KnowledgeSearchService:
             graph_contenxt_chunk = graph_context.context_chunks
             graph_context_records = graph_context.context_records
             
-            
+            import pdb;pdb.set_trace()
             search_results = graph_context_records["sources"].to_dict(orient="records")
             documents = []
             for result in search_results:
@@ -279,28 +280,28 @@ class KnowledgeSearchService:
                 documents.append(text_content)
 
             # 调用重排API
-            try:
-                from app.config.llm_client import rerank_client_instance
-                rerank_results = rerank_client_instance.rerank_sync(query, documents)
-                if rerank_results:
-                    # 根据重排结果重新排序
-                    reranked_results = []
-                    for item in rerank_results:
-                        idx = item["index"]
-                        score = item.get("score", 0)
+            # try:
+            #     from app.config.llm_client import rerank_client_instance
+            #     rerank_results = rerank_client_instance.rerank_sync(query, documents)
+            #     if rerank_results:
+            #         # 根据重排结果重新排序
+            #         reranked_results = []
+            #         for item in rerank_results:
+            #             idx = item["index"]
+            #             score = item.get("score", 0)
 
-                        if idx < len(search_results):
-                            # 复制原始结果并更新分数
-                            reranked_result = search_results[idx].copy()
-                            reranked_result["rerank_score"] = score
-                            reranked_results.append(reranked_result)
+            #             if idx < len(search_results):
+            #                 # 复制原始结果并更新分数
+            #                 reranked_result = search_results[idx].copy()
+            #                 reranked_result["rerank_score"] = score
+            #                 reranked_results.append(reranked_result)
 
-                    search_results = reranked_results[:top_n]
-                    #logger.info(f"文档重排完成，重排了 {len(search_results)} 个结果")
-                else:
-                    logger.warning("文档重排失败，使用原始搜索结果")
-            except Exception as e:
-                logger.error(f"文档重排过程出错: {e}，使用原始搜索结果")
+            #         search_results = reranked_results[:top_n]
+            #         #logger.info(f"文档重排完成，重排了 {len(search_results)} 个结果")
+            #     else:
+            #         logger.warning("文档重排失败，使用原始搜索结果")
+            # except Exception as e:
+            #     logger.error(f"文档重排过程出错: {e}，使用原始搜索结果")
 
             # 转换文档检索结果为标准格式
             for result in search_results:
