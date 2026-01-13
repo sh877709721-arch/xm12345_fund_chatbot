@@ -13,6 +13,7 @@ const Settings = lazy(() => import("@/pages/admin/settings"));
 const About = lazy(() => import("@/pages/about"));
 const Home = lazy(() => import("@/pages/index"));
 const NotFound = lazy(() => import("@/pages/404"));
+const Forbidden = lazy(() => import("@/pages/403"));
 
 //login and register
 const LoginPage = lazy(() => import("@/pages/login"));
@@ -50,6 +51,7 @@ import { ChatProviderWrapper } from "@/components/admin/chat-provider-wrapper";
 
 const routes = [
   { path: "/about", element: <About /> },
+  { path: "/403", element: <Forbidden /> },
   {
     path: "/login",
     element: (

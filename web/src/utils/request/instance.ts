@@ -34,11 +34,27 @@ instance.interceptors.response.use(
     // 超出 2xx 范围的状态码都会触发该函数
     // 对响应错误做点什么
     console.log(error);
+
     // 处理特定的错误状态码
     if (error.response?.status === 401) {
       // 未授权，只清除本地token，不自动跳转
       localStorage.removeItem("access_token");
       // 让AuthContext和路由系统处理跳转，避免页面刷新
+    } else if (error.response?.status === 403) {
+      // 权限不足，显示提示并跳转到403页面
+      const errorMessage = error.response?.data?.detail || "权限不足";
+
+      // 显示错误提示
+      toast.error(errorMessage);
+
+      // 跳转到403页面
+      window.location.href = "/znkfzs/403";
+
+      // 返回已拒绝的 Promise，阻止后续处理
+      return Promise.reject({
+        ...error,
+        handled: true, // 标记错误已处理
+      });
     } else {
       toast.error(error.response?.data?.detail || error.message);
     }

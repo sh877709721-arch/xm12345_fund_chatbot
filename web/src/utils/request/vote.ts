@@ -78,7 +78,7 @@ export interface VoteStatsQuery {
 export async function voteMessage(voteData: MessageVoteRequest): Promise<VoteResponse> {
   try {
     const response = await instance.post<VoteResponse>(
-      "/v1/vote/",
+      "/v1/admin/vote/",
       voteData
     );
     toast.success("投票成功");
@@ -96,7 +96,7 @@ export async function updateVote(
 ): Promise<VoteResponse> {
   try {
     const response = await instance.put<VoteResponse>(
-      `/v1/vote/${voteId}`,
+      `/v1/admin/vote/${voteId}`,
       voteData
     );
     toast.success("投票更新成功");
@@ -111,7 +111,7 @@ export async function updateVote(
 export async function cancelVote(voteId: number): Promise<VoteResponse> {
   try {
     const response = await instance.delete<VoteResponse>(
-      `/v1/vote/${voteId}`
+      `/v1/admin/vote/${voteId}`
     );
     toast.success("已取消投票");
     return response.data;
@@ -125,7 +125,7 @@ export async function cancelVote(voteId: number): Promise<VoteResponse> {
 export async function getMessageVote(messageId: number): Promise<VoteResponse | null> {
   try {
     const response = await instance.get<VoteResponse>(
-      `/v1/vote/message/${messageId}`
+      `/v1/admin/vote/message/${messageId}`
     );
     return response.data;
   } catch (error: any) {
@@ -148,7 +148,7 @@ export async function createOrUpdateVote(
 ): Promise<VoteResponse> {
   try {
     const response = await instance.post<VoteResponse>(
-      "/v1/vote/",
+      "/v1/admin/vote/",
       {
         message_id: messageId,
         vote_type: voteType,
@@ -192,7 +192,7 @@ export async function getVotesWithMessages(
     }
 
     const response = await instance.get<PaginatedResponse<VoteWithMessage>>(
-      `/v1/vote/with_messages?${params.toString()}`
+      `/v1/admin/vote/with_messages?${params.toString()}`
     );
 
     console.log('response',response)
@@ -234,7 +234,7 @@ export async function exportVotesToExcel(
     const token = localStorage.getItem('access_token');
     
     const response = await axios.get(
-      `${baseURL}/v1/vote/export/excel?${params.toString()}`,
+      `${baseURL}/v1/admin/vote/export/excel?${params.toString()}`,
       {
         responseType: 'blob', // 重要：指定响应类型为blob
         headers: token ? {

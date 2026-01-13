@@ -200,7 +200,7 @@ export function KnowledgeDialog({
                     }),
                     timeoutPromise
                   ]) as { data: { id: number } };
-
+                  console.log('response', response)
                   toast.success("知识条目创建成功");
 
                 } else {

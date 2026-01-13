@@ -46,7 +46,7 @@ export async function uploadFeedbackImage(file: File): Promise<FeedbackImageUplo
     formData.append('file', file);
 
     const response = await instance.post<FeedbackImageUploadResponse>(
-      "/v1/feedback/upload-image",
+      "/v1/admin/feedback/upload-image",
       formData,
       {
         headers: {
@@ -67,7 +67,7 @@ export async function uploadFeedbackImage(file: File): Promise<FeedbackImageUplo
 export async function submitFeedback(feedbackData: FeedbackRequest): Promise<FeedbackResponse> {
   try {
     const response = await instance.post<FeedbackResponse>(
-      "/v1/feedback/",
+      "/v1/admin/feedback/",
       feedbackData
     );
 
@@ -133,7 +133,7 @@ export async function getFeedbacks(
 
   try {
     const response = await instance.get<FeedbackListResponse<FeedbackItem>>(
-      `/v1/feedback/?${params.toString()}`
+      `/v1/admin/feedback/?${params.toString()}`
     );
     return response.data;
   } catch (error: any) {
@@ -165,7 +165,7 @@ export async function exportFeedbacksToExcel(query: FeedbackQuery = {}): Promise
     const token = localStorage.getItem("access_token");
 
     const response = await axios.get(
-      `${baseURL}/v1/feedback/export/excel?${params.toString()}`,
+      `${baseURL}/v1/admin/feedback/export/excel?${params.toString()}`,
       {
         responseType: "blob",
         headers: token
