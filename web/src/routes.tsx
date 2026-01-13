@@ -6,7 +6,7 @@ import { DashboardLayout } from "@/components/admin/dashboard-layout";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 
 // Pages
-const DashboardMain = lazy(() => import("@/pages/admin/main"));
+// const DashboardMain = lazy(() => import("@/pages/admin/main"));
 const Analytics = lazy(() => import("@/pages/admin/analytics"));
 const Team = lazy(() => import("@/pages/admin/team"));
 const Settings = lazy(() => import("@/pages/admin/settings"));
@@ -74,7 +74,8 @@ const routes = [
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <DashboardMain /> },
+      // { index: true, element: <DashboardMain /> },
+      { index: true, element: <QaDashboard /> },
       { path: "knowledge-list", element: <KnowledgeList /> },
       {
         path: "knowledge-labeling",
@@ -116,17 +117,9 @@ const routes = [
       },
       { path: "team", element: <Team /> },
       { path: "analytics", element: <Analytics /> },
-      {
-        path: "qa-dashboard",
-        element: <QaDashboard />
-      },
       { path: "settings", element: <Settings /> },
       { path: "about", element: <About /> },
     ],
-  },
-  {
-    path: "/qa-dashboard",
-    element: <QaDashboard />,
   },
   { path: "*", element: <NotFound /> },
 ];
