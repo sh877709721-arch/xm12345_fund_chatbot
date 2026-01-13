@@ -6,6 +6,7 @@ from app.router.admin.search import router as search_router
 from app.router.admin.guidelines import router as guidelines_router
 from app.router.admin.vote import router as vote_router
 from app.router.admin.feedback import router as feedback_router
+from app.router.admin.dashboard import router as dashboard_router
 from fastapi import APIRouter
 
 
@@ -26,3 +27,4 @@ router.include_router(guidelines_router, tags=["guidelines"])
 # 所有角色可访问的路由（包括 normal_user）
 router.include_router(vote_router, tags=["vote"])
 router.include_router(feedback_router, tags=["feedback"])
+router.include_router(dashboard_router, tags=["dashboard"])

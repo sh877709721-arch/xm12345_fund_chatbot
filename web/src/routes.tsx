@@ -42,6 +42,7 @@ const FeedbackPage = lazy(() => import("@/pages/admin/bot/feedback"));
 const GuidelineList = lazy(() => import("@/pages/admin/guideline/guideline-list-page"));
 const GuidelineMatchTest = lazy(() => import("@/pages/admin/guideline/guideline-match-test"));
 const BotChat = lazy(() => import("@/pages/admin/bot/bot-chat"));
+const QaDashboard = lazy(() => import("@/pages/admin/qa-dashboard"));
 
 //主界面
 import { AppLayout } from "@/components/app/app-layout";
@@ -113,9 +114,17 @@ const routes = [
       },
       { path: "team", element: <Team /> },
       { path: "analytics", element: <Analytics /> },
+      {
+        path: "qa-dashboard",
+        element: <QaDashboard />
+      },
       { path: "settings", element: <Settings /> },
       { path: "about", element: <About /> },
     ],
+  },
+  {
+    path: "/qa-dashboard",
+    element: <QaDashboard />,
   },
   { path: "*", element: <NotFound /> },
 ];

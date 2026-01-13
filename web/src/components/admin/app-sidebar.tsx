@@ -82,6 +82,11 @@ export const data = {
       ],
     },
     {
+      title: "可视化大屏",
+      url: "/admin/qa-dashboard",
+      icon: IconDashboard,
+    },
+    {
       title: "关于",
       url: "/admin/about",
       icon: IconHelp,

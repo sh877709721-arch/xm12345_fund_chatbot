@@ -60,6 +60,7 @@ app.add_middleware(
         "/znkfzs/v1/feedback",
         "/znkfzs/v1/chat/intent",
         "/znkfzs/v1/speech",
+        "/znkfzs/v1/admin/dashboard",
     ]
 )
 

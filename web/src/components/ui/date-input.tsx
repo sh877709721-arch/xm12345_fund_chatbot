@@ -51,6 +51,82 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
 
 DateInput.displayName = "DateInput";
 
+// DatePicker 组件 - 只选择日期
+interface DatePickerProps {
+  value?: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+  disabled?: boolean;
+}
+
+export const DatePicker = ({ value, onChange, placeholder = "选择日期", className, disabled }: DatePickerProps) => {
+  const [open, setOpen] = useState(false);
+  const [date, setDate] = useState<Date | undefined>(
+    value ? new Date(value) : undefined
+  );
+
+  // 同步外部 value 变化到内部状态
+  useEffect(() => {
+    if (value) {
+      const dateValue = new Date(value);
+      if (!isNaN(dateValue.getTime())) {
+        setDate(dateValue);
+      }
+    } else {
+      setDate(undefined);
+    }
+  }, [value]);
+
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (selectedDate) {
+      setDate(selectedDate);
+      // 格式化为 YYYY-MM-DD
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      onChange(`${year}-${month}-${day}`);
+      setOpen(false);
+    }
+  };
+
+  const formatDisplayValue = () => {
+    if (!date) return placeholder;
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          disabled={disabled}
+          className={cn(
+            "justify-start text-left font-normal h-8 w-32 bg-[#111827] border-[#374151] text-gray-100 hover:bg-[#374151]",
+            !date && "text-muted-foreground",
+            className
+          )}
+        >
+          <Calendar className="mr-2 h-4 w-4" />
+          {formatDisplayValue()}
+          <ChevronDown className="ml-auto h-4 w-4" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <CalendarComponent
+          mode="single"
+          selected={date}
+          onSelect={handleDateSelect}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+};
+
 // DateTimePicker 组件 - 支持日期+时间选择
 interface DateTimePickerProps {
   value?: string;
