@@ -4,6 +4,7 @@ from app.router.admin.knowledge_label import router as knowledge_label_router
 from app.router.admin.analysis import router as analysis_router
 from app.router.admin.search import router as search_router
 from app.router.admin.guidelines import router as guidelines_router
+from app.router.admin.dashboard import router as dashboard_router
 from fastapi import APIRouter
 
 
@@ -19,3 +20,4 @@ router.include_router(knowledge_label_router, tags=["knowledge label"])
 router.include_router(analysis_router, tags=["analysis"])
 router.include_router(search_router, tags=["search"])
 router.include_router(guidelines_router, tags=["guidelines"])
+router.include_router(dashboard_router, tags=["dashboard"])
