@@ -35,13 +35,13 @@ export const FilterBarCard: React.FC<FilterBarCardProps> = ({
   onRefresh,
 }) => {
   return (
-    <Card className="flex flex-row items-center justify-between gap-4 px-4 py-3 bg-[#1f2937] border-[#374151]">
+    <Card className="flex flex-row items-center justify-between gap-4 px-4 py-3 bg-card border-border">
       <div className="flex items-center gap-4">
         {/* 时间筛选：预设时间维度 + 自定义时间范围 */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-300">时间范围：</span>
+          <span className="text-sm text-muted-foreground">时间范围：</span>
           <Select value={timePreset} onValueChange={onTimePresetChange}>
-            <SelectTrigger className="h-8 w-28 text-xs bg-[#111827] border-[#374151] text-gray-100">
+            <SelectTrigger className="h-8 w-28 text-xs bg-background border-border text-foreground">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -58,7 +58,7 @@ export const FilterBarCard: React.FC<FilterBarCardProps> = ({
               placeholder="开始日期"
               disabled={timePreset !== "custom"}
             />
-            <span className="text-xs text-gray-400 ml-4 mr-2">至</span>
+            <span className="text-xs text-muted-foreground ml-4 mr-2">至</span>
             <DatePicker
               value={endDate}
               onChange={onEndDateChange}
@@ -68,11 +68,11 @@ export const FilterBarCard: React.FC<FilterBarCardProps> = ({
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-4 text-sm text-gray-300">
+      <div className="flex items-center gap-4 text-sm text-muted-foreground">
         <span>当前时间：{currentTime}</span>
-        <Separator orientation="vertical" className="h-4 bg-[#374151]" />
+        <Separator orientation="vertical" className="h-4 bg-border" />
         <span>数据更新：{lastUpdated}</span>
-        <Button variant="outline" size="sm" onClick={onRefresh} className="bg-[#111827] border-[#374151] text-gray-100 hover:bg-[#374151]">
+        <Button variant="outline" size="sm" onClick={onRefresh} className="bg-background border-border text-foreground hover:bg-accent">
           手动刷新
         </Button>
       </div>

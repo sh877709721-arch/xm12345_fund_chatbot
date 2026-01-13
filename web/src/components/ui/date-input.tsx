@@ -106,7 +106,7 @@ export const DatePicker = ({ value, onChange, placeholder = "选择日期", clas
           variant="outline"
           disabled={disabled}
           className={cn(
-            "justify-start text-left font-normal h-8 w-32 bg-[#111827] border-[#374151] text-gray-100 hover:bg-[#374151]",
+            "justify-start text-left font-normal h-8 w-32",
             !date && "text-muted-foreground",
             className
           )}

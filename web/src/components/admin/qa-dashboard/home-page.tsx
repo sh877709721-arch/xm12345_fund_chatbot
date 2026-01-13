@@ -78,14 +78,14 @@ const QaDashboardHomePage: React.FC = () => {
   // 错误处理
   if (error) {
     return (
-      <div className="flex h-full items-center justify-center bg-[#111827]">
+      <div className="flex h-full items-center justify-center bg-background">
         <div className="text-center">
           <div className="mb-4 text-6xl">⚠️</div>
-          <h2 className="mb-2 text-xl font-semibold text-gray-100">加载失败</h2>
-          <p className="text-gray-400">{error.message}</p>
+          <h2 className="mb-2 text-xl font-semibold text-foreground">加载失败</h2>
+          <p className="text-muted-foreground">{error.message}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+            className="mt-4 rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
           >
             重新加载
           </button>
@@ -95,7 +95,7 @@ const QaDashboardHomePage: React.FC = () => {
   }
 
   return (
-    <div className="flex h-full flex-col gap-4 p-4 bg-[#111827]">
+    <div className="flex h-full flex-col gap-4 p-4 bg-background">
       {/* 顶部筛选与时间区：筛选和时间展示保持同一行 */}
       <FilterBarCard
         timePreset={timePreset}

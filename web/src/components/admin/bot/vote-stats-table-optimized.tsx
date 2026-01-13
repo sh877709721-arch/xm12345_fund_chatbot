@@ -160,40 +160,31 @@ export function VoteStatsTableOptimized({ className }: VoteStatsTableOptimizedPr
     handleRefresh,
   } = useVoteData();
 
-  // 本地搜索状态（用于防抖）
+  // 本地搜索状态
   const [localSearchKeyword, setLocalSearchKeyword] = React.useState(searchParams.searchKeyword || "");
-  
-  // 防抖 timer ref
-  const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // 同步本地搜索关键词与 searchParams
   React.useEffect(() => {
     setLocalSearchKeyword(searchParams.searchKeyword || "");
   }, [searchParams.searchKeyword]);
 
-  // 处理搜索输入变化（带防抖）
+  // 处理搜索输入变化（只更新本地状态，不触发搜索）
   const handleSearchInputChange = (value: string) => {
     setLocalSearchKeyword(value);
-    
-    // 清除之前的定时器
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-    
-    // 设置新的防抖定时器
-    debounceTimerRef.current = setTimeout(() => {
-      handleSearch(value);
-    }, 300);
   };
-  
-  // 清理定时器
-  React.useEffect(() => {
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, []);
+
+  // 触发搜索
+  const triggerSearch = () => {
+    handleSearch(localSearchKeyword);
+  };
+
+  // 处理回车键
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      triggerSearch();
+    }
+  };
 
   // 列定义
   const columns: ColumnDef<VoteWithMessage>[] = [
@@ -332,6 +323,8 @@ export function VoteStatsTableOptimized({ className }: VoteStatsTableOptimizedPr
               onChange={(event) => {
                 handleSearchInputChange(event.target.value);
               }}
+              onKeyDown={handleKeyDown}
+              onBlur={triggerSearch}
               className="pl-8 h-8"
             />
           </div>

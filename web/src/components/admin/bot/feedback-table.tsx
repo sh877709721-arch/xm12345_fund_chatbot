@@ -118,29 +118,27 @@ export function FeedbackTable({ className }: FeedbackTableProps) {
 
   const [localContent, setLocalContent] = React.useState(searchParams.content || "");
   const [localPhone, setLocalPhone] = React.useState(searchParams.phone || "");
-  const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   React.useEffect(() => {
     setLocalContent(searchParams.content || "");
     setLocalPhone(searchParams.phone || "");
   }, [searchParams.content, searchParams.phone]);
 
-  const triggerSearch = (params: { content?: string; phone?: string }) => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-    debounceTimerRef.current = setTimeout(() => {
-      handleSearch(params);
-    }, 300);
+  // 触发搜索
+  const triggerSearch = () => {
+    handleSearch({
+      content: localContent,
+      phone: localPhone,
+    });
   };
 
-  React.useEffect(() => {
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, []);
+  // 处理回车键
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      triggerSearch();
+    }
+  };
 
   const columns: ColumnDef<FeedbackItem>[] = [
     {
@@ -256,8 +254,9 @@ export function FeedbackTable({ className }: FeedbackTableProps) {
               value={localContent}
               onChange={(event) => {
                 setLocalContent(event.target.value);
-                triggerSearch({ content: event.target.value });
               }}
+              onKeyDown={handleKeyDown}
+              onBlur={triggerSearch}
               className="pl-8 h-8"
             />
           </div>
@@ -268,8 +267,9 @@ export function FeedbackTable({ className }: FeedbackTableProps) {
               value={localPhone}
               onChange={(event) => {
                 setLocalPhone(event.target.value);
-                triggerSearch({ phone: event.target.value });
               }}
+              onKeyDown={handleKeyDown}
+              onBlur={triggerSearch}
               className="h-8"
             />
           </div>

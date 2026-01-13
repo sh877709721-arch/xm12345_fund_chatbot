@@ -7,6 +7,7 @@
  * `safelist` for those patterns so Tailwind doesn't purge them.
  */
 module.exports = {
+  darkMode: 'class',
   content: [
     './index.html',
     './src/**/*.{js,ts,jsx,tsx,html}',

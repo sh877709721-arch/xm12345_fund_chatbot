@@ -1,6 +1,7 @@
 import React from "react";
 import ReactECharts from "echarts-for-react";
 import { Card } from "@/components/ui/card";
+import { useTheme } from "@/components/theme-provider";
 
 interface TopQuestionDataItem {
   question: string;
@@ -20,22 +21,42 @@ export const TopQuestionsCard: React.FC<TopQuestionsCardProps> = ({
   topN = 5,
   loading = false,
 }) => {
-  if (loading) {
-    return (
-      <Card className="min-h-[280px] p-4 bg-[#1f2937] border-[#374151]">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-gray-100">{title}</h2>
-        </div>
-        <div className="h-[240px] w-full flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        </div>
-      </Card>
-    );
-  }
+  const { theme } = useTheme();
+  const [isDark, setIsDark] = React.useState(() => {
+    if (theme === "dark") return true;
+    if (theme === "light") return false;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
 
-  const displayData = data.slice(0, topN).reverse();
+  React.useEffect(() => {
+    const updateTheme = () => {
+      if (theme === "dark") {
+        setIsDark(true);
+      } else if (theme === "light") {
+        setIsDark(false);
+      } else {
+        setIsDark(window.matchMedia("(prefers-color-scheme: dark)").matches);
+      }
+    };
+    updateTheme();
+    
+    if (theme === "system") {
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      mediaQuery.addEventListener("change", updateTheme);
+      return () => mediaQuery.removeEventListener("change", updateTheme);
+    }
+  }, [theme]);
+
+  const displayData = React.useMemo(() => data.slice(0, topN).reverse(), [data, topN]);
   
-  const option = {
+  const axisLineColor = isDark ? "#4b5563" : "#e5e7eb";
+  const axisLabelColor = isDark ? "#9ca3af" : "#6b7280";
+  const splitLineColor = isDark ? "#374151" : "#e5e7eb";
+  const tooltipBg = isDark ? "rgba(31, 41, 55, 0.95)" : "rgba(255, 255, 255, 0.95)";
+  const tooltipBorder = isDark ? "#4b5563" : "#e5e7eb";
+  const tooltipText = isDark ? "#f3f4f6" : "#111827";
+  
+  const option = React.useMemo(() => ({
     backgroundColor: "transparent",
     grid: {
       left: "35%",
@@ -48,16 +69,16 @@ export const TopQuestionsCard: React.FC<TopQuestionsCardProps> = ({
       type: "value",
       axisLine: {
         lineStyle: {
-          color: "#4b5563",
+          color: axisLineColor,
         },
       },
       axisLabel: {
-        color: "#9ca3af",
+        color: axisLabelColor,
         fontSize: 11,
       },
       splitLine: {
         lineStyle: {
-          color: "#374151",
+          color: splitLineColor,
           type: "dashed",
         },
       },
@@ -67,21 +88,21 @@ export const TopQuestionsCard: React.FC<TopQuestionsCardProps> = ({
       data: displayData.map((item) => item.question.length > 10 ? item.question.substring(0, 10) + "..." : item.question),
       axisLine: {
         lineStyle: {
-          color: "#4b5563",
+          color: axisLineColor,
         },
       },
       axisLabel: {
-        color: "#9ca3af",
+        color: axisLabelColor,
         fontSize: 11,
       },
     },
     tooltip: {
       trigger: "axis",
-      backgroundColor: "rgba(31, 41, 55, 0.95)",
-      borderColor: "#4b5563",
+      backgroundColor: tooltipBg,
+      borderColor: tooltipBorder,
       borderWidth: 1,
       textStyle: {
-        color: "#f3f4f6",
+        color: tooltipText,
       },
       formatter: (params: any) => {
         const item = displayData[params[0].dataIndex];
@@ -116,12 +137,25 @@ export const TopQuestionsCard: React.FC<TopQuestionsCardProps> = ({
         barWidth: "60%",
       },
     ],
-  };
+  }), [displayData, axisLineColor, axisLabelColor, splitLineColor, tooltipBg, tooltipBorder, tooltipText]);
+
+  if (loading) {
+    return (
+      <Card className="min-h-[280px] p-4 bg-card border-border">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-base font-semibold text-foreground">{title}</h2>
+        </div>
+        <div className="h-[240px] w-full flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="min-h-[280px] p-4 bg-[#1f2937] border-[#374151]">
+    <Card className="min-h-[280px] p-4 bg-card border-border">
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-base font-semibold text-gray-100">{title}</h2>
+        <h2 className="text-base font-semibold text-foreground">{title}</h2>
       </div>
       <div className="h-[240px] w-full">
         <ReactECharts option={option} style={{ height: "100%", width: "100%" }} />
