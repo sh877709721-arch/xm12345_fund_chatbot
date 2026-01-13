@@ -6,9 +6,7 @@ from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 from app.router.chat import router as chat_router
 from app.router.auth import router as auth_router
-from app.router.vote import router as vote_router
 from app.router.admin import router as admin_router
-from app.router.feedback import router as feedback_router
 from app.router.speech import router as speech_router
 #from app.router.graphrag import router as graphrag_router
 from fastapi.middleware.cors import CORSMiddleware
@@ -78,10 +76,8 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
 
 app.include_router(chat_router, prefix="/znkfzs/v1", tags=["chat"])
-app.include_router(vote_router, prefix="/znkfzs/v1", tags=["vote"])
-app.include_router(admin_router, prefix="/znkfzs/v1", tags=["admin"],dependencies=[Depends(get_current_user)])
+app.include_router(admin_router, prefix="/znkfzs/v1", tags=["admin"])
 app.include_router(auth_router, prefix="/znkfzs/v1", tags=["auth"]) #,dependencies=[Depends(get_current_user)]
-app.include_router(feedback_router, prefix="/znkfzs/v1", tags=["feedback"])
 app.include_router(speech_router, prefix="/znkfzs/v1", tags=["speech"])
 #app.include_router(graphrag_router, prefix="/v1", tags=["graphrag"])
 

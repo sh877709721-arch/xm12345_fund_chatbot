@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 from app.core.vector import qa_response, qa_hybrid_search_vec_rff,doc_hybrid_search_vec_rff,doc_hybrid_search_bm25_vec
 from app.service.search_service import SearchService
 from pydantic import BaseModel
@@ -7,12 +8,16 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 router = APIRouter(prefix='/knowledge-search', tags=['knowledge-search'])
+from app.config.database import get_db
+from app.service.rbac import require_admin
+from app.schema.auth import UserReadWithRole
 
 class SearchRequest(BaseModel):
     query: str
 
 @router.post("/", response_model=BaseResponse)
-def search(request: SearchRequest):
+def search(request: SearchRequest, db: Session = Depends(get_db),
+           _: UserReadWithRole = Depends(require_admin)):
     query = request.query
     # QA 一次命中
     qa = SearchService.qa_response(query=query,score=0.95, top_n=1) #qa_response(query)
@@ -31,23 +36,27 @@ def search(request: SearchRequest):
 
 
 @router.post("/qa")
-async def qa_result(query: str):
+async def qa_result(query: str, db: Session = Depends(get_db),
+                   _: UserReadWithRole = Depends(require_admin)):
     return qa_response(query)
 
 @router.post("/qa_hybridsearch")
-def qa_hybridsearch(query: str):
+def qa_hybridsearch(query: str, db: Session = Depends(get_db),
+                    _: UserReadWithRole = Depends(require_admin)):
     return qa_hybrid_search_vec_rff(query)
 
 
 @router.post("/doc_hybridsearch")
-def doc_hybridsearch(query: str):
+def doc_hybridsearch(query: str, db: Session = Depends(get_db),
+                     _: UserReadWithRole = Depends(require_admin)):
     return doc_hybrid_search_vec_rff(query)
 
 
 
 
 @router.post("/doc_hybrid_search_bm25")
-def doc_hybrid_search_bm25(query: str):
+def doc_hybrid_search_bm25(query: str, db: Session = Depends(get_db),
+                           _: UserReadWithRole = Depends(require_admin)):
     return doc_hybrid_search_bm25_vec(query)
 
 

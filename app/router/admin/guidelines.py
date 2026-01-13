@@ -15,6 +15,8 @@ from app.schema.guideline import (
     GuidelinesStatusEnum
 )
 import logging
+from app.service.rbac import require_admin
+from app.schema.auth import UserReadWithRole
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/guidelines", tags=["guidelines"])
@@ -29,7 +31,8 @@ def get_guideline_service(db: Session = Depends(get_db)) -> GuidelinesService:
 @router.post("", response_model=BaseResponse[GuidelinesRead])
 def create_guideline(
     request: GuidelinesCreate,
-    service: GuidelinesService = Depends(get_guideline_service)
+    service: GuidelinesService = Depends(get_guideline_service),
+    _: UserReadWithRole = Depends(require_admin)
 ):
     """
     创建指南
@@ -53,7 +56,8 @@ def create_guideline(
 @router.post("/search", response_model=BaseResponse[PageResponse[GuidelinesRead]])
 def search_guidelines(
     request: GuidelinesSearchRequest,
-    service: GuidelinesService = Depends(get_guideline_service)
+    service: GuidelinesService = Depends(get_guideline_service),
+    _: UserReadWithRole = Depends(require_admin)
 ):
     """
     搜索指南（支持分页、多条件查询和排序）
@@ -80,7 +84,8 @@ def search_guidelines(
 @router.get("/{guideline_id}", response_model=BaseResponse[GuidelinesRead])
 def get_guideline(
     guideline_id: int,
-   service: GuidelinesService = Depends(get_guideline_service)
+    service: GuidelinesService = Depends(get_guideline_service),
+    _: UserReadWithRole = Depends(require_admin)
 ):
     """
     获取单个指南
@@ -123,7 +128,8 @@ def get_guideline(
 def update_guideline(
     guideline_id: int,
     request: GuidelinesUpdate,
-    service: GuidelinesService = Depends(get_guideline_service)
+    service: GuidelinesService = Depends(get_guideline_service),
+    _: UserReadWithRole = Depends(require_admin)
 ):
     """
     更新指南
@@ -150,7 +156,8 @@ def update_guideline(
 @router.delete("/{guideline_id}", response_model=BaseResponse[GuidelinesRead])
 def delete_guideline(
     guideline_id: int,
-    service: GuidelinesService = Depends(get_guideline_service)
+    service: GuidelinesService = Depends(get_guideline_service),
+    _: UserReadWithRole = Depends(require_admin)
 ):
     """
     删除指南（软删除）
@@ -189,7 +196,8 @@ def delete_guideline(
 @router.post("/match", response_model=BaseResponse)
 def match_guideline(
     request: GuidelinesMatchRequest,
-    service: GuidelinesService = Depends(get_guideline_service)
+    service: GuidelinesService = Depends(get_guideline_service),
+    _: UserReadWithRole = Depends(require_admin)
 ):
     """
     根据对话上下文智能匹配最合适的指南
@@ -264,7 +272,8 @@ def match_guideline(
 
 @router.get("", response_model=BaseResponse[list[GuidelinesRead]])
 def get_all_guidelines(
-    service: GuidelinesService = Depends(get_guideline_service)
+    service: GuidelinesService = Depends(get_guideline_service),
+    _: UserReadWithRole = Depends(require_admin)
 ):
     """
     获取所有未删除的指南列表

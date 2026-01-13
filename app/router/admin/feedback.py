@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime
 from app.service.auth import get_current_user
+from app.service.rbac import require_any_role
+from app.schema.auth import UserReadWithRole
 
 from app.service.feedback import FeedbackService
 from app.schema.feedback import FeedbackCreate, FeedbackRead, FeedbackUpdate, ImageUploadResponse
@@ -68,7 +70,7 @@ async def get_all_feedbacks(
     phone: Optional[str] = Query(None, description="手机号模糊搜索"),
     start_date: Optional[datetime] = Query(None, description="开始时间"),
     end_date: Optional[datetime] = Query(None, description="结束时间"),
-    _: str = Depends(get_current_user),
+    current_user: UserReadWithRole = Depends(require_any_role),
     feedback_service: FeedbackService = Depends(get_feedback_service)
 ):
     """
@@ -110,6 +112,7 @@ async def get_all_feedbacks(
 @router.get("/{feedback_id}", response_model=BaseResponse[FeedbackRead])
 async def get_feedback(
     feedback_id: int,
+    current_user: UserReadWithRole = Depends(require_any_role),
     feedback_service: FeedbackService = Depends(get_feedback_service)
 ):
     """根据ID获取反馈详情"""
@@ -123,6 +126,7 @@ async def get_feedback(
 async def update_feedback(
     feedback_id: int,
     feedback_data: FeedbackUpdate,
+    current_user: UserReadWithRole = Depends(require_any_role),
     feedback_service: FeedbackService = Depends(get_feedback_service)
 ):
     """更新反馈"""
@@ -140,6 +144,7 @@ async def update_feedback(
 @router.delete("/{feedback_id}", response_model=BaseResponse[bool])
 async def delete_feedback(
     feedback_id: int,
+    current_user: UserReadWithRole = Depends(require_any_role),
     feedback_service: FeedbackService = Depends(get_feedback_service)
 ):
     """删除反馈"""
@@ -158,7 +163,7 @@ async def export_feedbacks_to_excel(
     phone: Optional[str] = Query(None, description="手机号模糊搜索"),
     start_date: Optional[datetime] = Query(None, description="开始时间"),
     end_date: Optional[datetime] = Query(None, description="结束时间"),
-    _: str = Depends(get_current_user),
+    current_user: UserReadWithRole = Depends(require_any_role),
     feedback_service: FeedbackService = Depends(get_feedback_service)
 ):
     """

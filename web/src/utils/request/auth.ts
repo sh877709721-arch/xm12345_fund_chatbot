@@ -14,7 +14,11 @@ export interface User {
   id: number;
   username: string;
   email: string;
-  // 根据你的 UserRead 模型添加其他字段
+  user_role?: string; // 用户角色：superadmin | engineer | normal_user
+  full_name?: string;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // 登录

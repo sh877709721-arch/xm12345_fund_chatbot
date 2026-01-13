@@ -10,6 +10,8 @@ from app.schema.knowledge import KnowledgeLabelBatchRead, KnowledgeLabelRead, Kn
 from app.model.knowledge import KnowledgeStatusEnum
 from app.model.knowledge_label import KnoewledgeRoleEnum
 from app.schema.knowledge import KnowledgeLabelsQueryRequest
+from app.service.rbac import require_admin
+from app.schema.auth import UserReadWithRole
 
 
 import logging
@@ -43,7 +45,8 @@ class KnowledgeLabelUpdateRequest(BaseModel):
 @router.post("/batch", response_model=BaseResponse[KnowledgeLabelBatchRead], summary="创建知识标注批次")
 def create_knowledge_label_batch(
     req: KnowledgeLabelCreateRequest,
-    db: Session = Depends(get_db)):
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)):
     """
     创建一个新的知识标注测试批次
     
@@ -63,7 +66,9 @@ def create_knowledge_label_batch(
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/batch", response_model=BaseResponse[List[KnowledgeLabelBatchRead]], summary="获取所有批次")
-def get_knowledge_label_batchs(db: Session = Depends(get_db)):
+def get_knowledge_label_batchs(
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)):
     """
     创建一个新的知识标注测试批次
     
@@ -83,8 +88,9 @@ def get_knowledge_label_batchs(db: Session = Depends(get_db)):
 
 @router.put("/batch/{batch_id}", response_model=BaseResponse[KnowledgeLabelBatchRead], summary="更新知识标注批次")
 def update_knowledge_label_batch(batch_id: int,
-                                 reuqest:KnowledgeLabelUpdateRequest, 
-                                 db: Session = Depends(get_db)):
+                                 reuqest:KnowledgeLabelUpdateRequest,
+                                 db: Session = Depends(get_db),
+                                 _: UserReadWithRole = Depends(require_admin)):
     """
     更新指定ID的知识标注批次信息
     
@@ -105,7 +111,8 @@ def update_knowledge_label_batch(batch_id: int,
         raise HTTPException(status_code=404, detail=str(e))
 
 @router.delete("/batch/{batch_id}", response_model=BaseResponse[bool], summary="删除知识标注批次")
-def delete_knowledge_label_batch(batch_id: int, db: Session = Depends(get_db)):
+def delete_knowledge_label_batch(batch_id: int, db: Session = Depends(get_db),
+                                 _: UserReadWithRole = Depends(require_admin)):
     """
     删除指定ID的知识标注批次（逻辑删除，将状态设置为deleted）
     
@@ -124,7 +131,8 @@ def delete_knowledge_label_batch(batch_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=str(e))
 
 @router.get("/batch/{batch_id}", response_model=BaseResponse[List[KnowledgeLabelBatchRead]], summary="获取知识标注批次")
-def get_knowledge_label_batch(batch_id: int, db: Session = Depends(get_db)):
+def get_knowledge_label_batch(batch_id: int, db: Session = Depends(get_db),
+                              _: UserReadWithRole = Depends(require_admin)):
     """
     获取指定ID的知识标注批次信息
     
@@ -158,9 +166,10 @@ class KnowledgeLabelsRequest(BaseModel):
     names: List[str]    
 # 知识标注条目管理相关路由
 @router.post("/{batch_id}/label", response_model=BaseResponse[KnowledgeLabelRead], summary="创建知识标注条目")
-def create_knowledge_label(batch_id: int, 
+def create_knowledge_label(batch_id: int,
                            request: KnowledgeLabelRequest,
-                           db: Session = Depends(get_db)):
+                           db: Session = Depends(get_db),
+                           _: UserReadWithRole = Depends(require_admin)):
     """
     在指定批次中创建一个新的知识标注条目
     
@@ -185,9 +194,10 @@ def create_knowledge_label(batch_id: int,
 
 # 批量创建知识标注条目
 @router.post("/{batch_id}/labels", response_model=BaseResponse[bool], summary="批量创建知识标注条目")
-def create_knowledge_labels(batch_id: int, 
-                            request: KnowledgeLabelsRequest, 
-                            db: Session = Depends(get_db)):
+def create_knowledge_labels(batch_id: int,
+                            request: KnowledgeLabelsRequest,
+                            db: Session = Depends(get_db),
+                            _: UserReadWithRole = Depends(require_admin)):
     """
     在指定批次中批量创建知识标注条目
     
@@ -207,9 +217,10 @@ def create_knowledge_labels(batch_id: int,
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 @router.put("/label/{label_id}", response_model=BaseResponse[KnowledgeLabelRead], summary="更新知识标注条目")
-def update_knowledge_label(label_id: int, 
+def update_knowledge_label(label_id: int,
                            request: KnowledgeLabelRequest,
-                           db: Session = Depends(get_db)) -> BaseResponse[KnowledgeLabelRead]:
+                           db: Session = Depends(get_db),
+                           _: UserReadWithRole = Depends(require_admin)) -> BaseResponse[KnowledgeLabelRead]:
     """
     更新指定ID的知识标注条目信息
     
@@ -230,7 +241,8 @@ def update_knowledge_label(label_id: int,
         raise HTTPException(status_code=404, detail=str(e))
 
 @router.get("/label/{label_id}", response_model=BaseResponse[List[KnowledgeLabelRead]], summary="获取知识标注条目")
-def get_knowledge_label(label_id: int, db: Session = Depends(get_db)):
+def get_knowledge_label(label_id: int, db: Session = Depends(get_db),
+                        _: UserReadWithRole = Depends(require_admin)):
     """
     获取指定ID的知识标注条目信息
     
@@ -250,9 +262,10 @@ def get_knowledge_label(label_id: int, db: Session = Depends(get_db)):
 
 @router.post("/label/{label_id}", response_model=PageResponse[KnowledgeLabelRead], summary="分页获取知识标注条目")
 def get_knowledge_label_pagination(
-    page: int = 1, 
-    size: int = 10, 
-    db: Session = Depends(get_db)):
+    page: int = 1,
+    size: int = 10,
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)):
     """
     分页获取知识标注条目信息列表
     
@@ -293,9 +306,10 @@ class KnowledgeLabelDetailCreateRequest(BaseModel):
     filled_by: str
 @router.post("/{label_id}/detail", response_model=BaseResponse, summary="创建知识标注详情")
 def create_knowledge_label_detail(
-    label_id: int, 
+    label_id: int,
     request: KnowledgeLabelDetailCreateRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
 )->BaseResponse:
     """
     创建知识标注详情（回答内容）
@@ -339,7 +353,8 @@ class KnowledgeLabelDetailUpdateRequest(BaseModel):
 def update_knowledge_label_detail(
     detail_id: int,
     request: KnowledgeLabelDetailUpdateRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
 ):
     """
     更新知识标注详情信息
@@ -380,7 +395,8 @@ def update_knowledge_label_detail(
 @router.delete("/detail/{detail_id}", response_model=BaseResponse, summary="更新知识标注详情")
 def delete_knowledge_label_detail(
     detail_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
 ):
     """
     更新知识标注详情信息
@@ -418,8 +434,9 @@ def delete_knowledge_label_detail(
 
 @router.post("/query", response_model=BaseResponse[PageResponse[KnowledgeLabelWithDetailRead]], summary="查询知识标注条目")
 def query_knowledge_labels_details(
-        request: KnowledgeLabelsQueryRequest, 
-        db: Session = Depends(get_db))->BaseResponse[PageResponse[KnowledgeLabelWithDetailRead]]:
+        request: KnowledgeLabelsQueryRequest,
+        db: Session = Depends(get_db),
+        _: UserReadWithRole = Depends(require_admin))->BaseResponse[PageResponse[KnowledgeLabelWithDetailRead]]:
     """
     查询知识标注条目
     
@@ -461,7 +478,8 @@ from app.schema.knowledge import KnowledgeLabelsAndDetailsCreateRequest
 def create_knowledge_labels_and_details(
     batch_id: int,
     request: KnowledgeLabelsAndDetailsCreateRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
 )->BaseResponse:
     """
     同时创建知识条目及标注
@@ -509,7 +527,8 @@ def create_knowledge_labels_and_details(
 def update_knowledge_labels_and_details(
     label_id: int,
     request: KnowledgeLabelsAndDetailsCreateRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
 )->BaseResponse:
     """
     同时创建知识条目及标注

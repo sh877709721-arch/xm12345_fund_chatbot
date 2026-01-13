@@ -1,23 +1,78 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from app.config.database import get_db
-from app.service.knowledge_entries import KnowledgeService 
+from app.service.knowledge_entries import KnowledgeService
 from app.service.knowledge_catalog import KnowledgeCatalogService
 from app.service.knowledge_index import KnowledgeIndexService
+from app.service.knowledge_data_index import KnowledgeDataIndexService
 from app.schema.base import BaseResponse,PageResponse
 from app.schema.knowledge import (
-    KnowledgeRead, 
+    KnowledgeRead,
     KnowledgeDetailRead,
-    KnowledgeWithDetailsRead
+    KnowledgeWithDetailsRead,
+    ExcelUploadResponse,
+    KnowledgeDataSearchRequest,
+    KnowledgeDataSearchResponse
 )
 from app.model.knowledge import KnowledgeTypeEnum, KnowledgeStatusEnum
 from pydantic import BaseModel
 import logging
+from app.service.rbac import require_admin
+from app.schema.auth import UserReadWithRole
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 router = APIRouter(prefix="/knowledge")
+
+
+# ###############
+# 内部辅助函数
+# ###############
+
+def _process_excel_upload(
+    knowledge_id: int,
+    file_content: bytes,
+    filename: str | None,
+    db: Session
+) -> Dict[str, Any]:
+    """
+    处理 Excel 文件上传的内部函数（封装通用逻辑）
+
+    Args:
+        knowledge_id: 知识ID
+        file_content: 文件内容（字节）
+        filename: 文件名
+        db: 数据库会话
+
+    Returns:
+        处理结果字典
+
+    Raises:
+        ValueError: 文件类型不正确
+    """
+    # 验证文件类型
+    if not filename or not filename.endswith(('.xlsx', '.xls')):
+        raise ValueError("仅支持 .xlsx 或 .xls 格式")
+
+    logger.info(f"📤 开始处理 Excel 上传:")
+    logger.info(f"  - knowledge_id: {knowledge_id}")
+    logger.info(f"  - 文件名: {filename}")
+    logger.info(f"  - 文件大小: {len(file_content)} bytes")
+
+    # 处理上传
+    service = KnowledgeDataIndexService(db)
+    result = service.process_excel_upload(
+        knowledge_id=knowledge_id,
+        file_content=file_content
+    )
+
+    logger.info(f"✅ Excel 上传成功:")
+    logger.info(f"  - knowledge_data_id: {result['knowledge_data_id']}")
+    logger.info(f"  - 处理行数: {result['rows_processed']}")
+    logger.info(f"  - 列数: {result['columns']}")
+
+    return result
 
 # ###########
 # 知识库 实体本身
@@ -43,7 +98,8 @@ class KnowledgeRequest(BaseModel):
 @router.post("/entries", response_model=BaseResponse[KnowledgeRead])
 def create_knowledge(
     request: KnowledgeRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
 ):
     """
     创建知识条目
@@ -129,7 +185,8 @@ class KnowledgeSearchRequest(BaseModel):
 @router.post("/entries/search", response_model=BaseResponse[PageResponse[KnowledgeWithDetailsRead]])
 def get_knowledges(
     request: KnowledgeSearchRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
 ):
     """
     搜索知识条目（支持分页和多条件查询）
@@ -239,7 +296,9 @@ class KnowledgeUpdateRequest(BaseModel):
 def update_knowledge(
     knowledge_id: int,
     request: KnowledgeUpdateRequest,
-    db: Session = Depends(get_db)
+    #file: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
 ):
     """
     更新知识条目
@@ -295,7 +354,7 @@ def update_knowledge(
         indexed = KnowledgeIndexService(db)
 
         # 已经索引的知识状态 status 置为 'P'
-        try: 
+        try:
             pending_result = indexed.update_knowledge_pending_by_id(knowledge_id)
             logger.info(f"Knowledge {knowledge_id} indexed status updated to pending: {pending_result}")
             if status == KnowledgeStatusEnum.active:
@@ -304,9 +363,29 @@ def update_knowledge(
         except Exception as e:
             logger.warning(f"Failed to update indexed knowledge to pending: {e}")
             # 不阻塞主流程，只是记录警告
-        
 
-        
+        # 处理文件上传（如果提供）
+        # if file:
+        #     try:
+        #         # 读取文件内容（同步方式）
+        #         file_content = file.file.read()
+
+        #         # 调用封装的上传处理函数
+        #         result = _process_excel_upload(
+        #             knowledge_id=knowledge_id,
+        #             file_content=file_content,
+        #             filename=file.filename,
+        #             db=db
+        #         )
+        #         logger.info(f"✅ 更新时 Excel 上传成功: {result['rows_processed']} 行数据")
+        #     except ValueError as e:
+        #         logger.warning(f"⚠️ Excel 上传参数错误: {e}")
+        #         raise HTTPException(status_code=400, detail=str(e))
+        #     except Exception as e:
+        #         logger.error(f"❌ Excel 上传失败: {e}", exc_info=True)
+        #         raise HTTPException(status_code=500, detail=f"上传失败: {str(e)}")
+
+        # 更新知识基本信息
         result = service.update_knowledge(
             id=knowledge_id,
             knowledge_type=request.knowledge_type,
@@ -324,7 +403,8 @@ def update_knowledge(
 
 
 @router.delete("/entries/{knowledge_id}", response_model=BaseResponse[KnowledgeRead])
-def delete_knowledge(knowledge_id: int, db: Session = Depends(get_db)):
+def delete_knowledge(knowledge_id: int, db: Session = Depends(get_db),
+                      _: UserReadWithRole = Depends(require_admin)):
     """
     删除知识条目（软删除）
     
@@ -365,7 +445,8 @@ def create_knowledge_detail(
     role: str,
     status: KnowledgeStatusEnum = KnowledgeStatusEnum.active,
     created_by: Optional[int] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
 ):
     """
     创建知识详情（支持版本管理）
@@ -415,7 +496,8 @@ def create_knowledge_detail(
 
 
 @router.get("/details/{knowledge_id}", response_model=BaseResponse[List[KnowledgeDetailRead]])
-def get_knowledge_details(knowledge_id: int, db: Session = Depends(get_db)):
+def get_knowledge_details(knowledge_id: int, db: Session = Depends(get_db),
+                           _: UserReadWithRole = Depends(require_admin)):
     """
     获取知识详情列表（按版本倒序）
     
@@ -463,7 +545,8 @@ def get_knowledge_details(knowledge_id: int, db: Session = Depends(get_db)):
 def update_knowledge_detail(
     detail_id: int,
     content: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
 ):
     """
     更新知识详情
@@ -502,13 +585,14 @@ def update_knowledge_detail(
 
 
 @router.delete("/details/{knowledge_id}", response_model=BaseResponse[bool])
-def delete_knowledge_detail(knowledge_id: int, db: Session = Depends(get_db)):
+def delete_knowledge_detail(knowledge_id: int, db: Session = Depends(get_db),
+                             _: UserReadWithRole = Depends(require_admin)):
     """
     删除知识详情
-    
+
     示例请求:
     DELETE /knowledge/details/1
-    
+
     示例响应:
     {
         "code": 200,
@@ -525,5 +609,122 @@ def delete_knowledge_detail(knowledge_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         logging.error(f"删除知识详情失败: {e}")
         raise HTTPException(status_code=500, detail="删除知识详情失败")
-    
+
+
+# ###########
+# Excel 数据上传和搜索
+# ###########
+
+@router.post("/upload-excel", response_model=BaseResponse[ExcelUploadResponse])
+def upload_excel(
+    knowledge_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
+):
+    """
+    上传 Excel 文件并创建索引
+
+    Args:
+        knowledge_id: 知识ID
+        file: Excel 文件（.xlsx 或 .xls）
+
+    示例请求:
+    POST /knowledge/upload-excel?knowledge_id=1
+    Content-Type: multipart/form-data
+    file: <Excel 文件>
+
+    示例响应:
+    {
+        "code": 200,
+        "message": "success",
+        "data": {
+            "status": "success",
+            "knowledge_data_id": 1,
+            "rows_processed": 100,
+            "columns": 5,
+            "message": "Excel 上传成功，处理了 100 行数据"
+        }
+    }
+    """
+    try:
+        # 验证文件名
+        if not file.filename:
+            raise HTTPException(status_code=400, detail="文件名不能为空")
+
+        # 读取文件内容（同步方式）
+        file_content = file.file.read()
+
+        # 调用封装的上传处理函数
+        result = _process_excel_upload(
+            knowledge_id=knowledge_id,
+            file_content=file_content,
+            filename=file.filename,
+            db=db
+        )
+
+        result['message'] = f"Excel 上传成功，处理了 {result['rows_processed']} 行数据"
+
+        return BaseResponse(data=result)
+
+    except ValueError as e:
+        logger.warning(f"⚠️ Excel 上传参数错误: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"❌ Excel 上传失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"上传失败: {str(e)}")
+
+
+@router.post("/search-data", response_model=BaseResponse[KnowledgeDataSearchResponse])
+def search_knowledge_data(
+    request: KnowledgeDataSearchRequest,
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
+):
+    """
+    搜索知识数据（Excel 表格数据）
+
+    示例请求:
+    POST /knowledge/search-data
+    {
+        "knowledge_id": 1,
+        "query": "技术部",
+        "top_n": 10
+    }
+
+    示例响应:
+    {
+        "code": 200,
+        "message": "success",
+        "data": {
+            "results": [
+                {
+                    "row": {"姓名": "张三", "年龄": 25, "部门": "技术部", "职位": "工程师"},
+                    "score": 0.95,
+                    "knowledge_data_id": 1
+                }
+            ],
+            "count": 1
+        }
+    }
+    """
+    try:
+        service = KnowledgeDataIndexService(db)
+        results = service.search_knowledge_data(
+            knowledge_id=request.knowledge_id,
+            query=request.query,
+            top_n=request.top_n
+        )
+
+        response = KnowledgeDataSearchResponse(
+            results=results,
+            count=len(results)
+        )
+
+        return BaseResponse(data=response)
+    except Exception as e:
+        logging.error(f"❌ 搜索知识数据失败: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 

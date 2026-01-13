@@ -109,6 +109,25 @@ export const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();
 
+  // 根据用户角色过滤菜单项
+  const getFilteredNavItems = () => {
+    // 如果没有用户信息或角色，返回所有菜单（兜底）
+    if (!user || !user.user_role) {
+      return data.navMain;
+    }
+
+    // normal_user 只能看见：控制台、消息查询、关于
+    if (user.user_role === 'normal_user') {
+      return data.navMain.filter(item => {
+        const title = item.title;
+        return title === '控制台' || title === '消息查询' || title === '关于';
+      });
+    }
+
+    // superadmin 和 engineer 可以看见所有菜单
+    return data.navMain;
+  };
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -126,7 +145,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={getFilteredNavItems()} />
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>

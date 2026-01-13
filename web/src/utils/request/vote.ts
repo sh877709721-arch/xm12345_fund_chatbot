@@ -195,6 +195,8 @@ export async function getVotesWithMessages(
       `/v1/vote/with_messages?${params.toString()}`
     );
 
+    console.log('response',response)
+
     return response.data;
   } catch (error: any) {
     console.error('获取投票统计失败:', error);

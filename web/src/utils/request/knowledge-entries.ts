@@ -94,10 +94,9 @@ export async function createKnowledgeEntry(
       "/v1/admin/knowledge/entries",
       knowledge
     );
-    toast.success("知识条目创建成功");
     return response.data;
   } catch (error: any) {
-    toast.error(error.message || "Failed to create knowledge entry");
+    toast.error(error.response?.data?.detail || error.message || "知识条目创建失败");
     throw error;
   }
 }
@@ -112,10 +111,9 @@ export async function updateKnowledgeEntry(
       `/v1/admin/knowledge/entries/${id}`,
       knowledge
     );
-    toast.success("知识条目更新成功");
     return response.data;
   } catch (error: any) {
-    toast.error(error.message || "Failed to update knowledge entry");
+    toast.error(error.response?.data?.detail || error.message || "知识条目更新失败");
     throw error;
   }
 }
@@ -172,7 +170,75 @@ export async function searchKnowledgeEntries(
     );
     return response.data;
   } catch (error: any) {
-    toast.error(error.message || "Failed to fetch knowledge entries");
+    toast.error(error.response?.data?.detail || error.message || "获取知识条目列表失败");
+    throw error;
+  }
+}
+
+// Excel 上传响应接口
+export interface ExcelUploadResponse {
+  status: string;
+  knowledge_data_id: number;
+  rows_processed: number;
+  columns: number;
+  message: string;
+}
+
+// 上传 Excel 文件
+export async function uploadKnowledgeExcel(
+  knowledgeId: number,
+  file: File
+): Promise<{ data: ExcelUploadResponse }> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await instance.post<{ data: ExcelUploadResponse }>(
+      `/v1/admin/knowledge/upload-excel?knowledge_id=${knowledgeId}`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    toast.error(error.response?.data?.detail || error.message || "Excel 上传失败");
+    throw error;
+  }
+}
+
+// 知识数据搜索响应接口
+export interface KnowledgeDataSearchResult {
+  row: Record<string, any>;
+  score: number;
+  knowledge_data_id: number;
+}
+
+export interface KnowledgeDataSearchResponse {
+  results: KnowledgeDataSearchResult[];
+  count: number;
+}
+
+// 搜索知识数据
+export async function searchKnowledgeData(
+  knowledgeId: number,
+  query: string,
+  topN: number = 10
+): Promise<KnowledgeDataSearchResponse> {
+  try {
+    const response = await instance.post<{ data: KnowledgeDataSearchResponse }>(
+      "/v1/admin/knowledge/search-data",
+      {
+        knowledge_id: knowledgeId,
+        query: query,
+        top_n: topN,
+      }
+    );
+    return response.data.data;
+  } catch (error: any) {
+    toast.error(error.response?.data?.detail || error.message || "搜索知识数据失败");
     throw error;
   }
 }

@@ -8,6 +8,8 @@ from app.service.vote import VoteService
 from app.schema.vote import VoteCreate, VoteRead, VoteStats, VoteUpdate, VoteWithMessage
 from app.schema.base import BaseResponse, PageResponse
 from app.config.database import get_db
+from app.service.rbac import require_any_role
+from app.schema.auth import UserReadWithRole
 
 router = APIRouter(prefix="/vote", tags=["vote"])
 
@@ -44,7 +46,8 @@ async def get_votes_with_messages(
     end_date: Optional[datetime] = Query(None, description="结束时间 (YYYY-MM-DD HH:MM:SS)"),
     searchKeyword: Optional[str] = Query(None, description="搜索关键词（搜索问题和回答）"),
     client_type: Optional[str] = Query(None, description="请求来源过滤 (web/h5/miniprogram/mp/医保/rexian)"),
-    vote_service: VoteService = Depends(get_vote_service)
+    vote_service: VoteService = Depends(get_vote_service),
+    current_user: UserReadWithRole = Depends(require_any_role)
 ):
     """
     获取带问题和答案的投票列表（支持按类型和时间过滤）
@@ -103,7 +106,8 @@ async def get_votes_with_messages(
 @router.get("/{vote_id}", response_model=BaseResponse[VoteRead])
 async def get_vote(
     vote_id: int,
-    vote_service: VoteService = Depends(get_vote_service)
+    vote_service: VoteService = Depends(get_vote_service),
+    current_user: UserReadWithRole = Depends(require_any_role)
 ):
     """根据ID获取投票"""
     vote = vote_service.get_vote_by_id(vote_id)
@@ -115,7 +119,8 @@ async def get_vote(
 @router.get("/message/{message_id}", response_model=BaseResponse[List[VoteRead]])
 async def get_votes_by_message(
     message_id: int,
-    vote_service: VoteService = Depends(get_vote_service)
+    vote_service: VoteService = Depends(get_vote_service),
+    current_user: UserReadWithRole = Depends(require_any_role)
 ):
     """获取指定消息的所有投票"""
     votes = vote_service.get_votes_by_message(message_id)
@@ -126,7 +131,8 @@ async def get_votes_by_message(
 async def get_all_votes(
     page: int = Query(1, ge=1, description="页码"),
     size: int = Query(10, ge=1, le=100, description="每页数量"),
-    vote_service: VoteService = Depends(get_vote_service)
+    vote_service: VoteService = Depends(get_vote_service),
+    current_user: UserReadWithRole = Depends(require_any_role)
 ):
     """分页获取所有投票"""
     votes = vote_service.get_all_votes(page=page, size=size)
@@ -147,7 +153,8 @@ async def get_all_votes(
 async def update_vote(
     vote_id: int,
     vote_data: VoteUpdate,
-    vote_service: VoteService = Depends(get_vote_service)
+    vote_service: VoteService = Depends(get_vote_service),
+    current_user: UserReadWithRole = Depends(require_any_role)
 ):
     """更新投票"""
     try:
@@ -162,7 +169,8 @@ async def update_vote(
 @router.delete("/{vote_id}", response_model=BaseResponse[bool])
 async def delete_vote(
     vote_id: int,
-    vote_service: VoteService = Depends(get_vote_service)
+    vote_service: VoteService = Depends(get_vote_service),
+    current_user: UserReadWithRole = Depends(require_any_role)
 ):
     """删除投票"""
     try:
@@ -177,7 +185,8 @@ async def delete_vote(
 @router.get("/stats/message/{message_id}", response_model=BaseResponse[VoteStats])
 async def get_vote_stats_by_message(
     message_id: int,
-    vote_service: VoteService = Depends(get_vote_service)
+    vote_service: VoteService = Depends(get_vote_service),
+    current_user: UserReadWithRole = Depends(require_any_role)
 ):
     """获取指定消息的投票统计"""
     stats = vote_service.get_vote_stats_by_message(message_id)
@@ -196,7 +205,8 @@ async def get_vote_stats_by_message(
 @router.get("/stats/type/{vote_type}", response_model=BaseResponse[int])
 async def get_vote_stats_by_type(
     vote_type: str,
-    vote_service: VoteService = Depends(get_vote_service)
+    vote_service: VoteService = Depends(get_vote_service),
+    current_user: UserReadWithRole = Depends(require_any_role)
 ):
     """获取投票类型的统计数量"""
     from app.model.vote import VoteEnum
@@ -211,7 +221,8 @@ async def get_vote_stats_by_type(
 
 @router.get("/stats/overview", response_model=BaseResponse[dict])
 async def get_vote_overview(
-    vote_service: VoteService = Depends(get_vote_service)
+    vote_service: VoteService = Depends(get_vote_service),
+    current_user: UserReadWithRole = Depends(require_any_role)
 ):
     """获取投票总体统计"""
     from app.model.vote import VoteEnum
@@ -229,7 +240,8 @@ async def get_vote_overview(
 async def get_user_vote_for_message(
     message_id: int,
     user_id: Optional[str] = Query(None, description="用户ID（可选）"),
-    vote_service: VoteService = Depends(get_vote_service)
+    vote_service: VoteService = Depends(get_vote_service),
+    current_user: UserReadWithRole = Depends(require_any_role)
 ):
     """获取用户对指定消息的投票"""
     vote = vote_service.get_user_vote_for_message(message_id, user_id)
@@ -243,7 +255,8 @@ async def export_votes_to_excel(
     end_date: Optional[datetime] = Query(None, description="结束时间 (YYYY-MM-DD HH:MM:SS)"),
     searchKeyword: Optional[str] = Query(None, description="搜索关键词（搜索问题和回答）"),
     client_type: Optional[str] = Query(None, description="请求来源过滤 (web/h5/miniprogram/mp/医保/rexian)"),
-    vote_service: VoteService = Depends(get_vote_service)
+    vote_service: VoteService = Depends(get_vote_service),
+    current_user: UserReadWithRole = Depends(require_any_role)
 ):
     """
     导出投票数据到Excel

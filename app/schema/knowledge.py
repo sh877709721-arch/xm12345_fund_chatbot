@@ -1,5 +1,5 @@
 from typing import Dict, List, Optional, Any
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 from app.model.knowledge import KnowledgeStatusEnum
 
@@ -139,3 +139,27 @@ class KnowledgeLabelsAndDetailsCreateRequest(BaseModel):
     description: Optional[str]
     is_passed: Optional[bool]
     filled_by: Optional[str]
+
+
+## KnowledgeData - Excel 数据上传
+
+class ExcelUploadResponse(BaseModel):
+    """Excel 上传响应"""
+    status: str = Field(..., description="处理状态")
+    knowledge_data_id: int = Field(..., description="知识数据ID")
+    rows_processed: int = Field(..., description="处理的行数")
+    columns: int = Field(..., description="列数")
+    message: str = Field(..., description="处理结果消息")
+
+
+class KnowledgeDataSearchRequest(BaseModel):
+    """知识数据搜索请求"""
+    knowledge_id: int = Field(..., description="知识ID")
+    query: str = Field(..., description="搜索关键词")
+    top_n: int = Field(default=10, description="返回结果数量")
+
+
+class KnowledgeDataSearchResponse(BaseModel):
+    """知识数据搜索响应"""
+    results: List[Dict[str, Any]] = Field(..., description="匹配的行数据")
+    count: int = Field(..., description="结果数量")

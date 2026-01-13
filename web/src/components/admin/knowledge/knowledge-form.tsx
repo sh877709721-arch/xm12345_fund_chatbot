@@ -19,10 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { IconPlus } from "@tabler/icons-react";
+import { IconPlus, IconFileSpreadsheet, IconX } from "@tabler/icons-react";
 
 import type { KnowledgeEntry, KnowledgeType, KnowledgeStatus } from "@/utils/request/knowledge-entries";
-import { createKnowledgeEntry, updateKnowledgeEntry } from "@/utils/request/knowledge-entries";
+import { createKnowledgeEntry, updateKnowledgeEntry, uploadKnowledgeExcel } from "@/utils/request/knowledge-entries";
 import type {
   KnowledgeCatalog,
   CatalogTreeNode,
@@ -55,10 +55,74 @@ export function KnowledgeDialog({
     item?.knowledge_catalog_id || null
   );
 
+  // Excel 上传相关状态
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+  const [uploading, setUploading] = React.useState(false);
+  const [knowledgeType, setKnowledgeType] = React.useState<KnowledgeType>(
+    item?.knowledge_type || "qa"
+  );
+
   // 阻止回车键提交，允许 Shift+Enter 换行
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
+    }
+  };
+
+  // 处理文件选择
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 验证文件类型
+    const validTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+      'application/vnd.ms-excel', // .xls
+    ];
+    const validExtensions = ['.xlsx', '.xls'];
+
+    const isValidType = validTypes.includes(file.type) ||
+      validExtensions.some(ext => file.name.endsWith(ext));
+
+    if (!isValidType) {
+      toast.error('仅支持 .xlsx 或 .xls 格式的 Excel 文件');
+      return;
+    }
+
+    // 验证文件大小（10MB）
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error('文件大小不能超过 10MB');
+      return;
+    }
+
+    setSelectedFile(file);
+    toast.success(`已选择文件: ${file.name}`);
+  };
+
+  // 清除选择的文件
+  const clearFile = () => {
+    setSelectedFile(null);
+  };
+
+  // 上传 Excel 文件
+  const handleUploadExcel = async (knowledgeId: number) => {
+    if (!selectedFile) {
+      toast.warning('请先选择 Excel 文件');
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      const result = await uploadKnowledgeExcel(knowledgeId, selectedFile);
+      toast.success(`Excel 上传成功，处理了 ${result.data.rows_processed} 行数据`);
+      clearFile();
+    } catch (error: any) {
+      console.error('Excel 上传失败:', error);
+      // 错误已经在 API 函数中处理了，这里不需要再次显示
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -119,10 +183,10 @@ export function KnowledgeDialog({
 
                 if (type === "add") {
                   // 创建新知识条目（带超时保护）
-                  await Promise.race([
+                  const response = await Promise.race([
                     createKnowledgeEntry({
                       knowledge_type: knowledgeType,
-                      knowledge_catalog_id: selectedCatalogId || 0,
+                      knowledge_catalog_id: selectedCatalogId || 58,
                       name: name,
                       details: {
                         content: content,
@@ -135,14 +199,16 @@ export function KnowledgeDialog({
                       created_by: 1 // 默认创建者ID
                     }),
                     timeoutPromise
-                  ]);
+                  ]) as { data: { id: number } };
+
+                  toast.success("知识条目创建成功");
 
                 } else {
                   // 更新现有知识条目（带超时保护）
                   await Promise.race([
                     updateKnowledgeEntry(item!.id, {
                       knowledge_type: knowledgeType,
-                      knowledge_catalog_id: selectedCatalogId || 0,
+                      knowledge_catalog_id: selectedCatalogId || 58,
                       name: name,
                       details: {
                         content: content,
@@ -156,12 +222,20 @@ export function KnowledgeDialog({
                     timeoutPromise
                   ]);
 
+                  toast.success("知识条目更新成功");
+
+                  // 如果是数据表类型且有选择文件，则上传 Excel 
+                  // TODO: 这段有BUG
+                  if (knowledgeType === "data_table" && selectedFile) {
+                    await handleUploadExcel(item!.id);
+                  }
+
                   // 编辑成功后立即更新本地数据，不刷新页面
                   if (onUpdateLocal) {
                     const updatedData: KnowledgeEntry = {
                       id: item!.id,
                       knowledge_type: knowledgeType,
-                      knowledge_catalog_id: selectedCatalogId || 0,
+                      knowledge_catalog_id: selectedCatalogId || 58,
                       name: name,
                       status: status,
                       created_at: item!.created_at,
@@ -265,7 +339,11 @@ export function KnowledgeDialog({
                   <div className="h-[10%] min-h-[60px] flex gap-2 flex-shrink-0">
                     <div className="flex-1 flex flex-col gap-2">
                       <Label htmlFor="type">类型</Label>
-                      <Select name="type" defaultValue={item?.knowledge_type || "qa"}>
+                      <Select
+                        name="type"
+                        value={knowledgeType}
+                        onValueChange={(value) => setKnowledgeType(value as KnowledgeType)}
+                      >
                         <SelectTrigger id="type" className="w-full">
                           <SelectValue placeholder="选择类型" />
                         </SelectTrigger>
@@ -288,6 +366,40 @@ export function KnowledgeDialog({
                         </SelectContent>
                       </Select>
                     </div>
+
+                    {/* Excel 上传区（仅在数据表类型时显示） */}
+                    {knowledgeType === "data_table" && (
+                      <div className="flex-shrink-0 border rounded-md p-3 bg-muted/30">
+                        <Label className="mb-2 flex items-center gap-2">
+                          <IconFileSpreadsheet className="h-4 w-4" />
+                          Excel 数据上传
+                        </Label>
+                        {selectedFile ? (
+                          <div className="flex items-center justify-between p-2 bg-background rounded-md border">
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <IconFileSpreadsheet className="h-4 w-4 text-green-600 flex-shrink-0" />
+                              <span className="text-sm truncate">{selectedFile.name}</span>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={clearFile}
+                              disabled={uploading}
+                            >
+                              <IconX className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <Input
+                            type="file"
+                            accept=".xlsx,.xls"
+                            onChange={handleFileSelect}
+                            disabled={uploading}
+                          />
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* 内容输入区 (75%) */}
@@ -320,6 +432,8 @@ export function KnowledgeDialog({
                       />
                     </div>
                   </div>
+
+
                 </div>
               </div>
 

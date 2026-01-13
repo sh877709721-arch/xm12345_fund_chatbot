@@ -13,7 +13,7 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
 from app.config.database import get_db
 from app.model.auth import User, UserRoles, RoleEnum
-from app.schema.auth import UserCreate, UserRead
+from app.schema.auth import UserCreate, UserReadWithRole
 from app.config.settings import settings, pwd_context, oauth2_scheme
 import uuid
 
@@ -111,7 +111,7 @@ class AuthService:
         db.commit()
         return new_user
 
-    async def get_current_user(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> UserRead:
+    async def get_current_user(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> UserReadWithRole:
         """
         获取当前用户依赖项
         """
@@ -131,10 +131,10 @@ class AuthService:
         user = self.get_user_by_username(db, username)
         if user is None:
             raise credentials_exception
-        return UserRead.model_validate(user)
+        return UserReadWithRole.model_validate(user)
    
     
-async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> UserRead:
+async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> UserReadWithRole:
     """
     获取当前用户依赖项
     """
@@ -154,5 +154,5 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     user = db.query(User).filter(User.username == username).first()
     if user is None:
         raise credentials_exception
-    return UserRead.model_validate(user)
+    return UserReadWithRole.model_validate(user)
     

@@ -1,4 +1,6 @@
 from pydantic import BaseModel, EmailStr
+from app.model.auth import RoleEnum
+
 import datetime
 # -------------------- Pydantic Schemas --------------------
 
@@ -13,6 +15,15 @@ class UserCreate(UserBase):
 
 class UserRead(UserBase):
     id: int
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
+    class Config:
+        from_attributes = True
+
+class UserReadWithRole(UserBase):
+    id: int
+    user_role: RoleEnum
     created_at: datetime.datetime
     updated_at: datetime.datetime
 

@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.model.auth import User
 from app.config.database import get_db
 from app.service.auth import AuthService
-from app.schema.auth import Token, ResetPasswordRequest, UserCreate, UserRead
+from app.schema.auth import Token, ResetPasswordRequest, UserCreate, UserReadWithRole
 from app.schema.base import BaseResponse
 from app.middleware.api_rate_limiter import limiter, get_rate_limit_key_by_ip
 
@@ -21,10 +21,10 @@ router = APIRouter(prefix="/auth")
 auth_service = AuthService()
 
 # -------------------- Routes --------------------
-@router.post("/register", response_model=BaseResponse[UserRead])
+@router.post("/register", response_model=BaseResponse[UserReadWithRole])
 def register(user: UserCreate, db: Session = Depends(get_db)):
     user = auth_service.register_user(user, db)
-    return BaseResponse(data=UserRead.model_validate(user))
+    return BaseResponse(data=UserReadWithRole.model_validate(user))
 
 @router.post("/token", response_model=Token) #BaseResponse[Token]
 @limiter.limit("5/minute", key_func=get_rate_limit_key_by_ip)
@@ -46,12 +46,12 @@ def login_for_access_token(request: Request, response: Response,
     access_token = auth_service.create_access_token(data={"sub": user.username})
     return Token(access_token=access_token, token_type="bearer") #BaseResponse[Token](data=Token(access_token=access_token, token_type="bearer"))
 
-@router.get("/me", response_model=BaseResponse[UserRead]) #
+@router.get("/me", response_model=BaseResponse[UserReadWithRole]) #
 async def read_users_me(current_user: User = Depends(auth_service.get_current_user)):
     """
     获取当前用户信息
     """
-    return BaseResponse[UserRead](data=current_user)
+    return BaseResponse[UserReadWithRole](data=current_user)
 
 @router.post("/reset-password", response_model=BaseResponse[dict])
 def reset_password(req: ResetPasswordRequest, db: Session = Depends(get_db)):

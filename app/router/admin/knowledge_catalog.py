@@ -5,8 +5,10 @@ from app.config.database import get_db
 from app.service.knowledge_catalog import KnowledgeCatalogService
 from app.schema.base import BaseResponse
 from app.schema.knowledge import (
-    KnowledgeCatalogRead, 
+    KnowledgeCatalogRead,
 )
+from app.service.rbac import require_admin
+from app.schema.auth import UserReadWithRole
 from pydantic import BaseModel
 import logging
 
@@ -27,7 +29,8 @@ class KnowledgeCatalogRequest(BaseModel):
 @router.post("/catalogs", response_model=BaseResponse[KnowledgeCatalogRead])
 def create_knowledge_catalog(
     request: KnowledgeCatalogRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
 ):
     """
     创建知识目录
@@ -74,7 +77,10 @@ def create_knowledge_catalog(
 
 
 @router.get("/catalogs", response_model=BaseResponse[List[KnowledgeCatalogRead]])
-def get_knowledge_catalogs(db: Session = Depends(get_db)):
+def get_knowledge_catalogs(
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
+):
     """
     获取所有知识目录
     
@@ -110,7 +116,10 @@ def get_knowledge_catalogs(db: Session = Depends(get_db)):
 
 
 @router.get("/catalog-tree", response_model=BaseResponse[List[Dict[str, Any]]])
-def get_knowledge_catalog_tree(db: Session = Depends(get_db)):
+def get_knowledge_catalog_tree(
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
+):
     """
     获取所有知识目录
     
@@ -146,7 +155,8 @@ def get_knowledge_catalog_tree(db: Session = Depends(get_db)):
 @router.put("/catalogs/{catalog_id}", response_model=BaseResponse[KnowledgeCatalogRead])
 def update_knowledge_catalog(
     request: KnowledgeCatalogRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
 ):
     """
     更新知识目录
@@ -197,7 +207,11 @@ def update_knowledge_catalog(
 
 
 @router.delete("/catalogs/{catalog_id}", response_model=BaseResponse[KnowledgeCatalogRead])
-def delete_knowledge_catalog(catalog_id: int, db: Session = Depends(get_db)):
+def delete_knowledge_catalog(
+    catalog_id: int,
+    db: Session = Depends(get_db),
+    _: UserReadWithRole = Depends(require_admin)
+):
     """
     删除知识目录（软删除）
     

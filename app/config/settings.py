@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     # 用户认证配置
     NEXTAUTH_SECRET: str = ""
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 120
 
     # 讯飞语音识别配置
     SPEECH_APP_ID: str = ''
