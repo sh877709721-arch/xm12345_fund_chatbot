@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 from uuid import UUID
 from app.model.vote import VoteEnum
@@ -8,17 +8,17 @@ from app.model.vote import VoteEnum
 class VoteCreate(BaseModel):
     """创建投票请求模型"""
     message_id: int
-    vote_type: VoteEnum
+    vote_type: str
     feedback: Optional[str] = None
 
 
 class VoteRead(BaseModel):
     """投票响应模型"""
-    vote_id: int
+    vote_id: Optional[int] = None
     message_id: int
-    vote_type: VoteEnum
-    created_at: datetime
-    updated_at: datetime
+    vote_type: str
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -26,7 +26,7 @@ class VoteRead(BaseModel):
 
 class VoteUpdate(BaseModel):
     """更新投票请求模型"""
-    vote_type: VoteEnum
+    vote_type: str
 
 
 class VoteStats(BaseModel):
@@ -42,7 +42,7 @@ class VoteWithMessage(BaseModel):
     """带问题答案的投票响应模型"""
     vote_id: Optional[int]
     message_id: int
-    vote_type: Optional[VoteEnum]
+    vote_type: Optional[str]
     feedback: Optional[str] = None
     question: Optional[str] = None  # 用户问题
     answer: Optional[str] = None   # AI回答

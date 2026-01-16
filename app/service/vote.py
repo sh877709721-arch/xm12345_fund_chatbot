@@ -1,6 +1,6 @@
 from typing import List, Optional
 from datetime import datetime
-from sqlalchemy import func, text
+from sqlalchemy import func, text, create_engine
 from sqlalchemy.orm import Session
 from io import BytesIO
 from openpyxl import Workbook
@@ -9,46 +9,85 @@ from openpyxl.utils import get_column_letter
 
 from app.model.vote import Vote, VoteEnum
 from app.schema.vote import VoteCreate, VoteRead, VoteStats, VoteUpdate, VoteWithMessage
+from app.config.settings import settings
 
 
 class VoteService:
     def __init__(self, db: Session):
         self.db = db
+        # 创建一个独立的数据库引擎，用于直接执行 SQL 操作，完全绕过 ORM
+        self.engine = create_engine(settings.CHAT_POSTGRES_URL)
 
     def create_vote(self, vote_data: VoteCreate) -> VoteRead:
         """创建新的投票"""
         try:
-            # 检查该消息是否已经被投票过（可选业务逻辑）
-            existing_vote_db = self.db.query(Vote).filter(
-                Vote.message_id == vote_data.message_id
-            ).first()
+            # 清除会话中所有未提交的对象，避免 flush() 时出现问题
+            self.db.expunge_all()
+            
+            # 关闭自动刷新，避免会话中存在未提交的对象导致的问题
+            original_autoflush = self.db.autoflush
+            self.db.autoflush = False
+            
+            # 使用直接SQL查询来处理投票，避免ORM刷新问题
+            with self.engine.begin() as conn:
+                # 检查该消息是否已经被投票过
+                existing_vote = conn.execute(
+                    text("SELECT vote_id, created_at, updated_at FROM housing_fund.vote WHERE message_id = :message_id"),
+                    {"message_id": vote_data.message_id}
+                ).fetchone()
 
-            if existing_vote_db:
-                # 如果存在，更新现有投票
-                existing_vote_db.set_vote_type(vote_data.vote_type)
-                if vote_data.feedback is not None:
-                    existing_vote_db.set_feedback_content(feedback_content=vote_data.feedback)
-                else:
-                    existing_vote_db.set_feedback_content(feedback_content="")
-                self.db.commit()
-                self.db.refresh(existing_vote_db)
-                return VoteRead.model_validate(existing_vote_db)
+                if existing_vote:
+                    # 如果存在，更新现有投票
+                    conn.execute(
+                        text("UPDATE housing_fund.vote SET vote_type = :vote_type, feedback = :feedback, updated_at = NOW() WHERE vote_id = :vote_id"),
+                        {
+                            "vote_id": existing_vote.vote_id,
+                            "vote_type": vote_data.vote_type,
+                            "feedback": vote_data.feedback or ""
+                        }
+                    )
+                    
+                    # 获取更新后的投票
+                    updated_vote = conn.execute(
+                        text("SELECT vote_id, message_id, vote_type, created_at, updated_at FROM housing_fund.vote WHERE vote_id = :vote_id"),
+                        {"vote_id": existing_vote.vote_id}
+                    ).fetchone()
+                    
+                    return VoteRead(
+                        vote_id=updated_vote.vote_id,
+                        message_id=updated_vote.message_id,
+                        vote_type=updated_vote.vote_type,
+                        created_at=updated_vote.created_at,
+                        updated_at=updated_vote.updated_at
+                    )
 
-            # 创建新投票
-            vote = Vote(
-                message_id=vote_data.message_id,
-                vote_type=vote_data.vote_type.value,
-                feedback = vote_data.feedback                
-            )
-
-            self.db.add(vote)
-            self.db.commit()
-            self.db.refresh(vote)
-
-            return VoteRead.model_validate(vote)
+                # 创建新投票
+                new_vote = conn.execute(
+                    text("INSERT INTO housing_fund.vote (message_id, vote_type, feedback, created_at, updated_at) VALUES (:message_id, :vote_type, :feedback, NOW(), NOW()) RETURNING vote_id, message_id, vote_type, created_at, updated_at"),
+                    {
+                        "message_id": vote_data.message_id,
+                        "vote_type": vote_data.vote_type,
+                        "feedback": vote_data.feedback or ""
+                    }
+                ).fetchone()
+                
+                return VoteRead(
+                    vote_id=new_vote.vote_id,
+                    message_id=new_vote.message_id,
+                    vote_type=new_vote.vote_type,
+                    created_at=new_vote.created_at,
+                    updated_at=new_vote.updated_at
+                )
         except Exception as e:
             self.db.rollback()
-            raise e
+            # 添加更多调试信息
+            import traceback
+            error_msg = f"创建投票失败: {str(e)}\n" + traceback.format_exc()
+            print(error_msg)
+            raise Exception(error_msg) from e
+        finally:
+            # 恢复自动刷新设置
+            self.db.autoflush = original_autoflush
 
     def get_vote_by_id(self, vote_id: int) -> Optional[VoteRead]:
         """根据ID获取投票"""
@@ -78,7 +117,7 @@ class VoteService:
             vote = self.db.query(Vote).filter(Vote.vote_id == vote_id).first()
             if not vote:
                 raise ValueError(f"Vote with ID {vote_id} not found")
-            vote.vote_type = vote_data.vote_type.value
+            vote.vote_type = VoteEnum(vote_data.vote_type)
             self.db.commit()
             self.db.refresh(vote)
 
