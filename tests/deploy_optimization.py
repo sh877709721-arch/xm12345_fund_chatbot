@@ -132,7 +132,7 @@ services:
   postgres:
     image: pgvector/pgvector:pg15
     environment:
-      - POSTGRES_DB=chatbot
+      - POSTGRES_DB=housing_fund
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=your_password
       - MAX_CONNECTIONS=200  # 数据库最大连接数

@@ -549,7 +549,7 @@ class GuidelinesService:
                 SELECT
                     id,
                     1 - (condition_embedding <=> :emb) AS similarity
-                FROM chatbot.guidelines
+                FROM housing_fund.guidelines
                 WHERE
                     1 - (condition_embedding <=> :emb) >= :threshold
                     AND status != 'X'
@@ -612,7 +612,7 @@ class GuidelinesService:
                 SELECT
                     id,
                     ts_rank(condition_fts, websearch_to_tsquery('zhparsercfg', :query)) AS rank
-                FROM chatbot.guidelines
+                FROM housing_fund.guidelines
                 WHERE
                     condition_fts @@ websearch_to_tsquery('zhparsercfg', :query)
                     AND status != 'X'

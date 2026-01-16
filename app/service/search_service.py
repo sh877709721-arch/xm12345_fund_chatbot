@@ -62,7 +62,7 @@ class SearchService:
                 content as answer,
                 reference,
                 1 - (q_embedding <=> '{emb}'::vector) AS hybrid_score
-            FROM chatbot.indexed_knowledge
+            FROM housing_fund.indexed_knowledge
             WHERE
                 1 - (q_embedding <=> '{emb}'::vector) >= {score}
                 AND knowledge_type = 'qa'
@@ -94,7 +94,7 @@ class SearchService:
               SELECT
                 knowledge_id as id,title as question, content as answer,reference,
                 RANK() OVER (ORDER BY ts_rank(fts, websearch_to_tsquery('zhparsercfg', :query_text)) DESC) AS fts_rank
-              FROM chatbot.indexed_knowledge
+              FROM housing_fund.indexed_knowledge
               WHERE fts @@ websearch_to_tsquery('zhparsercfg', :query_text)
                 AND knowledge_type = 'qa'
                 AND status <>'P'
@@ -105,7 +105,7 @@ class SearchService:
               SELECT
                 knowledge_id as id,title as question, content as answer,reference,
                 RANK() OVER (ORDER BY q_embedding <=> :query_vector) AS vec_rank
-              FROM chatbot.indexed_knowledge
+              FROM housing_fund.indexed_knowledge
                 where knowledge_type = 'qa'
                 AND status <>'P'
               ORDER BY q_embedding <=> :query_vector
@@ -162,7 +162,7 @@ class SearchService:
               SELECT
                 knowledge_id as id,title as question, content as answer, reference,
                 RANK() OVER (ORDER BY ts_rank(fts, websearch_to_tsquery('zhparsercfg', :query_text)) DESC) AS fts_rank
-              FROM chatbot.indexed_knowledge
+              FROM housing_fund.indexed_knowledge
               WHERE fts @@ websearch_to_tsquery('zhparsercfg', :query_text)
                 AND status <>'P'
               ORDER BY ts_rank(fts, websearch_to_tsquery('zhparsercfg', :query_text)) DESC
@@ -172,7 +172,7 @@ class SearchService:
               SELECT
                 knowledge_id as id,title as question, content as answer, reference,
                 RANK() OVER (ORDER BY q_embedding <=> :query_vector) AS vec_rank
-              FROM chatbot.indexed_knowledge
+              FROM housing_fund.indexed_knowledge
               WHERE status <>'P'
               ORDER BY q_embedding <=> :query_vector
               LIMIT 30
@@ -306,7 +306,7 @@ class SearchService:
             return results[:top_n]
 
     @staticmethod
-    def bm25_search_pg(query: str, table_name: str = 'chatbot.indexed_knowledge',
+    def bm25_search_pg(query: str, table_name: str = 'housing_fund.indexed_knowledge',
                        b: float = 0.75, top_k: int = 20) -> List[Dict]:
         """
         在 PostgreSQL 中实现简化版 BM25 搜索
@@ -364,7 +364,7 @@ class SearchService:
         ]
 
     @staticmethod
-    def vector_search(query_embedding: List[float], table_name: str = 'chatbot.indexed_knowledge',
+    def vector_search(query_embedding: List[float], table_name: str = 'housing_fund.indexed_knowledge',
                      similarity_threshold: float = 0.0, top_k: int = 20) -> List[Dict]:
         """
         向量相似度搜索
@@ -415,7 +415,7 @@ class SearchService:
         ]
 
     @staticmethod
-    def doc_hybrid_search_bm25_vec(query: str, table_name: str = 'chatbot.indexed_knowledge') -> List[Dict]:
+    def doc_hybrid_search_bm25_vec(query: str, table_name: str = 'housing_fund.indexed_knowledge') -> List[Dict]:
         """
         BM25 + 向量检索混合搜索（完整实现）
 
@@ -467,7 +467,7 @@ class SearchService:
 
 
     @staticmethod
-    def qa_hybrid_search_bm25_vec(query: str, table_name: str = 'chatbot.indexed_knowledge') -> List[Dict]:
+    def qa_hybrid_search_bm25_vec(query: str, table_name: str = 'housing_fund.indexed_knowledge') -> List[Dict]:
         """
         QA 知识库的 BM25 + 向量检索混合搜索
 

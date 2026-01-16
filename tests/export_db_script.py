@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 class DatabaseExporter:
     """数据库导出工具类"""
 
-    def __init__(self, db_url: str, schema_name: str = "chatbot"):
+    def __init__(self, db_url: str, schema_name: str = "housing_fund"):
         """
         初始化导出器
 
@@ -498,7 +498,7 @@ def main():
     try:
         exporter = DatabaseExporter(
             db_url=settings.CHAT_POSTGRES_URL,
-            schema_name="chatbot"
+            schema_name="housing_fund"
         )
         exporter.export_full(
             output_file=args.output,

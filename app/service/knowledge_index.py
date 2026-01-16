@@ -50,7 +50,7 @@ class KnowledgeIndexService:
         try:
             # 使用原生SQL将指定knowledge_id的记录状态置为'P'
             update_query = f"""
-                UPDATE chatbot.indexed_knowledge
+                UPDATE housing_fund.indexed_knowledge
                 SET status = 'P', updated_time = NOW()
                 WHERE knowledge_id = {knowledge_id}
             """
@@ -74,8 +74,8 @@ class KnowledgeIndexService:
             # 1. 查询知识信息
             query = f"""
                 SELECT a.id as knowledge_id, a.knowledge_type, a.name as title, b.content, b.reference
-                FROM chatbot.knowledge a
-                INNER JOIN chatbot.knowledge_detail b ON a.id = b.knowledge_id
+                FROM housing_fund.knowledge a
+                INNER JOIN housing_fund.knowledge_detail b ON a.id = b.knowledge_id
                 WHERE a.status <> 'deleted' AND b.status <> 'deleted' AND a.id = {knowledge_id}
                 ORDER BY a.id ASC
             """
@@ -97,14 +97,14 @@ class KnowledgeIndexService:
 
             # 2. 先将知识表和知识详情表状态从 pending 转为 active
             update_knowledge_query = f"""
-                UPDATE chatbot.knowledge
+                UPDATE housing_fund.knowledge
                 SET status = 'active'
                 WHERE id = {knowledge_id} AND status = 'pending'
             """
             self.db.execute(sql_text(update_knowledge_query))
 
             update_detail_query = f"""
-                UPDATE chatbot.knowledge_detail
+                UPDATE housing_fund.knowledge_detail
                 SET status = 'active'
                 WHERE knowledge_id = {knowledge_id} AND status = 'pending'
             """
@@ -114,7 +114,7 @@ class KnowledgeIndexService:
 
             # 3. 将现有索引状态置为待审核 P（使用原生SQL）
             update_pending_query = f"""
-                UPDATE chatbot.indexed_knowledge
+                UPDATE housing_fund.indexed_knowledge
                 SET status = 'P', updated_time = NOW()
                 WHERE knowledge_id = {knowledge_id}
             """
@@ -133,7 +133,7 @@ class KnowledgeIndexService:
 
                     # 插入新的索引记录（使用原生SQL支持vector类型）
                     insert_query = f"""
-                        INSERT INTO chatbot.indexed_knowledge
+                        INSERT INTO housing_fund.indexed_knowledge
                         (knowledge_id, knowledge_type, title, content, reference, q_embedding, a_embedding, status, created_time, updated_time)
                         VALUES
                         ({knowledge_id}, '{knowledge_type}', $title${title}$title$, $content${content}$content$, $reference${reference}$reference$,
@@ -167,7 +167,7 @@ class KnowledgeIndexService:
 
                         # 插入新的索引记录
                         insert_query = f"""
-                            INSERT INTO chatbot.indexed_knowledge
+                            INSERT INTO housing_fund.indexed_knowledge
                             (knowledge_id, knowledge_type, title, content, reference, q_embedding, a_embedding, status, created_time, updated_time)
                             VALUES
                             ({knowledge_id}, '{knowledge_type}', $title${chunk_title}$title$, $content${chunk}$content$, $reference${reference}$reference$,
@@ -179,7 +179,7 @@ class KnowledgeIndexService:
 
             # 4. 更新FTS字段（如果需要）
             fts_update_query = f"""
-                UPDATE chatbot.indexed_knowledge
+                UPDATE housing_fund.indexed_knowledge
                 SET fts =
                     setweight(to_tsvector('zhparsercfg', coalesce(title, '')), 'A') ||
                     setweight(to_tsvector('zhparsercfg', coalesce(content, '')), 'B')

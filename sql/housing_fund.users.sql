@@ -2,17 +2,17 @@
 -- 对应Python SQLAlchemy模型中的User和UserRoles类
 
 -- 1. 创建角色枚举类型
-CREATE TYPE chatbot.role_enum AS ENUM (
+CREATE TYPE housing_fund.role_enum AS ENUM (
     'superadmin',
     'normal_user',
     'engineer'
 );
 
-DROP TABLE chatbot.user_roles;
-DROP TABLE chatbot.users;
+DROP TABLE housing_fund.user_roles;
+DROP TABLE housing_fund.users;
 
 -- 2. 创建用户表 (对应 User 类)
-CREATE TABLE chatbot.users (
+CREATE TABLE housing_fund.users (
     id bigserial,
     username VARCHAR(255) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE chatbot.users (
 );
 
 -- 3. 创建用户角色关联表 (对应 UserRoles 类)
-CREATE TABLE chatbot.user_roles (
+CREATE TABLE housing_fund.user_roles (
     id BIGSERIAL PRIMARY KEY,
     user_id bigserial,
     role role_enum NOT NULL,
@@ -37,14 +37,14 @@ CREATE TABLE chatbot.user_roles (
 
 -- 4. 创建索引以提高查询性能
 -- 用户表索引
-CREATE INDEX idx_users_username ON chatbot.users(username);
-CREATE INDEX idx_users_email ON chatbot.users(email);
-CREATE INDEX idx_users_is_active ON chatbot.users(is_active);
-CREATE INDEX idx_users_created_at ON chatbot.users(created_at);
+CREATE INDEX idx_users_username ON housing_fund.users(username);
+CREATE INDEX idx_users_email ON housing_fund.users(email);
+CREATE INDEX idx_users_is_active ON housing_fund.users(is_active);
+CREATE INDEX idx_users_created_at ON housing_fund.users(created_at);
 
 -- 用户角色表索引
-CREATE INDEX idx_user_roles_user_id ON chatbot.user_roles(user_id);
-CREATE INDEX idx_user_roles_role ON chatbot.user_roles(role);
+CREATE INDEX idx_user_roles_user_id ON housing_fund.user_roles(user_id);
+CREATE INDEX idx_user_roles_role ON housing_fund.user_roles(role);
 
 -- 5. 创建触发器函数，自动更新 updated_at 字段
 CREATE OR REPLACE FUNCTION update_updated_at_column()

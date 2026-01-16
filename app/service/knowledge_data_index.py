@@ -117,7 +117,7 @@ class KnowledgeDataIndexService:
 
             # 更新 FTS 索引（使用 UPDATE 语句）
             update_query = sql_text("""
-                UPDATE chatbot.knowledge_data
+                UPDATE housing_fund.knowledge_data
                 SET fts_content = to_tsvector('zhparsercfg', :text_content)
                 WHERE id = :knowledge_data_id
             """)
@@ -162,7 +162,7 @@ class KnowledgeDataIndexService:
 
             # 2. 将该 knowledge_id 的旧数据置为失效状态（软删除）
             deactivate_query = sql_text("""
-                UPDATE chatbot.knowledge_data
+                UPDATE housing_fund.knowledge_data
                 SET status = :deleted_status
                 WHERE knowledge_id = :knowledge_id
                     AND status = :active_status
@@ -247,7 +247,7 @@ class KnowledgeDataIndexService:
                     knowledge_id,
                     content,
                     ts_rank(fts_content, websearch_to_tsquery('zhparsercfg', :query)) AS rank_score
-                FROM chatbot.knowledge_data
+                FROM housing_fund.knowledge_data
                 WHERE
                     knowledge_id = :knowledge_id
                     AND fts_content @@ websearch_to_tsquery('zhparsercfg', :query)

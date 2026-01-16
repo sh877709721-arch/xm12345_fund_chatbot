@@ -1,6 +1,6 @@
--- DROP TYPE chatbot._chatstatusenum;
+-- DROP TYPE housing_fund._chatstatusenum;
 
-CREATE TYPE chatbot._chatstatusenum (
+CREATE TYPE housing_fund._chatstatusenum (
 	INPUT = array_in,
 	OUTPUT = array_out,
 	RECEIVE = array_recv,
@@ -9,12 +9,12 @@ CREATE TYPE chatbot._chatstatusenum (
 	ALIGNMENT = 4,
 	STORAGE = any,
 	CATEGORY = A,
-	ELEMENT = chatbot."chatstatusenum",
+	ELEMENT = housing_fund."chatstatusenum",
 	DELIMITER = ',');
 
--- DROP TYPE chatbot._contexttype;
+-- DROP TYPE housing_fund._contexttype;
 
-CREATE TYPE chatbot._contexttype (
+CREATE TYPE housing_fund._contexttype (
 	INPUT = array_in,
 	OUTPUT = array_out,
 	RECEIVE = array_recv,
@@ -23,12 +23,12 @@ CREATE TYPE chatbot._contexttype (
 	ALIGNMENT = 4,
 	STORAGE = any,
 	CATEGORY = A,
-	ELEMENT = chatbot."contexttype",
+	ELEMENT = housing_fund."contexttype",
 	DELIMITER = ',');
 
--- DROP TYPE chatbot._knowledgeroleenum;
+-- DROP TYPE housing_fund._knowledgeroleenum;
 
-CREATE TYPE chatbot._knowledgeroleenum (
+CREATE TYPE housing_fund._knowledgeroleenum (
 	INPUT = array_in,
 	OUTPUT = array_out,
 	RECEIVE = array_recv,
@@ -37,12 +37,12 @@ CREATE TYPE chatbot._knowledgeroleenum (
 	ALIGNMENT = 4,
 	STORAGE = any,
 	CATEGORY = A,
-	ELEMENT = chatbot."knowledgeroleenum",
+	ELEMENT = housing_fund."knowledgeroleenum",
 	DELIMITER = ',');
 
--- DROP TYPE chatbot._knowledgestatusenum;
+-- DROP TYPE housing_fund._knowledgestatusenum;
 
-CREATE TYPE chatbot._knowledgestatusenum (
+CREATE TYPE housing_fund._knowledgestatusenum (
 	INPUT = array_in,
 	OUTPUT = array_out,
 	RECEIVE = array_recv,
@@ -51,12 +51,12 @@ CREATE TYPE chatbot._knowledgestatusenum (
 	ALIGNMENT = 4,
 	STORAGE = any,
 	CATEGORY = A,
-	ELEMENT = chatbot."knowledgestatusenum",
+	ELEMENT = housing_fund."knowledgestatusenum",
 	DELIMITER = ',');
 
--- DROP TYPE chatbot._knowledgetypeenum;
+-- DROP TYPE housing_fund._knowledgetypeenum;
 
-CREATE TYPE chatbot._knowledgetypeenum (
+CREATE TYPE housing_fund._knowledgetypeenum (
 	INPUT = array_in,
 	OUTPUT = array_out,
 	RECEIVE = array_recv,
@@ -65,12 +65,12 @@ CREATE TYPE chatbot._knowledgetypeenum (
 	ALIGNMENT = 4,
 	STORAGE = any,
 	CATEGORY = A,
-	ELEMENT = chatbot."knowledgetypeenum",
+	ELEMENT = housing_fund."knowledgetypeenum",
 	DELIMITER = ',');
 
--- DROP TYPE chatbot._messageroleenum;
+-- DROP TYPE housing_fund._messageroleenum;
 
-CREATE TYPE chatbot._messageroleenum (
+CREATE TYPE housing_fund._messageroleenum (
 	INPUT = array_in,
 	OUTPUT = array_out,
 	RECEIVE = array_recv,
@@ -79,12 +79,12 @@ CREATE TYPE chatbot._messageroleenum (
 	ALIGNMENT = 4,
 	STORAGE = any,
 	CATEGORY = A,
-	ELEMENT = chatbot."messageroleenum",
+	ELEMENT = housing_fund."messageroleenum",
 	DELIMITER = ',');
 
--- DROP TYPE chatbot._role_enum;
+-- DROP TYPE housing_fund._role_enum;
 
-CREATE TYPE chatbot._role_enum (
+CREATE TYPE housing_fund._role_enum (
 	INPUT = array_in,
 	OUTPUT = array_out,
 	RECEIVE = array_recv,
@@ -93,12 +93,12 @@ CREATE TYPE chatbot._role_enum (
 	ALIGNMENT = 4,
 	STORAGE = any,
 	CATEGORY = A,
-	ELEMENT = chatbot."role_enum",
+	ELEMENT = housing_fund."role_enum",
 	DELIMITER = ',');
 
--- DROP TYPE chatbot._vote_type;
+-- DROP TYPE housing_fund._vote_type;
 
-CREATE TYPE chatbot._vote_type (
+CREATE TYPE housing_fund._vote_type (
 	INPUT = array_in,
 	OUTPUT = array_out,
 	RECEIVE = array_recv,
@@ -107,65 +107,65 @@ CREATE TYPE chatbot._vote_type (
 	ALIGNMENT = 4,
 	STORAGE = any,
 	CATEGORY = A,
-	ELEMENT = chatbot."vote_type",
+	ELEMENT = housing_fund."vote_type",
 	DELIMITER = ',');
 
--- DROP TYPE chatbot."chatstatusenum";
+-- DROP TYPE housing_fund."chatstatusenum";
 
-CREATE TYPE chatbot."chatstatusenum" AS ENUM (
+CREATE TYPE housing_fund."chatstatusenum" AS ENUM (
 	'active',
 	'deleted');
 
--- DROP TYPE chatbot."contexttype";
+-- DROP TYPE housing_fund."contexttype";
 
-CREATE TYPE chatbot."contexttype" AS ENUM (
+CREATE TYPE housing_fund."contexttype" AS ENUM (
 	'thought',
 	'observation',
 	'action',
 	'summary',
 	'question');
 
--- DROP TYPE chatbot."knowledgeroleenum";
+-- DROP TYPE housing_fund."knowledgeroleenum";
 
-CREATE TYPE chatbot."knowledgeroleenum" AS ENUM (
+CREATE TYPE housing_fund."knowledgeroleenum" AS ENUM (
 	'system',
 	'user',
 	'assistant',
 	'admin');
 
--- DROP TYPE chatbot."knowledgestatusenum";
+-- DROP TYPE housing_fund."knowledgestatusenum";
 
-CREATE TYPE chatbot."knowledgestatusenum" AS ENUM (
+CREATE TYPE housing_fund."knowledgestatusenum" AS ENUM (
 	'active',
 	'deleted',
 	'pending',
 	'indexing');
 
--- DROP TYPE chatbot."knowledgetypeenum";
+-- DROP TYPE housing_fund."knowledgetypeenum";
 
-CREATE TYPE chatbot."knowledgetypeenum" AS ENUM (
+CREATE TYPE housing_fund."knowledgetypeenum" AS ENUM (
 	'document',
 	'data_table',
 	'qa');
 
--- DROP TYPE chatbot."messageroleenum";
+-- DROP TYPE housing_fund."messageroleenum";
 
-CREATE TYPE chatbot."messageroleenum" AS ENUM (
+CREATE TYPE housing_fund."messageroleenum" AS ENUM (
 	'system',
 	'user',
 	'assistant');
 
--- DROP TYPE chatbot."role_enum";
+-- DROP TYPE housing_fund."role_enum";
 
-CREATE TYPE chatbot."role_enum" AS ENUM (
+CREATE TYPE housing_fund."role_enum" AS ENUM (
 	'superadmin',
 	'normal_user',
 	'engineer',
 	'admin');
 
--- DROP TYPE chatbot."vote_type";
+-- DROP TYPE housing_fund."vote_type";
 
-CREATE TYPE chatbot."vote_type" AS ENUM (
+CREATE TYPE housing_fund."vote_type" AS ENUM (
 	'good',
 	'average',
 	'poor',

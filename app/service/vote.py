@@ -167,11 +167,11 @@ class VoteService:
                 user_latest.content as question,
                 b.content as answer,
                 b.chat_id
-            FROM chatbot.vote a
-            LEFT JOIN chatbot.messages b ON a.message_id = b.id
+            FROM housing_fund.vote a
+            LEFT JOIN housing_fund.messages b ON a.message_id = b.id
             LEFT JOIN LATERAL (
                 SELECT *
-                FROM chatbot.messages
+                FROM housing_fund.messages
                 WHERE chat_id = b.chat_id
                 AND message_role_enum = 'user'
                 AND id < b.id
@@ -201,16 +201,16 @@ class VoteService:
                     WHEN a.metadata_->>'client' = 'rexian' THEN '热线'
                     ELSE a.metadata_->>'client'
                 END as client_type
-            from chatbot.messages a
+            from housing_fund.messages a
             left join lateral (
                 select id,chat_id,message_role_enum,content,created_at 
-                from chatbot.messages 
+                from housing_fund.messages 
                 where chat_id = a.chat_id
                 and message_role_enum = 'assistant'
                 and id > a.id
                 order by created_at asc limit 1
             ) user_latest ON true
-            left join chatbot.vote c on user_latest.id = c.message_id 
+            left join housing_fund.vote c on user_latest.id = c.message_id 
             where a.message_role_enum = 'user'
         """
         # 构建条件参数
@@ -268,16 +268,16 @@ class VoteService:
         # 构建基础查询（与 get_votes_with_messages 保持一致）
         base_query = """
             SELECT COUNT(DISTINCT a.id) as total
-            FROM chatbot.messages a
+            FROM housing_fund.messages a
             LEFT JOIN LATERAL (
                 SELECT id,chat_id,message_role_enum,content,created_at 
-                FROM chatbot.messages 
+                FROM housing_fund.messages 
                 WHERE chat_id = a.chat_id
                 AND message_role_enum = 'assistant'
                 and id > a.id
                 order by created_at asc limit 1
             ) user_latest ON true
-            LEFT JOIN chatbot.vote c ON user_latest.id = c.message_id 
+            LEFT JOIN housing_fund.vote c ON user_latest.id = c.message_id 
             WHERE a.message_role_enum = 'user'
         """
 
@@ -324,11 +324,11 @@ class VoteService:
                 user_latest.content as question,
                 b.content as answer,
                 b.chat_id
-            FROM chatbot.vote a
-            LEFT JOIN chatbot.messages b ON a.message_id = b.id
+            FROM housing_fund.vote a
+            LEFT JOIN housing_fund.messages b ON a.message_id = b.id
             LEFT JOIN LATERAL (
                 SELECT *
-                FROM chatbot.messages
+                FROM housing_fund.messages
                 WHERE chat_id = b.chat_id
                 AND message_role_enum = 'user'
                 AND id < b.id     
@@ -383,16 +383,16 @@ class VoteService:
                     WHEN a.metadata_->>'client' = 'rexian' THEN '热线'
                     ELSE a.metadata_->>'client'
                 END as client_type
-            from chatbot.messages a
+            from housing_fund.messages a
             left join lateral (
                 select id,chat_id,message_role_enum,content,created_at 
-                from chatbot.messages 
+                from housing_fund.messages 
                 where chat_id = a.chat_id
                 and message_role_enum = 'assistant'
                 and id > a.id
                 order by created_at asc limit 1
             ) user_latest ON true
-            left join chatbot.vote c on user_latest.id = c.message_id 
+            left join housing_fund.vote c on user_latest.id = c.message_id 
             where a.message_role_enum = 'user'
         """
         # 构建条件参数

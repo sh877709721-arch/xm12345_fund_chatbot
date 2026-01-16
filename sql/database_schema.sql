@@ -3,8 +3,8 @@
 -- =====================================================
 
 -- 创建数据库（如果需要）
--- CREATE DATABASE IF NOT EXISTS chatbot CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
--- USE chatbot;
+-- CREATE DATABASE IF NOT EXISTS housing_fund.CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- USE housing_fund.
 
 -- =====================================================
 -- 1. Agent实例管理

@@ -16,7 +16,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 -- 2. 创建 guidelines 表
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS chatbot.guidelines
+CREATE TABLE IF NOT EXISTS housing_fund.guidelines
 (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     title VARCHAR(512) NOT NULL,
@@ -33,11 +33,11 @@ CREATE TABLE IF NOT EXISTS chatbot.guidelines
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS chatbot.guidelines
-    OWNER to chatbot;
+ALTER TABLE IF EXISTS housing_fund.guidelines
+    OWNER to housing_fund.
 
-GRANT ALL ON TABLE chatbot.guidelines TO chatbot;
-GRANT ALL ON TABLE chatbot.guidelines TO etl;
+GRANT ALL ON TABLE housing_fund.guidelines TO housing_fund.
+GRANT ALL ON TABLE housing_fund.guidelines TO etl;
 
 
 -- ============================================
@@ -46,7 +46,7 @@ GRANT ALL ON TABLE chatbot.guidelines TO etl;
 
 -- GIN 索引用于全文搜索（condition_fts 字段）
 CREATE INDEX IF NOT EXISTS idx_condition_fts
-ON chatbot.guidelines USING gin (condition_fts);
+ON housing_fund.guidelines USING gin (condition_fts);
 
 -- GIN 索引用于向量搜索（condition_embedding 字段）
 CREATE INDEX ON guidelines USING hnsw (condition_embedding vector_cosine_ops)
@@ -54,17 +54,17 @@ CREATE INDEX ON guidelines USING hnsw (condition_embedding vector_cosine_ops)
 
 -- B-tree 索引用于状态字段过滤
 CREATE INDEX IF NOT EXISTS idx_guidelines_status
-ON chatbot.guidelines (status);
+ON housing_fund.guidelines (status);
 
 -- B-tree 索引用于创建时间排序
 CREATE INDEX IF NOT EXISTS idx_guidelines_created_time
-ON chatbot.guidelines (created_time DESC);
+ON housing_fund.guidelines (created_time DESC);
 
 
 -- ============================================
 -- 4. 创建自动更新时间戳的触发器
 -- ============================================
-CREATE OR REPLACE FUNCTION chatbot.update_guidelines_updated_time()
+CREATE OR REPLACE FUNCTION housing_fund.update_guidelines_updated_time()
 RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_time = CURRENT_TIMESTAMP;
@@ -73,15 +73,15 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trigger_update_guidelines_updated_time
-    BEFORE UPDATE ON chatbot.guidelines
+    BEFORE UPDATE ON housing_fund.guidelines
     FOR EACH ROW
-    EXECUTE FUNCTION chatbot.update_guidelines_updated_time();
+    EXECUTE FUNCTION housing_fund.update_guidelines_updated_time();
 
 
 -- ============================================
 -- 5. 插入示例数据
 -- ============================================
-INSERT INTO chatbot.guidelines (title, condition, action, prompt_template, status)
+INSERT INTO housing_fund.guidelines (title, condition, action, prompt_template, status)
 VALUES
     (
         '高血压管理指南',
@@ -117,33 +117,33 @@ ON CONFLICT DO NOTHING;
 -- ============================================
 -- 6. 添加注释说明
 -- ============================================
-COMMENT ON TABLE chatbot.guidelines IS '临床指南表，存储医疗实践指南和处理流程';
-COMMENT ON COLUMN chatbot.guidelines.id IS '主键ID';
-COMMENT ON COLUMN chatbot.guidelines.title IS '指南标题';
-COMMENT ON COLUMN chatbot.guidelines.condition IS '触发条件或适用情况';
-COMMENT ON COLUMN chatbot.guidelines.action IS '应采取的行动或建议';
-COMMENT ON COLUMN chatbot.guidelines.prompt_template IS 'AI提示词模板';
-COMMENT ON COLUMN chatbot.guidelines.condition_embedding IS '全文搜索字段（TSVECTOR类型）';
-COMMENT ON COLUMN chatbot.guidelines.condition_fts IS '向量嵌入字段（1024维向量）';
-COMMENT ON COLUMN chatbot.guidelines.priority IS '优先级(0-9999, 默认1, 越大优先级越高)';
-COMMENT ON COLUMN chatbot.guidelines.status IS '状态：A=激活, I=未激活, D=草稿, X=已删除';
-COMMENT ON COLUMN chatbot.guidelines.created_time IS '创建时间';
-COMMENT ON COLUMN chatbot.guidelines.updated_time IS '更新时间';
+COMMENT ON TABLE housing_fund.guidelines IS '临床指南表，存储医疗实践指南和处理流程';
+COMMENT ON COLUMN housing_fund.guidelines.id IS '主键ID';
+COMMENT ON COLUMN housing_fund.guidelines.title IS '指南标题';
+COMMENT ON COLUMN housing_fund.guidelines.condition IS '触发条件或适用情况';
+COMMENT ON COLUMN housing_fund.guidelines.action IS '应采取的行动或建议';
+COMMENT ON COLUMN housing_fund.guidelines.prompt_template IS 'AI提示词模板';
+COMMENT ON COLUMN housing_fund.guidelines.condition_embedding IS '全文搜索字段（TSVECTOR类型）';
+COMMENT ON COLUMN housing_fund.guidelines.condition_fts IS '向量嵌入字段（1024维向量）';
+COMMENT ON COLUMN housing_fund.guidelines.priority IS '优先级(0-9999, 默认1, 越大优先级越高)';
+COMMENT ON COLUMN housing_fund.guidelines.status IS '状态：A=激活, I=未激活, D=草稿, X=已删除';
+COMMENT ON COLUMN housing_fund.guidelines.created_time IS '创建时间';
+COMMENT ON COLUMN housing_fund.guidelines.updated_time IS '更新时间';
 
 
 -- ============================================
 -- 7. 验证查询
 -- ============================================
 -- 查看所有指南
--- SELECT * FROM chatbot.guidelines ORDER BY created_time DESC;
+-- SELECT * FROM housing_fund.guidelines ORDER BY created_time DESC;
 
 -- 查看激活状态的指南数量
--- SELECT status, COUNT(*) FROM chatbot.guidelines GROUP BY status;
+-- SELECT status, COUNT(*) FROM housing_fund.guidelines GROUP BY status;
 
 -- 全文搜索示例
--- SELECT * FROM chatbot.guidelines WHERE condition_embedding @@ to_tsquery('高血压 & 管理');
+-- SELECT * FROM housing_fund.guidelines WHERE condition_embedding @@ to_tsquery('高血压 & 管理');
 
 -- 向量相似度搜索示例（需要查询向量）
--- SELECT title, action FROM chatbot.guidelines
+-- SELECT title, action FROM housing_fund.guidelines
 -- ORDER BY condition_fts <=> '[...1024维向量...]'
 -- LIMIT 5;

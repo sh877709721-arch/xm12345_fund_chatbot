@@ -95,7 +95,7 @@ def get_medical_agent_function_list() -> List[Dict[str, Any]]:
             tools = [{
                 "mcpServers": {
                     "base_tools": {
-                        "command": "python",
+                        "command": "python3",
                         "args": ["-m", "app.core.mcp.base_tools"]
                     }
                 }

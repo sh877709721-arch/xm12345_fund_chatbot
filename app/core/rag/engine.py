@@ -118,10 +118,10 @@ class RAGEngine:
     def get_stats(self) -> Dict:
         """获取RAG系统统计信息"""
         qa_stats = {
-            "table": "chatbot.indexed_knowledge",
+            "table": "housing_fund.indexed_knowledge",
             **dict(zip(
                 ["avg_doc_length", "total_docs"],
-                self.db_ops.get_collection_stats("chatbot.indexed_knowledge")
+                self.db_ops.get_collection_stats("housing_fund.indexed_knowledge")
             ))
         }
 

@@ -76,7 +76,7 @@ class DatabaseOperations:
             SELECT
                 AVG(LENGTH(content)) as avg_doc_length,
                 COUNT(*) as total_docs
-            FROM chatbot.indexed_knowledge 
+            FROM housing_fund.indexed_knowledge 
             WHERE knowledge_type = 'document'
                 AND status = 'P'
         """)

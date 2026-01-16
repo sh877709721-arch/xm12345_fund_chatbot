@@ -110,7 +110,7 @@ def qa_response(query: str,score: float=0.95, top_n:int=1) -> List[Dict]:
             title as question,
             content as answer,
             1 - (q_embedding <=> '{emb}'::vector) AS hybrid_score
-        FROM chatbot.indexed_knowledge 
+        FROM housing_fund.indexed_knowledge 
         WHERE 
             1 - (q_embedding <=> '{emb}'::vector) >= {score}
             and knowledge_type = 'qa'
@@ -177,7 +177,7 @@ def get_adaptive_similarity_threshold_with_fallback(
                 title as question,
                 content as answer,
                 1 - (q_embedding <=> '{emb}'::vector) AS hybrid_score
-            FROM chatbot.indexed_knowledge
+            FROM housing_fund.indexed_knowledge
             WHERE
                 1 - (q_embedding <=> '{emb}'::vector) >= {threshold}
                 and knowledge_type = 'qa'
@@ -218,7 +218,7 @@ def get_adaptive_similarity_threshold_with_fallback(
                 title as question,
                 content as answer,
                 1 - (q_embedding <=> '{emb}'::vector) AS hybrid_score
-            FROM chatbot.indexed_knowledge
+            FROM housing_fund.indexed_knowledge
             WHERE
                 1 - (q_embedding <=> '{emb}'::vector) >= {fallback_threshold}
                 and knowledge_type = 'qa'
@@ -350,7 +350,7 @@ def qa_hybrid_search_vec_rff(query: str) -> List[Dict]:
           SELECT 
             id,title as question, content as answer,
             RANK() OVER (ORDER BY ts_rank(fts, websearch_to_tsquery('zhparsercfg', :query_text)) DESC) AS fts_rank
-          FROM chatbot.indexed_knowledge
+          FROM housing_fund.indexed_knowledge
           WHERE fts @@ websearch_to_tsquery('zhparsercfg', :query_text)
             and knowledge_type = 'qa'
             and status <>'P'
@@ -361,7 +361,7 @@ def qa_hybrid_search_vec_rff(query: str) -> List[Dict]:
           SELECT 
             id,title as question, content as answer,
             RANK() OVER (ORDER BY q_embedding <=> :query_vector) AS vec_rank
-          FROM chatbot.indexed_knowledge
+          FROM housing_fund.indexed_knowledge
             where knowledge_type = 'qa'
             and status <>'P'
           ORDER BY q_embedding <=> :query_vector
@@ -411,7 +411,7 @@ def doc_hybrid_search_vec_rff(query: str) -> List[Dict]:
           SELECT 
             id,title as question, content as answer,
             RANK() OVER (ORDER BY ts_rank(fts, websearch_to_tsquery('zhparsercfg', :query_text)) DESC) AS fts_rank
-          FROM chatbot.indexed_knowledge
+          FROM housing_fund.indexed_knowledge
           WHERE fts @@ websearch_to_tsquery('zhparsercfg', :query_text)
                and status <>'P'
           ORDER BY ts_rank(fts, websearch_to_tsquery('zhparsercfg', :query_text)) DESC
@@ -421,7 +421,7 @@ def doc_hybrid_search_vec_rff(query: str) -> List[Dict]:
           SELECT 
             id,title as question, content as answer,
             RANK() OVER (ORDER BY q_embedding <=> :query_vector) AS vec_rank
-          FROM chatbot.doc_knowledge
+          FROM housing_fund.doc_knowledge
           where status <>'P'
           ORDER BY q_embedding <=> :query_vector
           LIMIT 50
@@ -552,7 +552,7 @@ def calculate_bm25_score(term_freq: int, doc_length: int, avg_doc_length: float,
     return numerator / denominator
 
 
-def get_collection_stats(table_name: str = 'chatbot.indexed_knowledge') -> Tuple[float, int]:
+def get_collection_stats(table_name: str = 'housing_fund.indexed_knowledge') -> Tuple[float, int]:
     """
     获取文档集合的统计信息
 
@@ -576,7 +576,7 @@ def get_collection_stats(table_name: str = 'chatbot.indexed_knowledge') -> Tuple
         return float(row[0]), int(row[1])
 
 
-def bm25_search_pg(query: str, table_name: str = 'chatbot.indexed_knowledge',
+def bm25_search_pg(query: str, table_name: str = 'housing_fund.indexed_knowledge',
                    b: float = 0.75, top_k: int = 20) -> List[Dict]:
     """
     在 PostgreSQL 中实现简化版 BM25 搜索
@@ -629,7 +629,7 @@ def bm25_search_pg(query: str, table_name: str = 'chatbot.indexed_knowledge',
     ]
 
 
-def vector_search(query_embedding: List[float], table_name: str = 'chatbot.indexed_knowledge',
+def vector_search(query_embedding: List[float], table_name: str = 'housing_fund.indexed_knowledge',
                  similarity_threshold: float = 0.0, top_k: int = 20) -> List[Dict]:
     """
     向量相似度搜索
@@ -732,7 +732,7 @@ def merge_with_rrf(bm25_results: List[Dict], vec_results: List[Dict],
     return merged_results
 
 
-def doc_hybrid_search_bm25_vec(query: str, table_name: str = 'chatbot.indexed_knowledge') -> List[Dict]:
+def doc_hybrid_search_bm25_vec(query: str, table_name: str = 'housing_fund.indexed_knowledge') -> List[Dict]:
     """
     BM25 + 向量检索混合搜索（完整实现）
 
@@ -799,7 +799,7 @@ def doc_hybrid_search_bm25_vec(query: str, table_name: str = 'chatbot.indexed_kn
     return merged_results[:SEARCH_CONFIG["rrf"]["final_top_k"]]
 
 
-def qa_hybrid_search_bm25_vec(query: str, table_name: str = 'chatbot.indexed_knowledge') -> List[Dict]:
+def qa_hybrid_search_bm25_vec(query: str, table_name: str = 'housing_fund.indexed_knowledge') -> List[Dict]:
     """
     QA 知识库的 BM25 + 向量检索混合搜索
 
@@ -827,19 +827,19 @@ def create_indexes():
         """
         -- 创建文档长度索引（用于 BM25 长度归一化）
         CREATE INDEX IF NOT EXISTS idx_doc_knowledge_content_length
-        ON chatbot.doc_knowledge(LENGTH(content));
+        ON housing_fund.doc_knowledge(LENGTH(content));
         """,
 
         """
         CREATE INDEX IF NOT EXISTS idx_qa_knowledge_content_length
-        ON chatbot.qa_knowledge(LENGTH(content));
+        ON housing_fund.qa_knowledge(LENGTH(content));
         """,
 
         # 为向量搜索优化
         """
         -- 为向量相似度搜索创建 IVFFLAT 索引（如果支持）
         -- CREATE INDEX IF NOT EXISTS idx_doc_knowledge_q_embedding_ivf
-        -- ON chatbot.doc_knowledge USING ivfflat (q_embedding vector_cosine_ops)
+        -- ON housing_fund.doc_knowledge USING ivfflat (q_embedding vector_cosine_ops)
         -- WITH (lists = 100);
         """,
 
@@ -847,13 +847,13 @@ def create_indexes():
         """
         -- 复合索引优化
         CREATE INDEX IF NOT EXISTS idx_doc_knowledge_fts_length
-        ON chatbot.doc_knowledge USING gin(fts)
+        ON housing_fund.doc_knowledge USING gin(fts)
         INCLUDE (id, title, content);
         """,
 
         """
         CREATE INDEX IF NOT EXISTS idx_qa_knowledge_fts_length
-        ON chatbot.qa_knowledge USING gin(fts)
+        ON housing_fund.qa_knowledge USING gin(fts)
         INCLUDE (id, question, content);
         """
     ]

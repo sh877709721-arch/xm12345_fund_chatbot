@@ -1,7 +1,7 @@
 /*
-chatbot.knowledge_catalog
+housing_fund.knowledge_catalog
 */
-CREATE TABLE IF NOT EXISTS chatbot.knowledge_catalog
+CREATE TABLE IF NOT EXISTS housing_fund.knowledge_catalog
 (
     id integer NOT NULL DEFAULT nextval('knowledge_catalog_id_seq'::regclass),
     category_level_1 character varying(255) COLLATE pg_catalog."default",
@@ -15,23 +15,23 @@ CREATE TABLE IF NOT EXISTS chatbot.knowledge_catalog
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS chatbot.knowledge_catalog
-    OWNER to chatbot;
+ALTER TABLE IF EXISTS housing_fund.knowledge_catalog
+    OWNER to housing_fund.
 
-GRANT ALL ON TABLE chatbot.knowledge_catalog TO chatbot;
+GRANT ALL ON TABLE housing_fund.knowledge_catalog TO housing_fund.
 
-GRANT ALL ON TABLE chatbot.knowledge_catalog TO etl;
+GRANT ALL ON TABLE housing_fund.knowledge_catalog TO etl;
 
 
 /*
-chatbot.knowledge
+housing_fund.knowledge
 */
 
--- Table: chatbot.knowledge
+-- Table: housing_fund.knowledge
 
--- DROP TABLE IF EXISTS chatbot.knowledge;
+-- DROP TABLE IF EXISTS housing_fund.knowledge;
 
-CREATE TABLE IF NOT EXISTS chatbot.knowledge
+CREATE TABLE IF NOT EXISTS housing_fund.knowledge
 (
     id bigint NOT NULL DEFAULT nextval('knowledge_id_seq'::regclass),
     knowledge_type knowledgetypeenum NOT NULL,
@@ -46,17 +46,17 @@ CREATE TABLE IF NOT EXISTS chatbot.knowledge
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS chatbot.knowledge
-    OWNER to chatbot;
+ALTER TABLE IF EXISTS housing_fund.knowledge
+    OWNER to housing_fund.
 
 
 
 
--- Table: chatbot.knowledge_detail
+-- Table: housing_fund.knowledge_detail
 
--- DROP TABLE IF EXISTS chatbot.knowledge_detail;
+-- DROP TABLE IF EXISTS housing_fund.knowledge_detail;
 
-CREATE TABLE IF NOT EXISTS chatbot.knowledge_detail
+CREATE TABLE IF NOT EXISTS housing_fund.knowledge_detail
 (
     id bigint NOT NULL DEFAULT nextval('knowledge_detail_id_seq'::regclass),
     knowledge_id bigint,
@@ -73,15 +73,15 @@ CREATE TABLE IF NOT EXISTS chatbot.knowledge_detail
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS chatbot.knowledge_detail
-    OWNER to chatbot;
+ALTER TABLE IF EXISTS housing_fund.knowledge_detail
+    OWNER to housing_fund.
 
 
 
-update chatbot.knowledge_detail 
+update housing_fund.knowledge_detail 
 set status ='active'
 where status = 'pending'
 
-update chatbot.knowledge 
+update housing_fund.knowledge 
 set status ='active'
 where status = 'pending'

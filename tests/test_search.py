@@ -20,7 +20,7 @@ def example_usage():
     query = "异地就医备案"
 
     # 使用 BM25 + 向量混合搜索（文档知识库）
-    doc_results = doc_hybrid_search_bm25_vec(query, 'chatbot.doc_knowledge')
+    doc_results = doc_hybrid_search_bm25_vec(query, 'housing_fund.doc_knowledge')
     print("文档知识库搜索结果:")
     for i, result in enumerate(doc_results, 1):
         print(f"{i}. 标题: {result['question']}")

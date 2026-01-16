@@ -1,6 +1,6 @@
-drop table chatbot.indexed_knowledge
+drop table housing_fund.indexed_knowledge
 
-CREATE TABLE IF NOT EXISTS chatbot.indexed_knowledge
+CREATE TABLE IF NOT EXISTS housing_fund.indexed_knowledge
 (
     id bigserial,
     knowledge_id bigint,
@@ -21,17 +21,17 @@ CREATE TABLE IF NOT EXISTS chatbot.indexed_knowledge
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS chatbot.indexed_knowledge
-    OWNER to chatbot;
+ALTER TABLE IF EXISTS housing_fund.indexed_knowledge
+    OWNER to housing_fund.
 
-GRANT ALL ON TABLE chatbot.indexed_knowledge TO chatbot;
+GRANT ALL ON TABLE housing_fund.indexed_knowledge TO housing_fund.
 
-GRANT ALL ON TABLE chatbot.indexed_knowledge TO etl;
--- Index: idx_chatbot_doc_knowledge_fts
+GRANT ALL ON TABLE housing_fund.indexed_knowledge TO etl;
+-- Index: idx_housing_fund.doc_knowledge_fts
 
--- DROP INDEX IF EXISTS chatbot.idx_chatbot_doc_knowledge_fts;
+-- DROP INDEX IF EXISTS housing_fund.idx_housing_fund.doc_knowledge_fts;
 
-CREATE INDEX IF NOT EXISTS idx_chatbot_indexed_knowledge_fts
-    ON chatbot.indexed_knowledge USING gin
+CREATE INDEX IF NOT EXISTS idx_housing_fund.indexed_knowledge_fts
+    ON housing_fund.indexed_knowledge USING gin
     (fts)
     TABLESPACE pg_default;

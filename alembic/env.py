@@ -33,7 +33,7 @@ if config.config_file_name is not None:
 from app.model import *
 from app.config.database import Base
 target_metadata = Base.metadata
-target_metadata.schema = "chatbot"
+target_metadata.schema = "housing_fund"
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

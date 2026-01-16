@@ -59,18 +59,18 @@ def calculate_bm25_score(term_freq: int, doc_length: int, avg_doc_length: float,
     return ScoringAlgorithms.calculate_bm25_score(term_freq, doc_length, avg_doc_length, k1, b)
 
 
-def get_collection_stats(table_name: str = 'chatbot.indexed_knowledge') -> tuple:
+def get_collection_stats(table_name: str = 'housing_fund.indexed_knowledge') -> tuple:
     """兼容性包装：获取集合统计信息"""
     return DatabaseOperations.get_collection_stats(table_name)
 
 
-def bm25_search_pg(query: str, table_name: str = 'chatbot.indexed_knowledge',
+def bm25_search_pg(query: str, table_name: str = 'housing_fund.indexed_knowledge',
                    b: float = 0.75, top_k: int = 20) -> List[Dict]:
     """兼容性包装：BM25搜索"""
     return SearchService.bm25_search_pg(query, table_name, b, top_k)
 
 
-def vector_search(query_embedding: List[float], table_name: str = 'chatbot.indexed_knowledge',
+def vector_search(query_embedding: List[float], table_name: str = 'housing_fund.indexed_knowledge',
                  similarity_threshold: float = 0.0, top_k: int = 20) -> List[Dict]:
     """兼容性包装：向量搜索"""
     return SearchService.vector_search(query_embedding, table_name, similarity_threshold, top_k)
@@ -82,12 +82,12 @@ def merge_with_rrf(bm25_results: List[Dict], vec_results: List[Dict],
     return ScoringAlgorithms.merge_with_rrf(bm25_results, vec_results, k, weight_bm25, weight_vec)
 
 
-def doc_hybrid_search_bm25_vec(query: str, table_name: str = 'chatbot.indexed_knowledge') -> List[Dict]:
+def doc_hybrid_search_bm25_vec(query: str, table_name: str = 'housing_fund.indexed_knowledge') -> List[Dict]:
     """兼容性包装：文档BM25+向量混合搜索"""
     return SearchService.doc_hybrid_search_bm25_vec(query, table_name)
 
 
-def qa_hybrid_search_bm25_vec(query: str, table_name: str = 'chatbot.indexed_knowledge') -> List[Dict]:
+def qa_hybrid_search_bm25_vec(query: str, table_name: str = 'housing_fund.indexed_knowledge') -> List[Dict]:
     """兼容性包装：QA BM25+向量混合搜索"""
     return SearchService.qa_hybrid_search_bm25_vec(query, table_name)
 

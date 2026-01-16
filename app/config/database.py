@@ -93,7 +93,7 @@ def get_sqlalchemy_engine():
 
 
 
-Base = declarative_base(metadata=MetaData(schema="chatbot"))
+Base = declarative_base(metadata=MetaData(schema="housing_fund"))
 
 
 

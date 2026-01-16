@@ -228,7 +228,7 @@ class DashboardService:
                     ELSE '未知'
                 END as client_type,
                 COUNT(*) as count
-            FROM chatbot.messages
+            FROM housing_fund.messages
             WHERE message_role_enum = 'user'
                 AND created_at >= :start_date
                 AND created_at <= :end_date

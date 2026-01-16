@@ -24,7 +24,7 @@ class RAGSearch:
 
     def _vector_similarity_search(self, 
                                   query_embedding: List[float],
-                                  table_name: str = 'chatbot.indexed_knowledge',
+                                  table_name: str = 'housing_fund.indexed_knowledge',
                                   similarity_threshold: float = 0.8, 
                                   top_k: int = 20) -> List[Dict]:
         """
@@ -80,7 +80,7 @@ class RAGSearch:
         sql = text(f"""
         SELECT knowledge_id as id,title as question, content as answer,reference,
                    RANK() OVER (ORDER BY ts_rank(fts, websearch_to_tsquery('zhparsercfg', :query_text)) DESC) AS fts_rank
-        FROM chatbot.indexed_knowledge
+        FROM housing_fund.indexed_knowledge
         WHERE fts @@ websearch_to_tsquery('zhparsercfg', :query_text)
         AND status <>'P'
         ORDER BY ts_rank(fts, websearch_to_tsquery('zhparsercfg', :query_text)) DESC
@@ -104,7 +104,7 @@ class RAGSearch:
 
     def _bm25_search_pg(self,
                         query: str,
-                        table_name: str = 'chatbot.indexed_knowledge',
+                        table_name: str = 'housing_fund.indexed_knowledge',
                         b: float = 0.75,
                         top_k: int = 20):
         """bm25搜索"""

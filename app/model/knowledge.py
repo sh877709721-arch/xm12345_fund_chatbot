@@ -80,6 +80,6 @@ class KnowledgeData(Base):
     updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
 
     __table_args__ = (
-        Index('idx_chatbot_knowledge_data_knowledge_id', 'knowledge_id'),
-        Index('idx_chatbot_indexed_knowledge_fts', 'fts_content', postgresql_using='gin'),
+        Index('idx_housing_fund_knowledge_data_knowledge_id', 'knowledge_id'),
+        Index('idx_housing_fund_indexed_knowledge_fts', 'fts_content', postgresql_using='gin'),
     )
