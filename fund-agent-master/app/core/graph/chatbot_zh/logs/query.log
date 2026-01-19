@@ -1,0 +1,898 @@
+2025-11-21 16:24:21.0093 - ERROR - graphrag.query.structured_search.global_search.search - Exception in _map_response_single_batch
+Traceback (most recent call last):
+  File "D:\dev\ai_app\.venv\Lib\site-packages\graphrag\query\structured_search\global_search\search.py", line 227, in _map_response_single_batch
+    model_response = await self.model.achat(
+                     ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\graphrag\language_model\providers\fnllm\models.py", line 84, in achat
+    response = await self.model(prompt, history=history, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\openai\llm\openai_chat_llm.py", line 94, in __call__
+    return await self._text_chat_llm(prompt, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\openai\services\openai_tools_parsing.py", line 141, in __call__
+    return await self._delegate(prompt, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\base\base_llm.py", line 144, in __call__
+    return await self._decorated_target(prompt, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\base\services\json.py", line 77, in invoke
+    return await this.invoke_json(delegate, prompt, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\base\services\json.py", line 96, in invoke_json
+    return await self.try_receive_json(delegate, prompt, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\base\services\json.py", line 112, in try_receive_json
+    result = await delegate(prompt, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\base\services\rate_limiter.py", line 75, in invoke
+    result = await delegate(prompt, **args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\base\base_llm.py", line 126, in _decorator_target
+    output = await self._execute_llm(prompt, kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\openai\llm\openai_text_chat_llm.py", line 173, in _execute_llm
+    raw_response = await self._client.chat.completions.with_raw_response.create(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\openai\_legacy_response.py", line 381, in wrapped
+    return cast(LegacyAPIResponse[R], await func(*args, **kwargs))
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 2585, in create
+    return await self._post(
+           ^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\openai\_base_client.py", line 1794, in post
+    return await self.request(cast_to, opts, stream=stream, stream_cls=stream_cls)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\openai\_base_client.py", line 1594, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.UnprocessableEntityError: Error code: 422 - {'error': 'Model not found', 'error_type': 'Input Validation Error'}
+2025-11-21 16:25:43.0400 - ERROR - graphrag.query.structured_search.global_search.search - Exception in _map_response_single_batch
+Traceback (most recent call last):
+  File "D:\dev\ai_app\.venv\Lib\site-packages\graphrag\query\structured_search\global_search\search.py", line 227, in _map_response_single_batch
+    model_response = await self.model.achat(
+                     ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\graphrag\language_model\providers\fnllm\models.py", line 84, in achat
+    response = await self.model(prompt, history=history, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\openai\llm\openai_chat_llm.py", line 94, in __call__
+    return await self._text_chat_llm(prompt, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\openai\services\openai_tools_parsing.py", line 141, in __call__
+    return await self._delegate(prompt, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\base\base_llm.py", line 144, in __call__
+    return await self._decorated_target(prompt, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\base\services\json.py", line 77, in invoke
+    return await this.invoke_json(delegate, prompt, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\base\services\json.py", line 96, in invoke_json
+    return await self.try_receive_json(delegate, prompt, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\base\services\json.py", line 112, in try_receive_json
+    result = await delegate(prompt, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\base\services\rate_limiter.py", line 75, in invoke
+    result = await delegate(prompt, **args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\base\base_llm.py", line 126, in _decorator_target
+    output = await self._execute_llm(prompt, kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\fnllm\openai\llm\openai_text_chat_llm.py", line 173, in _execute_llm
+    raw_response = await self._client.chat.completions.with_raw_response.create(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\openai\_legacy_response.py", line 381, in wrapped
+    return cast(LegacyAPIResponse[R], await func(*args, **kwargs))
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 2585, in create
+    return await self._post(
+           ^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\openai\_base_client.py", line 1794, in post
+    return await self.request(cast_to, opts, stream=stream, stream_cls=stream_cls)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dev\ai_app\.venv\Lib\site-packages\openai\_base_client.py", line 1594, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.UnprocessableEntityError: Error code: 422 - {'error': 'Model not found', 'error_type': 'Input Validation Error'}
+2025-11-21 16:32:40.0439 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 16:32:40.0451 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 16:48:35.0945 - DEBUG - graphrag.api.query - Executing streaming global search query: 请简单介绍一下人工智能
+2025-11-21 16:48:36.0239 - DEBUG - graphrag.query.context_builder.community_context - Computing community weights...
+2025-11-21 16:48:48.0605 - DEBUG - graphrag.query.structured_search.global_search.search - Map response: 
+
+{
+    "points": [
+        {
+            "description": "我不知道，因为所提供的数据表中没有包含关于人工智能的信息。",
+            "score": 0
+        }
+    ]
+}
+
+2025-11-21 16:49:43.0983 - DEBUG - graphrag.query.structured_search.global_search.search - Map response: 
+
+{
+    "points": [
+        {"description": "我不知道", "score": 0}
+    ]
+}
+
+2025-11-21 16:52:50.0631 - DEBUG - graphrag.api.query - Executing streaming global search query: 有三岁以下小孩免交城乡医保的政策吗
+2025-11-21 16:52:50.0966 - DEBUG - graphrag.query.context_builder.community_context - Computing community weights...
+2025-11-21 16:53:16.0296 - DEBUG - graphrag.query.structured_search.global_search.search - Map response: 
+
+{
+    "points": [
+        {"description": "不知道", "score": 0}
+    ]
+}
+
+2025-11-21 16:54:18.0899 - DEBUG - graphrag.query.structured_search.global_search.search - Map response: 
+
+{
+    "points": [
+        {"description": "不知道", "score": 0}
+    ]
+}
+
+2025-11-21 16:55:19.0989 - DEBUG - graphrag.query.structured_search.global_search.search - Map response: 
+
+{
+    "answer": "不知道"
+}
+
+2025-11-21 16:56:08.0999 - DEBUG - graphrag.query.structured_search.global_search.search - Map response: 
+
+{
+    "points": [
+        {"description": "我不知道", "score": 0}
+    ]
+}
+
+2025-11-21 16:57:31.0269 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 16:57:31.0273 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 17:05:38.0806 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 17:05:38.0884 - DEBUG - graphrag.api.query - Executing streaming local search query: 怎么交医保
+2025-11-21 17:05:40.0500 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 17:05:40.0512 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 17:05:40.0525 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763715939.8005025. QUERY: 怎么交医保
+2025-11-21 17:08:48.0007 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 17:08:48.0069 - DEBUG - graphrag.api.query - Executing streaming local search query: 怎么交医保
+2025-11-21 17:08:49.0152 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 17:08:49.0161 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 17:08:49.0171 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763716128.6374145. QUERY: 怎么交医保
+2025-11-21 17:17:46.0926 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 17:17:46.0998 - DEBUG - graphrag.api.query - Executing streaming local search query: 如何交医保
+2025-11-21 17:17:47.0933 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 17:17:47.0943 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 17:17:47.0955 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763716667.6505995. QUERY: 如何交医保
+2025-11-21 17:19:18.0971 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 17:19:19.0043 - DEBUG - graphrag.api.query - Executing streaming local search query: 如何交医保
+2025-11-21 17:19:19.0970 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 17:19:19.0982 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 17:19:19.0994 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763716759.6851966. QUERY: 如何交医保
+2025-11-21 17:20:04.0053 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 17:20:04.0127 - DEBUG - graphrag.api.query - Executing streaming local search query: 如何交医保
+2025-11-21 17:20:04.0414 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 17:20:04.0430 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 17:20:04.0442 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763716804.1705604. QUERY: 如何交医保
+2025-11-21 17:26:53.0697 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 17:26:53.0768 - DEBUG - graphrag.api.query - Executing streaming local search query: 如何交医保
+2025-11-21 17:26:54.0984 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 17:26:54.0994 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 17:26:55.0006 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763717214.6605706. QUERY: 如何交医保
+2025-11-21 17:27:49.0298 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 17:27:49.0363 - DEBUG - graphrag.api.query - Executing streaming local search query: 如何交医保
+2025-11-21 17:27:49.0663 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 17:27:49.0675 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 17:27:49.0686 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763717269.4129763. QUERY: 如何交医保
+2025-11-21 17:30:50.0720 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 17:30:50.0779 - DEBUG - graphrag.api.query - Executing streaming local search query: 如何交医保
+2025-11-21 17:30:51.0679 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 17:30:51.0691 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 17:30:51.0705 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763717451.402552. QUERY: 如何交医保
+2025-11-21 17:35:44.0010 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 17:35:44.0089 - DEBUG - graphrag.api.query - Executing streaming local search query: 如何交医保
+2025-11-21 17:35:44.0967 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 17:35:44.0978 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 17:35:44.0989 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763717744.681608. QUERY: 如何交医保
+2025-11-21 17:38:27.0409 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 17:38:27.0491 - DEBUG - graphrag.api.query - Executing streaming local search query: 我在厦门工作一年多，现在离开厦门了来到新的地方，厦门是停保状态，是否可以在省外使用厦门医保里面的钱。
+2025-11-21 17:38:28.0786 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 17:38:28.0808 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 17:38:28.0829 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763717908.4136372. QUERY: 我在厦门工作一年多，现在离开厦门了来到新的地方，厦门是停保状态，是否可以在省外使用厦门医保里面的钱。
+2025-11-21 17:39:21.0775 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 17:39:21.0859 - DEBUG - graphrag.api.query - Executing streaming local search query: 2025年在省内异地缴纳居民医保，2026在厦门参保居民医保，厦门的居民医保待遇什么时候生效时间
+2025-11-21 17:39:22.0235 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 17:39:22.0249 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 17:39:22.0297 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763717961.9215214. QUERY: 2025年在省内异地缴纳居民医保，2026在厦门参保居民医保，厦门的居民医保待遇什么时候生效时间
+2025-11-21 17:40:52.0998 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 17:40:53.0062 - DEBUG - graphrag.api.query - Executing streaming local search query: 有三岁以下小孩免交城乡医保的政策吗
+2025-11-21 17:40:53.0385 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 17:40:53.0396 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 17:40:53.0432 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763718053.126498. QUERY: 有三岁以下小孩免交城乡医保的政策吗
+2025-11-21 17:43:54.0424 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 17:43:54.0503 - DEBUG - graphrag.api.query - Executing streaming local search query: 上个月看病没有用医保卡结算，能不能去政务中心报销？
+2025-11-21 17:43:54.0845 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 17:43:54.0882 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 17:43:54.0897 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763718234.573729. QUERY: 上个月看病没有用医保卡结算，能不能去政务中心报销？
+2025-11-21 18:01:09.0972 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 18:01:10.0097 - DEBUG - graphrag.api.query - Executing streaming local search query: 投诉公司没有交医保需要什么材料？
+2025-11-21 18:01:11.0283 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763719270.9830282. QUERY: 投诉公司没有交医保需要什么材料？
+2025-11-21 18:06:10.0987 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 18:06:11.0077 - DEBUG - graphrag.api.query - Executing streaming local search query: 投诉公司没有交医保需要什么材料？
+2025-11-21 18:06:12.0014 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763719571.7053015. QUERY: 投诉公司没有交医保需要什么材料？
+2025-11-21 18:07:43.0804 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 18:07:43.0875 - DEBUG - graphrag.api.query - Executing streaming local search query: 投诉公司没有交医保需要什么材料？
+2025-11-21 18:07:44.0813 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763719664.5135484. QUERY: 投诉公司没有交医保需要什么材料？
+2025-11-21 18:10:08.0598 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 18:10:08.0680 - DEBUG - graphrag.api.query - Executing streaming local search query: 公司没有给我交医保，该如何投诉
+2025-11-21 18:10:08.0997 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 18:10:09.0040 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 18:10:09.0062 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763719808.734318. QUERY: 公司没有给我交医保，该如何投诉
+2025-11-21 18:11:29.0332 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 18:11:29.0392 - DEBUG - graphrag.api.query - Executing streaming local search query: 已经办理异地备案了，但看病刷卡无法使用，提示备案已过期，怎么办？
+2025-11-21 18:11:29.0693 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 18:11:29.0705 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 18:11:29.0717 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763719889.4321163. QUERY: 已经办理异地备案了，但看病刷卡无法使用，提示备案已过期，怎么办？
+2025-11-21 18:13:21.0742 - DEBUG - graphrag.api.query - Executing streaming global search query: 已经办理异地备案了，但看病刷卡无法使用，提示备案已过期，怎么办？
+2025-11-21 18:13:22.0106 - DEBUG - graphrag.query.context_builder.community_context - Computing community weights...
+2025-11-21 18:13:58.0001 - DEBUG - graphrag.query.structured_search.global_search.search - Map response: 
+
+{
+    "points": [
+        {"description": "您遇到的医保电子凭证提示备案过期问题，可能属于医保电子凭证异常情况。厦门市医疗保障提供专门的医保电子凭证异常处理服务，用于解决电子凭证同步、绑定和切换等技术问题，您应联系该服务寻求帮助 [数据: 报告(120)]。", "score": 95},
+        {"description": "如果线上或电话技术支持无法解决，您也可以前往厦门市政务服务中心的医保窗口寻求线下帮助。该窗口负责处理包括医疗费用报销、医保关系转移在内的多项医保业务，可能能够协助处理备案异常问题 [数据: 报告(116)]。", "score": 85},
+        {"description": "您需要核实异地就医备案的具体有效期。虽然数据中未明确说明备案的有效期规则，但系统提示已过期，表明备案存在时效性。您应通过官方渠道查询备案的准确状态和有效期 [数据: 报告(120)]。", "score": 85},
+        {"description": "除了备案本身的技术问题，您还应确认自己的医保缴费状态是否正常。根据规定，中断缴费将直接导致医疗保障待遇被暂停，这也可能是导致刷卡失败的原因之一 [数据: 报告(120)]。", "score": 75},
+        {"description": "厦门市医保系统支持跨地区医保关系转移服务，这表明系统具备处理跨地区业务的能力。您遇到的问题可能是在这一复杂系统交互中出现的特定技术故障 [数据: 报告(120)]。", "score": 65}
+    ]
+}
+
+2025-11-21 18:14:40.0492 - DEBUG - graphrag.query.structured_search.global_search.search - Map response: 
+
+{
+    "points": [
+        {"description": "我不知道", "score": 0}
+    ]
+}
+
+2025-11-21 18:15:38.0491 - DEBUG - graphrag.api.query - Executing streaming global search query: 已经办理异地备案了，但看病刷卡无法使用，提示备案已过期，怎么办？
+2025-11-21 18:15:38.0491 - DEBUG - graphrag.query.context_builder.community_context - Computing community weights...
+2025-11-21 18:16:40.0869 - DEBUG - graphrag.api.query - Executing streaming global search query: 已经办理异地备案了，但看病刷卡无法使用，提示备案已过期，怎么办？
+2025-11-21 18:16:40.0869 - DEBUG - graphrag.query.context_builder.community_context - Computing community weights...
+2025-11-21 18:16:50.0613 - DEBUG - graphrag.query.structured_search.global_search.search - Map response: 
+
+{
+    "points": [
+        {"description": "应联系厦门医疗保障寻求技术支持，因为医保电子凭证异常处理专门解决电子凭证同步、绑定和切换问题，这可能是导致刷卡失败并提示“备案已过期”的技术原因之一 [数据: 报告(120)]", "score": 95},
+        {"description": "可以前往厦门市政务服务中心的医保窗口寻求帮助，该窗口负责处理包括医疗费用报销、医保关系转入转出在内的各类医疗保险相关事务，是解决备案问题的线下关键渠道 [数据: 报告(116)]", "score": 90},
+        {"description": "应检查自己的医保缴费状态，因为中断缴费将直接导致医疗保障待遇被暂停，这可能影响异地就医结算并导致刷卡失败 [数据: 报告(120)]", "score": 85},
+        {"description": "如果本人不便前往办理，可以利用代理人制度，委托父母或其他受委托人作为代理人，代表参保人办理相关手续，这为解决备案问题提供了便利 [数据: 报告(120)]", "score": 75},
+        {"description": "厦门市医疗保障中心是管理厦门市医疗保障事务的核心机构，在遇到复杂问题时，联系该中心或其分支机构（如市医保中心湖里管理部）可能获得权威的指导和解决方案 [数据: 报告(189)]", "score": 70}
+    ]
+}
+
+2025-11-21 18:17:47.0852 - DEBUG - graphrag.query.structured_search.global_search.search - Map response: 
+
+{
+    "points": [
+        {"description": "厦门市已建立异地医保备案制度，参保人员在异地就医前应按规定办理备案手续。备案信息可能存在有效期限制，过期后可能导致无法正常刷卡结算 [数据: 报告(22)]。", "score": 95},
+        {"description": "参保人员可以通过官方的“厦门医疗保障”公众号或微信小程序查询备案状态和有效期，并办理相关业务。这是厦门市统一的医保服务平台，提供信息查询和业务办理功能 [数据: 报告(22)]。", "score": 100},
+        {"description": "除了线上渠道，厦门市还建立了完善的线下服务体系，包括市、区政务服务中心和医保经办窗口。参保人员可以前往这些线下服务点咨询备案过期问题并办理相关手续 [数据: 报告(22)]。", "score": 90},
+        {"description": "“厦门医疗保障”平台的核心功能之一是医保信息查询。参保人员应首先通过该功能核实自己的异地就医备案状态及有效期信息，以确认问题所在 [数据: 报告(22)]。", "score": 85},
+        {"description": "“厦门医疗保障”平台提供全面的医疗保障相关业务办理服务。如果备案确实过期，参保人员应尝试在该平台上查找并办理异地就医备案的更新或重新申请业务 [数据: 报告(22)]。", "score": 80}
+    ]
+}
+
+2025-11-21 18:18:35.0945 - DEBUG - graphrag.query.structured_search.global_search.search - Map response: 
+
+{
+    "points": [
+        {"description": "根据提供的数据表，无法找到关于异地备案过期后如何处理的具体信息。数据中提到了异地备案登记服务 [数据: 报告(14)]，但未包含备案有效期、过期原因或续期流程等相关内容。", "score": 0}
+    ]
+}
+
+2025-11-21 18:20:34.0528 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 18:20:34.0596 - DEBUG - graphrag.api.query - Executing streaming local search query: 已经办理异地备案了，但看病刷卡无法使用，提示备案已过期，怎么办？
+2025-11-21 18:20:35.0511 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 18:20:35.0522 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 18:20:35.0533 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763720435.2032158. QUERY: 已经办理异地备案了，但看病刷卡无法使用，提示备案已过期，怎么办？
+2025-11-21 18:22:55.0487 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 18:22:55.0574 - DEBUG - graphrag.api.query - Executing streaming local search query: 已经办理异地备案了，但看病刷卡无法使用，提示备案已过期，怎么办？
+2025-11-21 18:22:56.0607 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 18:22:56.0624 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 18:22:56.0637 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763720576.3316214. QUERY: 已经办理异地备案了，但看病刷卡无法使用，提示备案已过期，怎么办？
+2025-11-21 18:25:25.0762 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 18:25:25.0846 - DEBUG - graphrag.api.query - Executing streaming local search query: 已经办理异地备案了，但看病刷卡无法使用，提示备案已过期，怎么办？
+2025-11-21 18:25:27.0016 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 18:25:27.0029 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 18:25:27.0039 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763720726.7350245. QUERY: 已经办理异地备案了，但看病刷卡无法使用，提示备案已过期，怎么办？
+2025-11-21 19:44:27.0105 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 19:44:27.0286 - DEBUG - graphrag.api.query - Executing streaming local search query: 我没有居住证，在厦门能参加医保吗
+2025-11-21 19:44:28.0615 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 19:44:28.0636 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 19:44:28.0680 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763725468.2306972. QUERY: 我没有居住证，在厦门能参加医保吗
+2025-11-21 21:26:51.0507 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 21:26:51.0696 - DEBUG - graphrag.api.query - Executing streaming local search query: 我办理了养老退休，但医保年限不够，可以按月接着交吗
+2025-11-21 21:26:52.0832 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 21:26:52.0856 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 21:26:52.0872 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763731612.3381557. QUERY: 我办理了养老退休，但医保年限不够，可以按月接着交吗
+2025-11-21 21:30:12.0473 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 21:30:12.0534 - DEBUG - graphrag.api.query - Executing streaming local search query: 上个月看病没有用医保卡结算，能不能去政务中心报销
+2025-11-21 21:30:12.0907 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 21:30:12.0927 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 21:30:12.0937 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763731812.5761356. QUERY: 上个月看病没有用医保卡结算，能不能去政务中心报销
+2025-11-21 21:35:57.0818 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-21 21:35:57.0931 - DEBUG - graphrag.api.query - Executing streaming local search query: 职工是在厦门缴纳的职工医保，在泉州就医的怎么办理结算报销。
+2025-11-21 21:35:58.0919 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-21 21:35:58.0932 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-21 21:35:58.0962 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763732158.640808. QUERY: 职工是在厦门缴纳的职工医保，在泉州就医的怎么办理结算报销。
+2025-11-24 16:49:51.0835 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-24 16:49:52.0034 - DEBUG - graphrag.api.query - Executing streaming local search query: 住院的起付线能不能用医保账户余额支付？
+2025-11-24 16:49:53.0683 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-24 16:49:53.0734 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-24 16:49:53.0751 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763974193.2179985. QUERY: 住院的起付线能不能用医保账户余额支付？
+2025-11-24 16:50:30.0284 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-24 16:50:30.0365 - DEBUG - graphrag.api.query - Executing streaming local search query: 我老公有交医社保，我没有，我生孩子可以用他的报销吗
+2025-11-24 16:50:30.0711 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-24 16:50:30.0753 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-24 16:50:30.0773 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1763974230.4231653. QUERY: 我老公有交医社保，我没有，我生孩子可以用他的报销吗
+2025-11-27 16:42:46.0485 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-27 16:42:46.0583 - DEBUG - graphrag.api.query - Executing streaming local search query: 我在厦门参保，可以去泉州看病吗
+2025-11-27 16:42:46.0959 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-27 16:42:46.0979 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-27 16:42:47.0011 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1764232966.6612117. QUERY: 我在厦门参保，可以去泉州看病吗
+2025-11-27 16:44:30.0146 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-27 16:44:30.0208 - DEBUG - graphrag.api.query - Executing streaming local search query: 我在厦门参保，可以去泉州看病吗
+2025-11-27 16:44:31.0172 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-27 16:44:31.0184 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-27 16:44:31.0208 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1764233070.82072. QUERY: 我在厦门参保，可以去泉州看病吗
+2025-11-27 16:48:08.0842 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-27 16:48:08.0918 - DEBUG - graphrag.api.query - Executing streaming local search query: 我在厦门参保，可以去泉州看病吗
+2025-11-27 16:48:09.0875 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-27 16:48:09.0887 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-27 16:48:09.0908 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1764233289.5908966. QUERY: 我在厦门参保，可以去泉州看病吗
+2025-11-27 16:51:54.0638 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-27 16:51:54.0698 - DEBUG - graphrag.api.query - Executing streaming local search query: 我在厦门参保，可以去泉州看病吗
+2025-11-27 16:51:55.0609 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-27 16:51:55.0619 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-27 16:51:55.0640 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1764233515.2988954. QUERY: 我在厦门参保，可以去泉州看病吗
+2025-11-27 16:52:30.0999 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-27 16:52:31.0012 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-27 16:52:44.0914 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-27 16:52:44.0932 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-27 16:52:56.0118 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-27 16:52:56.0129 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-28 16:21:28.0052 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-28 16:21:28.0124 - DEBUG - graphrag.api.query - Executing streaming local search query: 我在厦门交的医保泉州看病能报销吗
+2025-11-28 16:21:29.0198 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-28 16:21:29.0205 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-28 16:21:29.0233 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1764318088.8438303. QUERY: 我在厦门交的医保泉州看病能报销吗
+2025-11-28 16:21:38.0106 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-28 16:21:38.0113 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-28 16:22:15.0318 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-28 16:22:15.0324 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-28 16:23:21.0930 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-28 16:23:21.0935 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-28 16:25:38.0583 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-28 16:25:38.0648 - DEBUG - graphrag.api.query - Executing streaming local search query: 我在厦门交的医保泉州看病能报销吗？
+2025-11-28 16:25:38.0993 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-28 16:25:39.0005 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-28 16:25:39.0028 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1764318338.7175121. QUERY: 我在厦门交的医保泉州看病能报销吗？
+2025-11-28 16:25:59.0450 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-28 16:25:59.0523 - DEBUG - graphrag.api.query - Executing streaming local search query: 我在厦门交的医保泉州看病能报销吗？
+2025-11-28 16:25:59.0926 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-28 16:25:59.0935 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-28 16:25:59.0957 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1764318359.5892856. QUERY: 我在厦门交的医保泉州看病能报销吗？
+2025-11-28 16:27:02.0439 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-28 16:27:02.0448 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-28 16:27:58.0612 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-28 16:27:58.0633 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-28 16:28:40.0802 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-28 16:28:40.0811 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-28 16:30:42.0789 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-28 16:30:42.0806 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-28 16:37:13.0191 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-28 16:37:13.0230 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-28 16:38:32.0947 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-28 16:38:32.0982 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2025-11-29 21:46:19.0736 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\ai_app\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2025-11-29 21:46:19.0863 - DEBUG - graphrag.api.query - Executing streaming local search query: 特殊病种怎么办
+2025-11-29 21:46:21.0335 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2025-11-29 21:46:21.0386 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1764423979.9291096. QUERY: 特殊病种怎么办
+2026-01-08 15:03:27.0797 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\medical-agent\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2026-01-08 15:03:28.0169 - DEBUG - graphrag.api.query - Executing streaming local search query: 父母是其他城市的户口，如何才能享受厦门的医保待遇
+2026-01-08 15:03:29.0493 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2026-01-08 15:03:29.0509 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2026-01-08 15:03:29.0546 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1767855809.0931294. QUERY: 父母是其他城市的户口，如何才能享受厦门的医保待遇
+2026-01-08 16:35:42.0435 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\medical-agent\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2026-01-08 16:35:42.0771 - DEBUG - graphrag.api.query - Executing streaming local search query: 异地就医哪些检查可以享受医保报销
+2026-01-08 16:35:44.0389 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2026-01-08 16:35:44.0452 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2026-01-08 16:35:44.0512 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1767861344.07119. QUERY: 异地就医哪些检查可以享受医保报销
+2026-01-09 13:02:39.0133 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\medical-agent\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2026-01-09 13:02:39.0515 - DEBUG - graphrag.api.query - Executing streaming local search query: 为什么每个月会从我的个人账户扣走7元呢？
+2026-01-09 13:02:41.0010 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2026-01-09 13:02:41.0151 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1767934960.5493124. QUERY: 为什么每个月会从我的个人账户扣走7元呢？
+2026-01-09 13:05:00.0628 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\medical-agent\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2026-01-09 13:05:00.0942 - DEBUG - graphrag.api.query - Executing streaming local search query: 去年住院没有报销，现在才能报销吗
+2026-01-09 13:05:01.0403 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2026-01-09 13:05:01.0551 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1767935101.1366737. QUERY: 去年住院没有报销，现在才能报销吗
+2026-01-09 16:05:49.0645 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\medical-agent\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2026-01-09 16:05:50.0154 - DEBUG - graphrag.api.query - Executing streaming local search query: 我在厦门市妇幼做试管过程中，目前是促排阶段，今年有相关的惠民政策吗
+2026-01-09 16:05:51.0756 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2026-01-09 16:05:51.0827 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2026-01-09 16:05:51.0890 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1767945951.3227084. QUERY: 我在厦门市妇幼做试管过程中，目前是促排阶段，今年有相关的惠民政策吗
+2026-01-09 17:06:21.0014 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\medical-agent\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2026-01-09 17:06:21.0424 - DEBUG - graphrag.api.query - Executing streaming local search query: 产检报销
+2026-01-09 17:06:23.0106 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2026-01-09 17:06:23.0253 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2026-01-09 17:06:23.0292 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1767949582.6279442. QUERY: 产检报销
+2026-01-09 17:07:26.0960 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2026-01-09 17:07:27.0046 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2026-01-16 15:20:50.0163 - DEBUG - graphrag.api.query - Vector Store Args: {
+    "default_vector_store": {
+        "type": "lancedb",
+        "db_uri": "D:\\dev\\medical-agent\\app\\core\\graph\\chatbot_zh\\output\\lancedb",
+        "url": null,
+        "audience": null,
+        "container_name": "==== REDACTED ====",
+        "database_name": null,
+        "overwrite": true,
+        "embeddings_schema": {}
+    }
+}
+2026-01-16 15:20:50.0601 - DEBUG - graphrag.api.query - Executing streaming local search query: 我今天开始交居民医保。等待期怎么计算？
+2026-01-16 15:20:52.0465 - WARNING - graphrag.query.context_builder.community_context - Warning: No community records added when building community context.
+2026-01-16 15:20:52.0535 - WARNING - graphrag.query.structured_search.local_search.mixed_context - Reached token limit - reverting to previous context state
+2026-01-16 15:20:52.0563 - DEBUG - graphrag.query.structured_search.local_search.search - GENERATE ANSWER: 1768548051.911388. QUERY: 我今天开始交居民医保。等待期怎么计算？
