@@ -53,7 +53,7 @@ class AgentFactory:
             self._initialized = True
 
     def _create_react_bot(self) -> ReActChat:
-        """创建医保助手实例"""
+        """创建公积金助手实例"""
         return ReActChat(
             llm=llm_cfg,
             system_message=MEDICAL_SYSTEM_MESSAGE,
@@ -70,7 +70,7 @@ class AgentFactory:
     
 
     def _create_realtime_bot(self) -> ReActChat:
-        """创建医保助手实例"""
+        """创建公积金助手实例"""
         return ReActChat(
             llm=llm_cfg,
             system_message=MEDICAL_SYSTEM_MESSAGE,
@@ -152,7 +152,7 @@ class AgentFactory:
 
         # 根据不同的 agent 类型返回不同的描述
         descriptions = {
-            'ReActChat': '医保政务服务助手 - 支持 ReAct 思维链和工具调用',
+            'ReActChat': '公积金政务服务助手 - 支持 ReAct 思维链和工具调用',
             'Assistant': '通用对话助手 - 基础问答功能',
             'QwenRagAssistant': 'RAG 增强助手 - 支持知识库检索增强'
         }

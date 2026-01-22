@@ -173,7 +173,7 @@ class VoteService:
                     WHEN a.metadata_->>'client' = 'h5' THEN 'H5'
                     WHEN a.metadata_->>'client' = 'miniprogram' THEN '小程序'
                     WHEN a.metadata_->>'client' = 'mp' THEN '公众号'
-                    WHEN a.metadata_->>'client' = '医保' THEN '医保'
+                    WHEN a.metadata_->>'client' = '公积金' THEN '公积金'
                     WHEN a.metadata_->>'client' = 'rexian' THEN '热线'
                     ELSE a.metadata_->>'client'
                 END as client_type
@@ -305,7 +305,7 @@ class VoteService:
                     WHEN a.metadata_->>'client' = 'h5' THEN 'H5'
                     WHEN a.metadata_->>'client' = 'miniprogram' THEN '小程序'
                     WHEN a.metadata_->>'client' = 'mp' THEN '公众号'
-                    WHEN a.metadata_->>'client' = '医保' THEN '医保'
+                    WHEN a.metadata_->>'client' = '公积金' THEN '公积金'
                     WHEN a.metadata_->>'client' = 'rexian' THEN '热线'
                     ELSE a.metadata_->>'client'
                 END as client_type
@@ -365,7 +365,7 @@ class VoteService:
                     WHEN a.metadata_->>'client' = 'h5' THEN 'H5'
                     WHEN a.metadata_->>'client' = 'miniprogram' THEN '小程序'
                     WHEN a.metadata_->>'client' = 'mp' THEN '公众号'
-                    WHEN a.metadata_->>'client' = '医保' THEN '医保'
+                    WHEN a.metadata_->>'client' = '公积金' THEN '公积金'
                     WHEN a.metadata_->>'client' = 'rexian' THEN '热线'
                     ELSE a.metadata_->>'client'
                 END as client_type

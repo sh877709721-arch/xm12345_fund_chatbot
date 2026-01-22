@@ -29,7 +29,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       id: 0,
       role: "assistant",
       content:
-        "您好！我是你的医保服务小助手，你可以叫我小E。我熟悉医保各类政策法规、办事流程和便民服务信息，随时准备为你提供准确、及时的帮助。",
+        "您好！我是你的公积金服务小助手，你可以叫我小金灵。我熟悉公积金各类政策法规、办事流程和便民服务信息，随时准备为你提供准确、及时的帮助。",
     },
   ]);
 

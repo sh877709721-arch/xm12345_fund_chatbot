@@ -207,7 +207,7 @@ class DashboardService:
             end_date: 结束日期（可选）
 
         Returns:
-            SourceStats: 包含各来源（网页、H5、小程序、公众号、医保、热线等）的问答分布
+            SourceStats: 包含各来源（网页、H5、小程序、公众号、公积金、热线等）的问答分布
         """
         # 如果没有指定日期范围，默认使用最近7天
         if not end_date:
@@ -223,7 +223,7 @@ class DashboardService:
                     WHEN metadata_->>'client' = 'h5' THEN 'H5'
                     WHEN metadata_->>'client' = 'miniprogram' THEN '小程序'
                     WHEN metadata_->>'client' = 'mp' THEN '公众号'
-                    WHEN metadata_->>'client' = '医保' THEN '医保'
+                    WHEN metadata_->>'client' = '公积金' THEN '公积金'
                     WHEN metadata_->>'client' = 'rexian' THEN '热线'
                     WHEN metadata_->>'client' IS NOT NULL THEN metadata_->>'client'
                     ELSE '未知'

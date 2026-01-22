@@ -1,6 +1,6 @@
 """
 用户意图识别和问题改写MCP工具
-用于医疗保险领域的智能意图分类和问题优化
+用于公积金领域的智能意图分类和问题优化
 """
 
 from mcp.server.fastmcp import FastMCP
@@ -32,8 +32,8 @@ class IntentResult:
     clarification_question: str        # 新增：反问内容
     
 
-class MedicalInsuranceIntentRecognizer:
-    """医疗保险意图识别器"""
+class ProvidentFundIntentRecognizer:
+    """公积金意图识别器"""
 
     def __init__(self):
         self.intent_taxonomy = self._build_intent_taxonomy()
@@ -43,404 +43,473 @@ class MedicalInsuranceIntentRecognizer:
         self.completeness_rules = self._build_completeness_rules()  # 新增：完整性规则
 
     def _build_intent_taxonomy(self) -> Dict:
-        """构建意图分类体系"""
+        """构建公积金意图分类体系"""
         return {
-            "职工基本医疗保险": {
-                "参保缴费": {
-                    "参保对象": ["职工", "单位职工", "在职人员", "企业员工", "机关事业单位", "灵活就业"],
-                    "缴费标准": ["缴费", "费用", "标准", "基数", "比例", "多少钱"],
-                    "参保缴费方式": ["怎么交", "如何缴纳", "缴费方式", "代扣", "自缴"],
-                    "参保缴费纠纷处理": ["纠纷", "争议", "投诉", "维权", "问题", "错误"],
-                    "重复参保处理": ["重复参保", "多地参保", "双重参保", "冲突"],
-                    "退费": ["退费", "退款", "返还", "多缴", "错缴"]
+            "公积金缴存业务": {
+                "缴存管理": {
+                    "缴存对象": ["单位职工", "灵活就业人员", "个人自愿缴存", "企业员工", "机关事业单位", "缴存人"],
+                    "缴存基数与比例": ["缴存基数", "缴存比例", "基数上限", "比例范围", "调整基数"],
+                    "缴存方式（单位/个人）": ["单位缴存", "个人缴存", "代扣", "自缴", "汇缴"],
+                    "缴存变更（增员/减员）": ["增员", "减员", "新增缴存", "停止缴存", "人员变更"],
+                    "补缴与缓缴规定": ["补缴", "缓缴", "补缴流程", "缓缴条件", "补缴费用"],
+                    "缴存纠纷处理": ["缴存纠纷", "未缴", "少缴", "投诉", "维权", "缴存问题"]
                 },
-                "医疗待遇": {
-                    "待遇生效时间": ["生效时间", "开始时间", "等待期", "何时享受"],
-                    "连续参保机制": ["连续参保", "断缴", "补缴", "连续性"],
-                    "医保账户划拨": ["个人账户", "账户划拨", "返钱", "划入比例"],
-                    "大病医保": ["大病", "重疾", "大病保险", "高额医疗"],
-                    "医疗救助": ["医疗救助", "困难群众", "补助", "救助金"],
-                    "待遇标准": ["报销比例", "封顶线", "起付线", "待遇标准"],
-                    "就医使用": ["怎么用", "如何使用", "就医流程", "刷卡"]
+                "缴存相关": {
+                    "缴存明细查询": ["缴存明细", "缴费记录", "查询缴存", "缴存历史"],
+                    "缴存证明开具": ["缴存证明", "开具证明", "公积金证明", "提取证明"],
+                    "汇缴托收办理": ["汇缴", "托收", "自动汇缴", "委托缴存"],
+                    "退费办理": ["退费", "退款", "返还", "多缴退费", "错缴返还"],
+                    "重复缴存处理": ["重复缴存", "多地缴存", "双重缴存", "缴存冲突"]
                 },
-                "办事指南": {
-                    "医疗费用报销办理": ["报销", "费用报销", "理赔", "怎么报销"],
-                    "异地就医备案办理": ["异地就医", "外地就医", "备案", "转诊"],
-                    "家庭共济办理": ["家庭共济", "家人使用", "配偶", "子女", "父母"],
-                    "医保退休办理": ["医保退休", "退休医保", "缴费年限"],
-                    "个人账户一次性支取办理": ["一次性支取", "账户提取", "清户", "销户"]
-                },
-                "转移接续手续办理": ["转移", "接续", "外地转入", "本地转出", "关系转移"]
-            },
-            "城乡居民医疗保险": {
-                "参保缴费": {
-                    "参保对象": ["居民", "城乡居民", "学生", "儿童", "老人", "无业人员"],
-                    "缴费标准": ["缴费", "费用", "标准", "多少钱", "保费"],
-                    "参保缴费方式": ["怎么交", "如何缴纳", "缴费方式", "线上缴费"],
-                    "重复参保": ["重复参保", "双重参保", "冲突"],
-                    "退费": ["退费", "退款", "返还", "多缴"]
-                },
-                "医疗待遇": {
-                    "待遇生效时间": ["生效时间", "开始时间", "等待期"],
-                    "参保长效机制": ["长效机制", "连续参保", "激励机制"],
-                    "医保账户划拨": ["个人账户", "账户划拨", "门诊统筹"],
-                    "大病医保": ["大病", "重疾", "大病保险"],
-                    "医疗救助": ["医疗救助", "困难群众", "补助"],
-                    "待遇标准": ["报销比例", "封顶线", "起付线"],
-                    "就医使用": ["怎么用", "如何使用", "就医流程"]
-                },
-                "办事指南": {
-                    "医疗费用报销办理": ["报销", "费用报销", "理赔"],
-                    "异地就医备案办理": ["异地就医", "外地就医", "备案"],
-                    "家庭共济办理": ["家庭共济", "家人使用"],
-                    "转移接续手续办理": ["转移", "接续", "外地转入"]
+                "缴存办理指南": {
+                    "单位缴存登记": ["单位开户", "缴存登记", "单位注册", "开户流程"],
+                    "个人自愿缴存申请": ["个人开户", "自愿缴存", "个人缴存申请"],
+                    "缴存基数调整办理": ["基数调整", "调整缴存基数", "基数变更"],
+                    "单位缴存信息变更": ["单位信息变更", "缴存信息修改", "单位名称变更"]
                 }
             },
-            "生育保险": {
-                "参保缴费": {
-                    "参保对象": ["生育保险", "参保对象", "覆盖范围"],
-                    "缴费标准": ["生育缴费", "费用标准", "缴费比例"],
-                    "参保缴费方式": ["生育缴费方式", "怎么交"],
-                    "参保缴费纠纷处理": ["生育纠纷", "争议处理"]
+            "公积金提取业务": {
+                "提取类型": {
+                    "购房提取": ["购房提取", "买房提取", "购房取公积金", "买房提公积金"],
+                    "租房提取": ["租房提取", "租房取公积金", "租房提公积金"],
+                    "离职提取": ["离职提取", "辞职提取", "失业提取", "外地户籍离职"],
+                    "退休提取": ["退休提取", "离休提取", "退休取公积金"],
+                    "代际互助提取": ["代际互助", "父母提取", "子女提取", "亲属互助"],
+                    "其他提取（出境/大病等）": ["出境提取", "大病提取", "残疾提取", "低保提取", "死亡提取"]
                 },
-                "生育待遇": {
-                    "生育津贴待遇": ["生育津贴", "产假工资", "津贴标准"],
-                    "男职工未就业配偶生育医疗费用待遇": ["配偶待遇", "男方配偶", "未就业配偶"],
-                    "其他待遇": ["生育医疗", "产检", "分娩费用"]
+                "提取管理": {
+                    "提取条件": ["提取条件", "提取资格", "符合什么条件", "提取要求"],
+                    "提取额度": ["提取额度", "能提多少", "提取上限", "提取金额"],
+                    "提取频次": ["提取次数", "多久提一次", "提取频率"],
+                    "提取限制": ["提取限制", "不能提取", "提取禁区", "限制条件"]
                 },
-                "办事指南": {
-                    "生育津贴办理": ["津贴办理", "生育津贴申请", "如何申请"],
-                    "男职工未就业配偶生育医疗费用办理": ["配偶费用", "男方报销"]
+                "提取办理指南": {
+                    "提取材料准备": ["提取材料", "需要什么材料", "材料清单", "证明材料"],
+                    "线上提取办理": ["线上提取", "微信提取", "官网提取", "支付宝提取"],
+                    "线下提取办理": ["线下提取", "窗口提取", "银行提取", "现场提取"],
+                    "提取进度查询": ["提取进度", "查询提取", "提取状态", "办理进度"],
+                    "提取到账查询": ["到账时间", "提取到账", "多久到账", "到账查询"]
                 }
             },
-            "其他医药政策": {
-                "药品（含项目、耗材）政策": {
-                    "药品目录": ["药品目录", "医保药品", "甲类乙类", "目录内药品"],
-                    "医疗服务项目目录": ["服务项目", "诊疗项目", "医疗服务"],
-                    "医用耗材目录": ["医用耗材", "器械", "植入材料"]
+            "公积金贷款业务": {
+                "贷款申请": {
+                    "贷款条件": ["贷款条件", "贷款资格", "申请条件", "贷款要求"],
+                    "贷款额度计算": ["贷款额度", "能贷多少", "额度计算", "贷款上限"],
+                    "贷款期限规定": ["贷款期限", "还款年限", "贷款年限", "期限上限"],
+                    "贷款利率标准": ["贷款利率", "利率多少", "利息标准", "利率调整"],
+                    "贷款申请材料": ["贷款材料", "申请材料", "材料清单", "贷款证明"]
                 },
-                "DRG收费及按病种收费政策": {
-                    "厦门市定点医疗机构就医": ["厦门DRG", "厦门病种收费", "厦门定点"],
-                    "省内异地定点医疗机构就医": ["省内异地", "DRG异地"]
+                "贷款管理": {
+                    "还款方式": ["还款方式", "等额本息", "等额本金", "还款选择"],
+                    "还款额度调整": ["还款调整", "调整月供", "额度变更", "还款额修改"],
+                    "提前还款规定": ["提前还款", "提前还贷", "提前结清", "部分还款"],
+                    "贷款展期办理": ["贷款展期", "展期申请", "延长贷款期限"],
+                    "贷款变更（还款账户/方式）": ["还款账户变更", "变更还款方式", "账户修改"]
                 },
-                "辅助生殖政策": {
-                    "福建省辅助生殖类医疗服务价格项目及省属公立医院项目价格表": ["辅助生殖", "试管婴儿", "人工授精", "价格表"],
-                    "辅助生殖医保支付政策": ["辅助生殖医保", "试管医保", "支付政策"]
+                "贷款办理指南": {
+                    "贷款申请流程": ["贷款流程", "申请流程", "办理步骤", "贷款手续"],
+                    "贷款审批时限": ["审批时间", "多久审批", "审批时限", "审核时间"],
+                    "异地贷款办理": ["异地贷款", "外地买房贷款", "跨省贷款", "省内异地贷款"],
+                    "商转公贷款办理": ["商转公", "商业贷款转公积金", "商转公流程"],
+                    "贷款进度查询": ["贷款进度", "查询贷款", "贷款状态", "审批进度"]
+                }
+            },
+            "公积金账户管理业务": {
+                "账户维护": {
+                    "个人账户设立": ["账户设立", "开户", "个人账户开户", "新建账户"],
+                    "账户封存与启封": ["账户封存", "封存账户", "启封", "账户解封"],
+                    "账户信息变更": ["信息变更", "姓名变更", "身份证变更", "账户修改"],
+                    "账户注销": ["账户注销", "销户", "注销公积金账户"],
+                    "异地转移接续": ["异地转移", "转移公积金", "转入", "转出", "异地接续"]
                 },
-                "补充医疗保险": {
-                    "惠厦保": ["惠厦保", "补充保险", "商业保险"]
+                "账户查询": {
+                    "账户余额查询": ["余额查询", "查公积金余额", "账户余额", "余额多少"],
+                    "账户状态查询": ["账户状态", "查询状态", "封存状态", "正常状态"],
+                    "业务办理记录查询": ["办理记录", "业务记录", "查询历史", "操作记录"],
+                    "个人缴存证明打印": ["打印缴存证明", "证明打印", "打印公积金证明"]
                 },
-                "长期护理险政策": ["长期护理", "护理保险", "失能护理"]
+                "账户办理指南": {
+                    "单位账户管理": ["单位账户", "单位账户查询", "单位账户维护"],
+                    "个人账户异地转入": ["异地转入", "转入公积金", "外地转入"],
+                    "账户信息更正办理": ["信息更正", "账户纠错", "修改错误信息"],
+                    "家庭共济账户绑定": ["家庭共济", "账户绑定", "家人绑定", "共济绑定"]
+                }
+            },
+            "其他公积金政策": {
+                "专项业务政策": {
+                    "代际互助业务": ["代际互助政策", "互助提取规则", "亲属提取政策"],
+                    "老旧住宅加装电梯提取": ["加装电梯提取", "电梯提取", "住宅电梯提取"],
+                    "保障性住房相关公积金政策": ["保障房公积金", "保障性住房提取", "保障房贷款"]
+                },
+                "补充政策": {
+                    "公积金政策法规解读": ["政策解读", "法规说明", "政策解释", "新规解读"],
+                    "便民服务（上门/预约）": ["上门服务", "预约服务", "便民服务", "预约办理"],
+                    "线上渠道操作指引": ["线上操作", "网厅操作", "小程序操作", "线上指南"],
+                    "受托银行业务网点查询": ["银行网点", "经办银行", "网点查询", "银行地址"]
+                }
             }
         }
 
-    def _build_keyword_mappings(self) -> Dict:
-        """构建关键词映射"""
-        return {
-            # 同义词映射
-            "医保": ["医疗保险", "医保", "社保医保", "基本医疗保险"],
-            "报销": ["费用报销", "理赔", "结算", "费用返还"],
-            "缴费": ["交费", "缴纳", "保费", "费用"],
-            "账户": ["个人账户", "医保账户", "账户余额"],
-            "异地": ["外地", "其他城市", "非参保地"],
-            "生育": ["生孩子", "生育津贴", "产假"],
-            "退休": ["养老", "退休人员", "退职"],
-            "大病": ["重大疾病", "重疾", "大病保险"],
-            "救助": ["补助", "救助金", "困难补助"]
-        }
-
-    def _build_synonym_dict(self) -> Dict:
-        """构建同义词字典"""
-        return {
-            "职工": ["员工", "在职人员", "工作者"],
-            "居民": ["城乡居民", "城镇居民", "农村居民"],
-            "费用": ["钱", "金额", "收费", "价格"],
-            "办理": ["申请", "手续", "流程"],
-            "标准": ["规定", "政策", "制度"],
-            "待遇": ["福利", "保障", "权益"],
-            "备案": ["登记", "记录", "报备"]
-        }
-
-    def _build_pattern_rules(self) -> List[Tuple[str, Dict]]:
-        """构建模式匹配规则"""
-        return [
-            # 职工医保相关模式
-            (r'职工.*?医保|在职.*?医保|单位.*?医保', {"first_level": "职工基本医疗保险"}),
-            (r'灵活就业.*?医保|个人.*?职工医保', {"first_level": "职工基本医疗保险"}),
-
-            # 居民医保相关模式
-            (r'居民.*?医保|城乡.*?医保|学生.*?医保', {"first_level": "城乡居民医疗保险"}),
-
-            # 生育保险相关模式
-            (r'生育.*?津贴|产假.*?工资|生孩子.*?补贴', {"first_level": "生育保险", "second_level": "生育待遇", "third_level": "生育津贴待遇"}),
-            (r'男职工.*?配偶|未就业.*?配偶.*?生育', {"first_level": "生育保险", "second_level": "生育待遇", "third_level": "男职工未就业配偶生育医疗费用待遇"}),
-
-            # 异地就医相关模式
-            (r'异地.*?就医|外地.*?就医|跨省.*?就医', {"action": "异地就医备案"}),
-
-            # 报销相关模式
-            (r'怎么.*?报销|如何.*?报销|费用.*?报销', {"action": "医疗费用报销"}),
-
-            # 缴费相关模式
-            (r'怎么.*?缴费|如何.*?缴费|缴费.*?方式', {"action": "参保缴费"}),
-
-            # 账户相关模式
-            (r'个人.*?账户|账户.*?余额|账户.*?划拨', {"second_level": "医疗待遇", "third_level": "医保账户划拨"}),
-
-            # 转移相关模式
-            (r'关系.*?转移|转移.*?接续|外地.*?转入', {"second_level": "转移接续手续办理"}),
-
-            # 家庭共济相关模式
-            (r'家庭.*?共济|家人.*?使用|配偶.*?使用', {"second_level": "办事指南", "third_level": "家庭共济办理"}),
-
-            # 大病相关模式
-            (r'大病.*?保险|重疾.*?保险|高额.*?医疗', {"second_level": "医疗待遇", "third_level": "大病医保"}),
-        ]
-
-    def _build_completeness_rules(self) -> Dict:
-        """构建信息完整性规则字典"""
-        return {
-            "医疗费用报销办理": {
-                "required_slots": ["就医类型"],
-                "fallback_question": "请问您需要报销的是门诊还是住院费用？"
-            },
-            "异地就医备案办理": {
-                "required_slots": ["就医地"],
-                "fallback_question": "请问您计划去哪个城市就医？"
-            },
-            "参保缴费方式": {
-                "required_slots": ["参保类型"],
-                "fallback_question": "请问您是职工、灵活就业人员，还是城乡居民？"
-            },
-            "缴费标准": {
-                "required_slots": ["参保类型"],
-                "fallback_question": "请问您想了解职工医保还是居民医保的缴费标准？"
-            },
-            "参保对象": {
-                "required_slots": ["参保类型"],
-                "fallback_question": "请问您想了解哪类人群的参保政策？"
-            },
-            "生育津贴待遇": {
-                "required_slots": ["性别", "在职状态"],
-                "fallback_question": "请问您是男职工还是女职工？目前是否在职？"
-            },
-            "男职工未就业配偶生育医疗费用待遇": {
-                "required_slots": ["配偶状态"],
-                "fallback_question": "请问您的配偶目前是否就业？"
-            },
-            "医保退休办理": {
-                "required_slots": ["退休状态", "缴费年限"],
-                "fallback_question": "请问您是否已退休？医保缴费满多少年了？"
-            },
-            "家庭共济办理": {
-                "required_slots": ["家庭关系"],
-                "fallback_question": "请问您想为哪位家人办理共济（配偶、子女还是父母）？"
-            },
-            "个人账户一次性支取办理": {
-                "required_slots": ["支取原因"],
-                "fallback_question": "请问您是因为什么情况需要一次性支取医保个人账户资金？"
-            },
-            "转移接续手续办理": {
-                "required_slots": ["转移类型", "转移地区"],
-                "fallback_question": "请问您需要从外地转入还是转出到外地？具体是哪个地区？"
+        def _build_keyword_mappings(self) -> Dict:
+            """构建公积金关键词映射"""
+            return {
+                # 同义词映射
+                "公积金": ["住房公积金", "公积金账户", "住房公积金账户", "厦公积金"],
+                "提取": ["支取", "提取公积金", "取公积金", "公积金提取", "销户提取"],
+                "缴存": ["缴纳", "缴存公积金", "交公积金", "公积金缴存", "缴存金额"],
+                "贷款": ["公积金贷款", "购房贷款", "房贷", "公积金房贷", "住房贷款"],
+                "账户": ["公积金账户", "个人账户", "单位账户", "账户余额", "公积金账户状态"],
+                "异地": ["外地", "非缴存地", "异地缴存", "跨省", "省内异地"],
+                "转移": ["异地转移", "账户转移", "公积金转移", "转移接续", "转入转出"],
+                "封存": ["账户封存", "封存公积金", "停缴封存", "公积金封存"],
+                "启封": ["账户启封", "启封公积金", "恢复缴存"],
+                "代际互助": ["亲属互助", "父母子女互助", "互助提取", "代际提取"],
+                "还款": ["还贷", "偿还贷款", "公积金还款", "月供", "提前还款"]
             }
-        }
 
-    def _extract_slots(self, query: str) -> Dict[str, bool]:
-        """从查询中抽取关键槽位是否存在"""
-        query_lower = query.lower()
-        return {
-            "就医类型": any(kw in query_lower for kw in ["门诊", "住院", "急诊", "门急诊", "门特", "门诊特殊病"]),
-            "就医地": any(kw in query_lower for kw in [
-                "北京", "上海", "厦门", "外地", "城市", "某地", "哪个城市", "广州", "深圳", "杭州",
-                "南京", "武汉", "成都", "重庆", "天津", "西安", "青岛", "大连", "宁波", "苏州"
-            ]),
-            "参保类型": any(kw in query_lower for kw in [
-                "职工", "灵活就业", "居民", "学生", "老人", "城乡居民", "单位职工", "在职人员",
-                "企业员工", "机关事业单位", "无业人员", "儿童", "学龄前儿童"
-            ]),
-            "性别": any(kw in query_lower for kw in ["男", "女", "男性", "女性", "先生", "女士"]),
-            "在职状态": any(kw in query_lower for kw in ["在职", "退休", "离职", "工作", "失业", "就业"]),
-            "配偶状态": any(kw in query_lower for kw in ["配偶", "爱人", "妻子", "丈夫", "老婆", "老公", "未就业", "失业"]),
-            "退休状态": any(kw in query_lower for kw in ["退休", "退休人员", "养老", "退休年龄", "退休条件"]),
-            "缴费年限": any(kw in query_lower for kw in ["缴费年限", "缴费年数", "累计缴费", "连续缴费", "缴费满", "缴费多少年"]),
-            "家庭关系": any(kw in query_lower for kw in ["配偶", "子女", "父母", "家人", "父亲", "母亲", "儿子", "女儿", "孩子"]),
-            "支取原因": any(kw in query_lower for kw in ["死亡", "出国", "移民", "转出", "销户", "清户", "继承", "遗属"]),
-            "转移类型": any(kw in query_lower for kw in ["转入", "转出", "转移", "接续", "外地转入", "本地转出"]),
-            "转移地区": any(kw in query_lower for kw in ["外地", "其他城市", "省外", "省内", "厦门", "北京", "上海", "广州", "深圳"])
-        }
+        def _build_synonym_dict(self) -> Dict:
+            """构建公积金同义词字典"""
+            return {
+                "缴存人": ["公积金缴存者", "缴存职工", "个人缴存户", "单位缴存员工"],
+                "灵活就业人员": ["自由职业者", "个体从业者", "自主就业人员", "个人缴存人员"],
+                "缴存额": ["缴存金额", "缴纳数额", "缴存费用", "缴存款项"],
+                "办理": ["申请", "申办", "经办", "手续办理", "业务办理"],
+                "标准": ["规定", "政策", "基数标准", "比例标准", "缴存规范"],
+                "权益": ["业务权益", "提取权益", "贷款权益", "公积金保障"],
+                "登记": ["备案", "报备", "账户登记", "业务报备", "信息登记"],
+                "封存": ["账户封存", "停缴封存", "封存登记", "缴存暂停"],
+                "提取额": ["提取金额", "支取数额", "可提额度", "提取款项"],
+                "贷款额": ["贷款金额", "可贷额度", "贷款数额", "放款金额"]
+            }
 
-    def _preprocess_query(self, query: str) -> str:
-        """预处理查询文本"""
-        # 转换为小写
-        query = query.lower()
-        # 移除多余空格
-        query = re.sub(r'\s+', ' ', query).strip()
-        # 替换同义词
-        for main_word, synonyms in self.synonym_dict.items():
-            for synonym in synonyms:
-                query = query.replace(synonym, main_word)
-        return query
+        def _build_pattern_rules(self) -> List[Tuple[str, Dict]]:
+            """构建公积金模式匹配规则"""
+            return [
+                # 公积金缴存业务相关模式
+                (r'单位.*?公积金|职工.*?缴存|企业.*?缴存', {"first_level": "公积金缴存业务", "second_level": "缴存管理"}),
+                (r'灵活就业.*?公积金|个人.*?缴存|自愿.*?缴存', {"first_level": "公积金缴存业务", "second_level": "缴存管理", "third_level": "缴存方式（单位/个人）"}),
+                (r'增员.*?公积金|减员.*?公积金|人员.*?变更', {"first_level": "公积金缴存业务", "second_level": "缴存管理", "third_level": "缴存变更（增员/减员）"}),
 
-    def _calculate_keyword_similarity(self, query: str, keywords: List[str]) -> float:
-        """计算关键词相似度"""
-        query_words = set(jieba.lcut(query))
-        keyword_matches = 0
+                # 公积金提取业务相关模式
+                (r'购房.*?提取|买房.*?公积金|购房.*?取', {"first_level": "公积金提取业务", "second_level": "提取类型", "third_level": "购房提取"}),
+                (r'租房.*?提取|租房.*?公积金', {"first_level": "公积金提取业务", "second_level": "提取类型", "third_level": "租房提取"}),
+                (r'离职.*?提取|辞职.*?公积金|外地户籍.*?离职', {"first_level": "公积金提取业务", "second_level": "提取类型", "third_level": "离职提取"}),
+                (r'退休.*?提取|离休.*?公积金', {"first_level": "公积金提取业务", "second_level": "提取类型", "third_level": "退休提取"}),
+                (r'代际.*?互助|父母.*?提取|子女.*?提取', {"first_level": "公积金提取业务", "second_level": "提取类型", "third_level": "代际互助提取"}),
 
-        for keyword in keywords:
-            keyword_words = set(jieba.lcut(keyword.lower()))
-            if query_words & keyword_words:
-                keyword_matches += 1
+                # 公积金贷款业务相关模式
+                (r'公积金.*?贷款|购房.*?贷款|房贷.*?公积金', {"first_level": "公积金贷款业务", "second_level": "贷款申请"}),
+                (r'提前.*?还款|提前.*?还贷|部分.*?还款', {"first_level": "公积金贷款业务", "second_level": "贷款管理", "third_level": "提前还款规定"}),
+                (r'商转公.*?贷款|商业贷款.*?转', {"first_level": "公积金贷款业务", "second_level": "贷款办理指南", "third_level": "商转公贷款办理"}),
 
-        return keyword_matches / len(keywords) if keywords else 0
+                # 公积金账户管理相关模式
+                (r'公积金.*?账户|账户.*?余额|账户.*?封存', {"first_level": "公积金账户管理业务", "second_level": "账户维护"}),
+                (r'异地.*?转移|外地.*?公积金|转移.*?接续', {"first_level": "公积金账户管理业务", "second_level": "账户维护", "third_level": "异地转移接续"}),
+                (r'账户.*?变更|姓名.*?变更|身份证.*?修改', {"first_level": "公积金账户管理业务", "second_level": "账户维护", "third_level": "账户信息变更"}),
 
-    def _pattern_match(self, query: str) -> Optional[Dict]:
-        """模式匹配"""
-        for pattern, result in self.pattern_rules:
-            if re.search(pattern, query):
-                return result
-        return None
+                # 业务办理相关模式
+                (r'怎么.*?提取|如何.*?提取|提取.*?流程', {"action": "提取办理"}),
+                (r'怎么.*?缴存|如何.*?缴存|缴存.*?方式', {"action": "缴存办理"}),
+                (r'怎么.*?贷款|如何.*?贷款|贷款.*?流程', {"action": "贷款办理"}),
 
-    def _hierarchical_match(self, query: str) -> Tuple[float, Dict]:
-        """层级匹配"""
-        best_score = 0.0
-        best_match = {}
+                # 专项业务相关模式
+                (r'加装电梯.*?提取|电梯.*?公积金', {"first_level": "其他公积金政策", "second_level": "专项业务政策", "third_level": "老旧住宅加装电梯提取"}),
+                (r'保障房.*?公积金|保障性住房.*?提取', {"first_level": "其他公积金政策", "second_level": "专项业务政策", "third_level": "保障性住房相关公积金政策"}),
+            ]
 
-        for first_level, second_level_data in self.intent_taxonomy.items():
-            first_level_score = self._calculate_keyword_similarity(query, [first_level])
+        def _build_completeness_rules(self) -> Dict:
+            """构建公积金信息完整性规则字典"""
+            return {
+                "购房提取": {
+                    "required_slots": ["购房类型"],
+                    "fallback_question": "请问您是本地购房还是异地购房？"
+                },
+                "租房提取": {
+                    "required_slots": ["备案状态"],
+                    "fallback_question": "请问您的租房是否已在住房租赁交易服务系统备案？"
+                },
+                "离职提取": {
+                    "required_slots": ["户籍类型"],
+                    "fallback_question": "请问您是本地户籍还是外地户籍？"
+                },
+                "代际互助提取": {
+                    "required_slots": ["亲属关系"],
+                    "fallback_question": "请问您与购房人是父母子女中的哪种亲属关系？"
+                },
+                "公积金贷款申请": {
+                    "required_slots": ["缴存时长", "购房类型"],
+                    "fallback_question": "请问您公积金缴存满多久了？是本地购房还是异地购房？"
+                },
+                "提前还款规定": {
+                    "required_slots": ["贷款状态"],
+                    "fallback_question": "请问您的公积金贷款目前是正常还款中还是处于其他状态？"
+                },
+                "商转公贷款办理": {
+                    "required_slots": ["商业贷款状态"],
+                    "fallback_question": "请问您的商业贷款目前是否正常还款？"
+                },
+                "异地转移接续": {
+                    "required_slots": ["转移类型", "转移地区"],
+                    "fallback_question": "请问您是要将公积金转入厦门还是转出厦门？具体涉及哪个地区？"
+                },
+                "缴存基数调整办理": {
+                    "required_slots": ["缴存类型"],
+                    "fallback_question": "请问您是单位缴存职工还是个人自愿缴存人员？"
+                },
+                "单位缴存登记": {
+                    "required_slots": ["单位类型"],
+                    "fallback_question": "请问您的单位是企业、机关事业单位还是其他类型？"
+                },
+                "账户信息变更": {
+                    "required_slots": ["变更类型"],
+                    "fallback_question": "请问您要变更的是姓名、身份证号还是银行卡等信息？"
+                },
+                "老旧住宅加装电梯提取": {
+                    "required_slots": ["产权关系"],
+                    "fallback_question": "请问您是房屋产权人还是产权人的子女？"
+                },
+                "灵活就业缴存申请": {
+                    "required_slots": ["就业状态"],
+                    "fallback_question": "请问您目前是否处于灵活就业状态？"
+                }
+            }
 
-            if isinstance(second_level_data, dict):
-                # 有二级分类
-                for second_level, third_level_data in second_level_data.items():
-                    second_level_score = self._calculate_keyword_similarity(query, [second_level])
+        def _extract_slots(self, query: str) -> Dict[str, bool]:
+            """从查询中抽取公积金关键槽位是否存在"""
+            query_lower = query.lower()
+            return {
+                "提取类型": any(kw in query_lower for kw in [
+                    "购房", "租房", "离职", "退休", "离休", "代际互助", "出境", "大病", "残疾", 
+                    "低保", "死亡", "加装电梯", "拆迁", "拍卖房", "自建房", "大修"
+                ]),
+                "贷款类型": any(kw in query_lower for kw in [
+                    "公积金贷款", "商转公", "组合贷款", "异地贷款", "购房贷款", "房贷"
+                ]),
+                "缴存类型": any(kw in query_lower for kw in [
+                    "单位缴存", "个人缴存", "灵活就业", "自愿缴存", "职工缴存"
+                ]),
+                "户籍类型": any(kw in query_lower for kw in [
+                    "本地户籍", "外地户籍", "厦门户籍", "非厦门户籍", "户籍"
+                ]),
+                "购房类型": any(kw in query_lower for kw in [
+                    "本地购房", "异地购房", "新建商品住房", "二手房", "拍卖房", "拆迁安置房", 
+                    "保障性住房", "自建房", "预售房"
+                ]),
+                "备案状态": any(kw in query_lower for kw in [
+                    "备案", "未备案", "住房租赁备案", "房屋备案"
+                ]),
+                "亲属关系": any(kw in query_lower for kw in [
+                    "父母", "子女", "配偶", "亲属", "父子", "母子", "父女", "母女"
+                ]),
+                "转移类型": any(kw in query_lower for kw in [
+                    "转入", "转出", "异地转移", "转移接续", "本地转入", "外地转出"
+                ]),
+                "转移地区": any(kw in query_lower for kw in [
+                    "厦门", "省内", "省外", "福州", "泉州", "漳州", "北京", "上海", "广州", 
+                    "深圳", "外地", "其他城市", "跨省", "跨市"
+                ]),
+                "缴存时长": any(kw in query_lower for kw in [
+                    "缴存年限", "缴存年数", "累计缴存", "连续缴存", "缴存满", "缴存多少年"
+                ]),
+                "贷款状态": any(kw in query_lower for kw in [
+                    "正常还款", "提前还款", "部分还款", "结清", "贷款展期", "还款中"
+                ]),
+                "变更类型": any(kw in query_lower for kw in [
+                    "姓名", "身份证号", "银行卡", "联系方式", "单位信息", "缴存基数"
+                ]),
+                "产权关系": any(kw in query_lower for kw in [
+                    "产权人", "产权人子女", "共有人", "房屋产权", "产权证明"
+                ]),
+                "就业状态": any(kw in query_lower for kw in [
+                    "灵活就业", "在职", "离职", "失业", "就业", "退休"
+                ]),
+                "单位类型": any(kw in query_lower for kw in [
+                    "企业", "机关事业单位", "个体户", "社会组织", "公司"
+                ])
+            }
 
-                    if isinstance(third_level_data, dict):
-                        # 有三级分类
-                        for third_level, keywords in third_level_data.items():
-                            third_level_score = self._calculate_keyword_similarity(query, keywords)
-                            total_score = (first_level_score * 0.3 +
-                                         second_level_score * 0.3 +
-                                         third_level_score * 0.4)
+        def _preprocess_query(self, query: str) -> str:
+            """预处理查询文本"""
+            # 转换为小写
+            query = query.lower()
+            # 移除多余空格
+            query = re.sub(r'\s+', ' ', query).strip()
+            # 替换同义词
+            for main_word, synonyms in self.synonym_dict.items():
+                for synonym in synonyms:
+                    query = query.replace(synonym, main_word)
+            return query
+
+        def _calculate_keyword_similarity(self, query: str, keywords: List[str]) -> float:
+            """计算关键词相似度"""
+            query_words = set(jieba.lcut(query))
+            keyword_matches = 0
+
+            for keyword in keywords:
+                keyword_words = set(jieba.lcut(keyword.lower()))
+                if query_words & keyword_words:
+                    keyword_matches += 1
+
+            return keyword_matches / len(keywords) if keywords else 0
+
+        def _pattern_match(self, query: str) -> Optional[Dict]:
+            """模式匹配"""
+            for pattern, result in self.pattern_rules:
+                if re.search(pattern, query):
+                    return result
+            return None
+
+        def _hierarchical_match(self, query: str) -> Tuple[float, Dict]:
+            """层级匹配"""
+            best_score = 0.0
+            best_match = {}
+
+            for first_level, second_level_data in self.intent_taxonomy.items():
+                first_level_score = self._calculate_keyword_similarity(query, [first_level])
+
+                if isinstance(second_level_data, dict):
+                    # 有二级分类
+                    for second_level, third_level_data in second_level_data.items():
+                        second_level_score = self._calculate_keyword_similarity(query, [second_level])
+
+                        if isinstance(third_level_data, dict):
+                            # 有三级分类
+                            for third_level, keywords in third_level_data.items():
+                                third_level_score = self._calculate_keyword_similarity(query, keywords)
+                                total_score = (first_level_score * 0.3 +
+                                            second_level_score * 0.3 +
+                                            third_level_score * 0.4)
+
+                                if total_score > best_score:
+                                    best_score = total_score
+                                    best_match = {
+                                        "first_level": first_level,
+                                        "second_level": second_level,
+                                        "third_level": third_level,
+                                        "confidence": total_score,
+                                        "action": f"{second_level}_{third_level}"
+                                    }
+                        else:
+                            # 第三级是关键词列表
+                            keywords = third_level_data
+                            total_score = (first_level_score * 0.4 + second_level_score * 0.6)
 
                             if total_score > best_score:
                                 best_score = total_score
                                 best_match = {
                                     "first_level": first_level,
                                     "second_level": second_level,
-                                    "third_level": third_level,
+                                    "third_level": "",
                                     "confidence": total_score,
-                                    "action": f"{second_level}_{third_level}"
+                                    "action": second_level
                                 }
-                    else:
-                        # 第三级是关键词列表
-                        keywords = third_level_data
-                        total_score = (first_level_score * 0.4 + second_level_score * 0.6)
+                else:
+                    # 第二级是关键词列表
+                    keywords = second_level_data
+                    total_score = first_level_score
 
-                        if total_score > best_score:
-                            best_score = total_score
-                            best_match = {
-                                "first_level": first_level,
-                                "second_level": second_level,
-                                "third_level": "",
-                                "confidence": total_score,
-                                "action": second_level
-                            }
+                    if total_score > best_score:
+                        best_score = total_score
+                        best_match = {
+                            "first_level": first_level,
+                            "second_level": "",
+                            "third_level": "",
+                            "confidence": total_score,
+                            "action": first_level
+                        }
+
+            return best_score, best_match
+
+        def _rewrite_query(self, query: str, intent_result: Dict) -> str:
+            """改写公积金查询"""
+            rewritten = query
+
+            # 添加公积金专业术语（基于一级分类）
+            if intent_result.get("first_level"):
+                first_level = intent_result["first_level"]
+                if "缴存" not in rewritten and "公积金缴存业务" == first_level:
+                    rewritten = f"公积金缴存业务：{rewritten}"
+                elif "提取" not in rewritten and "公积金提取业务" == first_level:
+                    rewritten = f"公积金提取业务：{rewritten}"
+                elif "贷款" not in rewritten and "公积金贷款业务" == first_level:
+                    rewritten = f"公积金贷款业务：{rewritten}"
+                elif "账户" not in rewritten and "公积金账户管理业务" == first_level:
+                    rewritten = f"公积金账户管理业务：{rewritten}"
+                elif "政策" not in rewritten and "其他公积金政策" == first_level:
+                    rewritten = f"其他公积金政策：{rewritten}"
+
+            # 根据公积金业务类型添加关键词
+            action = intent_result.get("action", "")
+            if "提取办理" in action and "流程" not in rewritten:
+                rewritten += " 提取流程"
+            elif "缴存办理" in action and "标准" not in rewritten:
+                rewritten += " 缴存标准"
+            elif "贷款办理" in action and "流程" not in rewritten:
+                rewritten += " 贷款流程"
+            elif "转移办理" in action and "流程" not in rewritten:
+                rewritten += " 转移流程"
+            elif "账户变更" in action and "材料" not in rewritten:
+                rewritten += " 变更材料"
+
+            return rewritten.strip()
+
+        def recognize_intent(self, query: str) -> IntentResult:
+            """识别用户公积金业务意图"""
+            # 预处理
+            processed_query = self._preprocess_query(query)
+
+            # 模式匹配
+            pattern_result = self._pattern_match(processed_query)
+
+            # 层级匹配
+            hierarchical_score, hierarchical_result = self._hierarchical_match(processed_query)
+
+            # 合并结果
+            if pattern_result:
+                final_result = {**hierarchical_result, **pattern_result}
             else:
-                # 第二级是关键词列表
-                keywords = second_level_data
-                total_score = first_level_score
+                final_result = hierarchical_result
 
-                if total_score > best_score:
-                    best_score = total_score
-                    best_match = {
-                        "first_level": first_level,
-                        "second_level": "",
-                        "third_level": "",
-                        "confidence": total_score,
-                        "action": first_level
-                    }
+            # 设置默认值
+            final_result.setdefault("first_level", "未分类")
+            final_result.setdefault("second_level", "")
+            final_result.setdefault("third_level", "")
+            final_result.setdefault("confidence", 0.0)
+            final_result.setdefault("action", "")
 
-        return best_score, best_match
+            # 改写查询
+            rewritten_query = self._rewrite_query(query, final_result)
 
-    def _rewrite_query(self, query: str, intent_result: Dict) -> str:
-        """改写查询"""
-        rewritten = query
+            # ===== 新增：完整性判断 =====
+            needs_clarification = False
+            clarification_question = ""
 
-        # 添加专业术语
-        if intent_result.get("first_level"):
-            if "职工" not in rewritten and "职工基本医疗保险" == intent_result["first_level"]:
-                rewritten = f"职工基本医疗保险：{rewritten}"
-            elif "居民" not in rewritten and "城乡居民医疗保险" == intent_result["first_level"]:
-                rewritten = f"城乡居民医疗保险：{rewritten}"
+            # 获取当前三级意图（用于匹配公积金完整性规则）
+            third_level_key = final_result.get("third_level") or final_result.get("second_level")
+            completeness_rule = self.completeness_rules.get(third_level_key)
 
-        # 根据意图类型添加关键词
-        action = intent_result.get("action", "")
-        if "报销" in action and "报销" not in rewritten:
-            rewritten += " 报销流程"
-        elif "缴费" in action and "缴费" not in rewritten:
-            rewritten += " 缴费标准"
-        elif "备案" in action and "备案" not in rewritten:
-            rewritten += " 备案流程"
+            if completeness_rule:
+                slots = self._extract_slots(query)
+                missing = [slot for slot in completeness_rule["required_slots"] if not slots.get(slot, False)]
+                if missing:
+                    needs_clarification = True
+                    clarification_question = completeness_rule["fallback_question"]
 
-        return rewritten.strip()
-
-    def recognize_intent(self, query: str) -> IntentResult:
-        """识别用户意图"""
-        # 预处理
-        processed_query = self._preprocess_query(query)
-
-        # 模式匹配
-        pattern_result = self._pattern_match(processed_query)
-
-        # 层级匹配
-        hierarchical_score, hierarchical_result = self._hierarchical_match(processed_query)
-
-        # 合并结果
-        if pattern_result:
-            final_result = {**hierarchical_result, **pattern_result}
-        else:
-            final_result = hierarchical_result
-
-        # 设置默认值
-        final_result.setdefault("first_level", "未分类")
-        final_result.setdefault("second_level", "")
-        final_result.setdefault("third_level", "")
-        final_result.setdefault("confidence", 0.0)
-        final_result.setdefault("action", "")
-
-        # 改写查询
-        rewritten_query = self._rewrite_query(query, final_result)
-
-        # ===== 新增：完整性判断 =====
-        needs_clarification = False
-        clarification_question = ""
-
-        # 获取当前三级意图（用于匹配规则）
-        third_level_key = final_result.get("third_level") or final_result.get("second_level")
-        completeness_rule = self.completeness_rules.get(third_level_key)
-
-        if completeness_rule:
-            slots = self._extract_slots(query)
-            missing = [slot for slot in completeness_rule["required_slots"] if not slots.get(slot, False)]
-            if missing:
+            # 默认：低置信度也视为需澄清
+            if not needs_clarification and final_result["confidence"] < 0.3:
                 needs_clarification = True
-                clarification_question = completeness_rule["fallback_question"]
+                clarification_question = "您的问题不够明确，请具体说明您想了解的公积金事项（如缴存、提取、贷款、转移等）。"
 
-        # 默认：低置信度也视为需澄清
-        if not needs_clarification and final_result["confidence"] < 0.3:
-            needs_clarification = True
-            clarification_question = "您的问题不够明确，请具体说明您想了解的医保事项（如缴费、报销、异地就医等）。"
-
-        return IntentResult(
-            first_level=final_result["first_level"],
-            second_level=final_result["second_level"],
-            third_level=final_result["third_level"],
-            confidence=final_result["confidence"],
-            action=final_result["action"],
-            rewritten_query=rewritten_query,
-            needs_clarification=needs_clarification,
-            clarification_question=clarification_question
-        )
+            return IntentResult(
+                first_level=final_result["first_level"],
+                second_level=final_result["second_level"],
+                third_level=final_result["third_level"],
+                confidence=final_result["confidence"],
+                action=final_result["action"],
+                rewritten_query=rewritten_query,
+                needs_clarification=needs_clarification,
+                clarification_question=clarification_question
+            )
 
 # 初始化意图识别器
 intent_recognizer = MedicalInsuranceIntentRecognizer()
@@ -496,7 +565,7 @@ def recognize_user_intent(query: str) -> str:
 @mcp.tool()
 def rewrite_medical_query(query: str) -> str:
     """
-    改写医疗保险相关问题，使其更专业和准确
+    改写公积金相关问题，使其更专业和准确
 
     Args:
         query: 原始查询文本

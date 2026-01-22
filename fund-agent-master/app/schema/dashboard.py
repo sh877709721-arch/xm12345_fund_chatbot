@@ -40,7 +40,7 @@ class TimeSlotStats(BaseModel):
 # ================== 来源分布数据模型 ==================
 class SourceDataPoint(BaseModel):
     """来源数据点"""
-    name: str  # 来源名称（网页、H5、小程序、公众号、医保、热线等）
+    name: str  # 来源名称（网页、H5、小程序、公众号、公积金、热线等）
     value: int  # 数量
 
 

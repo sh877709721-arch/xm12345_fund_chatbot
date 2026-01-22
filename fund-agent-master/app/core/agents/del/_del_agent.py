@@ -32,7 +32,7 @@ from app.core.agents.factory import AgentFactory
 
 # 向后兼容的导出
 __all__ = [
-    'bot',           # 医保助手
+    'bot',           # 公积金助手
     'rag_bot',       # 基础助手
     'guideline_bot',
     'qwen_rag_bot',  # RAG助手

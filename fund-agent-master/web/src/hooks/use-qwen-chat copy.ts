@@ -61,9 +61,9 @@ export function useQwenChat(
   const [status, setStatus] = useState<ChatStatus>("ready");
   const [session, setSession] = useState<ChatSession | null>(null);
   const [recommendQa, setRecommendQa] = useState<RecommendQA[]|null>([
-      {"id": 2557,"question": "怎么打印厦门的医保参保凭证？"},
-      {"id": 1872,"question": "厦门医保参保人在外地就医，怎么报销费用？"},
-      {"id": 2151,"question": "怎么查我在思明区的医保缴费情况和金额？"}
+      {"id": 2557,"question": "我打算在本市购买预售一手房，提取公积金抵首付的材料是什么？"},
+      {"id": 1872,"question": "我的子女/父母在本市购房，我办理购房代际互助提取公积金的材料是什么？"},
+      {"id": 2151,"question": "我是单位经办，想了解单位公积金账户如何开户？"}
     ])
   const tempIdRef = useRef(-1); // 用于生成临时ID
 

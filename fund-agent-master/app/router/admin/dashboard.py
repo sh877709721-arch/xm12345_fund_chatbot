@@ -133,7 +133,7 @@ async def get_source_stats(
     - H5
     - 小程序
     - 公众号
-    - 医保
+    - 公积金
     - 热线
     - 未知
 

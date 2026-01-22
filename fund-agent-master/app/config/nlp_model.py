@@ -36,6 +36,6 @@ def extract_question(text):
 
 
 if __name__ =='__main__':
-    text = "我在厦门参保职工医保，要如何查询起付线累计情况？"
+    text = "我的姓名有变更，咨询个人公积金账户信息变更如何办理？"
     question = extract_question(text)
     print(f"提取的问题: {question}")

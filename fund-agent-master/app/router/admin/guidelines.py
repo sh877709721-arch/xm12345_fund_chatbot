@@ -200,11 +200,11 @@ def match_guideline(
     _: UserReadWithRole = Depends(require_admin)
 ):
     """
-    根据对话上下文智能匹配最合适的指南
+    根据对话上下文智能匹配最合适的公积金指南
 
     使用两阶段混合检索 + LLM 精选策略：
     1. 粗粒度检索：向量语义搜索 + BM25 全文搜索 + RRF 融合
-    2. 细粒度精选：使用 LLM 从 Top-K 候选中选择最匹配的指南
+    2. 细粒度精选：使用 LLM 从 Top-K 候选中选择最匹配的公积金指南
 
     ## 请求参数说明
     - **context**: 对话上下文或用户查询（必填）
@@ -217,7 +217,7 @@ def match_guideline(
     ## 请求示例
     ```json
     {
-        "context": "为什么医保缴费变多了",
+        "context": "为什么公积金缴存基数调整了",
         "candidate_top_k": 5,
         "use_llm_refinement": true
     }
@@ -230,10 +230,10 @@ def match_guideline(
         "message": "success",
         "data": {
             "guideline_id": 1,
-            "title": "为什么医保缴费变多了",
-            "condition": "用户提到缴费变多了",
-            "action": "回复问题要使用恢复、调整为原费率等字眼",
-            "prompt_template": "提示词:回复问题要使用恢复、调整为原费率等字眼...",
+            "title": "为什么公积金缴存基数调整了",
+            "condition": "用户提到缴存基数调整",
+            "action": "回复问题要使用调整、恢复原缴存基数等字眼",
+            "prompt_template": "提示词:回复问题要使用调整、恢复原缴存基数等字眼...",
             "priority": 5,
             "match_score": 0.92,
             "match_method": "llm",

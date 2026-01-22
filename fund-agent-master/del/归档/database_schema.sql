@@ -275,11 +275,11 @@ CREATE TABLE performance_metrics (
 
 -- 创建默认的Agent实例
 INSERT INTO agent_instances (instance_name, instance_code, description, created_by) VALUES
-('医保政务服务助手', 'medical_insurance_assistant', '厦门市医保政务服务智能助手系统', 'admin');
+('公积金政务服务助手', 'fund_assistant', '厦门市公积金政务服务智能助手系统', 'admin');
 
 -- 创建默认的系统消息模板
 INSERT INTO message_templates (instance_id, template_name, template_key, language, template_content, template_type, created_by) VALUES
-(1, '默认系统消息', 'DEFAULT_SYSTEM_MESSAGE', 'zh', '你是厦门市医保政务服务助手小E。你必须严格遵守以下规则：
+(1, '默认系统消息', 'DEFAULT_SYSTEM_MESSAGE', 'zh', '你是厦门市公积金政务服务助手小金灵。你必须严格遵守以下规则：
 
 **核心原则：**
 - 使用知识库内容，简要回答用户的问题
@@ -297,7 +297,7 @@ INSERT INTO message_templates (instance_id, template_name, template_key, languag
 - 禁止回复材料中明确不能对外说明的内容
 - 禁止自行编造、推测', 'system', 'admin'),
 
-(1, '规则系统消息', 'RULE_SYSTEM_MESSAGE', 'zh', '审核上下文，明确医保类型、资格、待遇身份区别，针对用户问题，
+(1, '规则系统消息', 'RULE_SYSTEM_MESSAGE', 'zh', '审核上下文，明确公积金类型、资格、待遇身份区别，针对用户问题，
 请检查该回答是否符合检索知识原意，一句话补充[注意事项]
 **核心原则：**
 - 判断话题无关，可回答 "我是您的人工智能助手，生成的内容可能不准确，请仔细甄别。"
