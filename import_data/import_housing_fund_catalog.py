@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# 批量导入目录
 import pandas as pd
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT

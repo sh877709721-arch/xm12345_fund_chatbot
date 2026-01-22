@@ -1,3 +1,4 @@
+# 从ods源数据库导入公积金目录到目标数据库housing_fund.knowledge_catalog
 import psycopg2
 
 def import_housing_fund_catalog():

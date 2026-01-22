@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# 复制表
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
