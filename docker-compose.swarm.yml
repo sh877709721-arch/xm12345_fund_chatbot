@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  fund-agent-service: 
+    image: fund-api-agent-service:latest  # 使用镜像
+    #container_name: fund-api-agent-service-demo  # 注意：Swarm模式下container_name不生效
+    ports:
+      - target: 8200  # 容器内部端口
+        published: 16400 #对外暴露端口（更换）
+        protocol: tcp
+        mode: ingress  # 或使用 ingress 模式（默认）
+    deploy:
+      mode: replicated
+      replicas: 2  # 横向扩展3个副本
+      #placement:
+      #  constraints:
+      #    - node.role == worker  # 可选的约束条件
+      update_config:
+        parallelism: 1  # 一次更新1个副本
+        delay: 10s
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        #condition: unless-stopped
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    env_file:
+      - .env  # 加载当前目录下的.env文件

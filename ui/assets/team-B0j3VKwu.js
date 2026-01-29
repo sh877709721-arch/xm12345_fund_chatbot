@@ -1,0 +1,1 @@
+import{j as s}from"./index-BkZ1fbvE.js";function r(){return s.jsxs("div",{className:"p-6",children:[s.jsx("h1",{className:"text-3xl font-bold mb-6",children:"用户管理"}),s.jsx("div",{className:"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",children:"待开发..."})]})}export{r as default};
