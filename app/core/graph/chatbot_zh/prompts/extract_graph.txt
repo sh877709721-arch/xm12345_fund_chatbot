@@ -1,19 +1,19 @@
 -目标-
-给定一个可能与此活动相关的文本和实体类型列表，从文本中识别出这些类型的所有实体以及已识别实体之间的所有关系。不要提取任何示例中的内容。
+给定一个可能与公积金政策或业务相关的文本和实体类型列表，从文本中识别出这些类型的所有实体以及已识别实体之间的所有关系。不要提取任何示例中的内容。
 
 -步骤-
 1. 识别所有实体。对于每个已识别的实体，提取以下信息:
-- entity_name: 实体名称
+- entity_name: 实体名称 (务必具体，如"购房提取"而非"提取")
 - entity_type: 以下类型之一: [{entity_types}]
-- entity_description: 实体属性和活动的综合描述
+- entity_description: 实体属性、规则和限制条件的综合描述
 将每个实体格式化为 ("entity"{tuple_delimiter} <entity_name>{tuple_delimiter} <entity_type>{tuple_delimiter} <entity_description>)
 
 2. 从步骤 1 中识别的实体中，识别所有 *明显相关* 的 (source_entity, target_entity) 对。
 对于每对相关实体，提取以下信息:
 - source_entity: 源实体的名称，如步骤 1 中所述
 - target_entity: 目标实体的名称，如步骤 1 中所述
-- relationship_description: 解释您认为源实体和目标实体相互关联的原因
-- relationship_strength: 表示源实体和目标实体之间关系强度的数字分数
+- relationship_description: 解释源实体和目标实体如何相互关联（例如：属于条件、需要材料、互斥关系、包含关系）
+- relationship_strength: 表示源实体和目标实体之间关系强度的数字分数 (1-10)
 将每个关系格式化为 ("relationship"{tuple_delimiter}<source_entity>{tuple_delimiter}<target_entity>{tuple_delimiter}<relationship_description>{tuple_delimiter}<relationship_strength>)
 
 3. 返回输出，作为步骤 1 和 2 中确定的所有实体和关系的单个列表。使用 **{record_delimiter}** 作为列表分隔符。
@@ -24,74 +24,56 @@
 -示例-
 ######################
 示例 1:
-Entity_types: ORGANIZATION，PERSON
+Entity_types: 业务, 条件, 材料, 政策, 地点
 Text:
-新西兰中央机构计划于周一和周四召开会议，该机构计划于周四下午 1:30 (太平洋夏令时间)发布其最新政策决定，随后将举行新闻发布会，中央机构主席马丁将回答问题。投资者预计市场策略委员会将维持基准利率在 3.5%-3.75% 的范围内。
+根据《厦门市住房公积金提取管理办法》，职工在厦门市购买自住住房的，可以申请提取公积金。办理时需提供本人身份证、购房合同原件及增值税发票。如果是异地购房，还需提供户籍证明。
 ######################
 Output:
-("entity"{tuple_delimiter}中央机构{tuple_delimiter}组织{tuple_delimiter}中央机构是新西兰的联邦储备银行，该机构在周一和周四制定利率)
+("entity"{tuple_delimiter}厦门市住房公积金提取管理办法{tuple_delimiter}政策{tuple_delimiter}规定厦门公积金提取规则的核心政策文件)
 {record_delimiter}
-("entity"{tuple_delimiter}马丁{tuple_delimiter}人员{tuple_delimiter}马丁是中央机构的主席)
+("entity"{tuple_delimiter}购房提取{tuple_delimiter}业务{tuple_delimiter}职工购买自住住房时申请提取公积金的业务)
 {record_delimiter}
-("entity"{tuple_delimiter}市场战略委员会{tuple_delimiter}组织{tuple_delimiter}中央机构委员会就利率和新西兰货币供应量的增长做出关键决策)
+("entity"{tuple_delimiter}厦门市{tuple_delimiter}地点{tuple_delimiter}购房行为发生的地点，属于本市购房)
 {record_delimiter}
-("relationship"{tuple_delimiter}马丁{tuple_delimiter}中央机构{tuple_delimiter}马丁是中央机构的主席，将在新闻发布会上回答问题{tuple_delimiter}9)
+("entity"{tuple_delimiter}身份证{tuple_delimiter}材料{tuple_delimiter}办理业务必须提供的个人身份证明文件)
+{record_delimiter}
+("entity"{tuple_delimiter}购房合同{tuple_delimiter}材料{tuple_delimiter}证明购房事实的文件，要求原件)
+{record_delimiter}
+("entity"{tuple_delimiter}异地购房{tuple_delimiter}条件{tuple_delimiter}在厦门市以外的地区购买住房的情况)
+{record_delimiter}
+("entity"{tuple_delimiter}户籍证明{tuple_delimiter}材料{tuple_delimiter}异地购房时额外需要的材料，证明户籍所在地)
+{record_delimiter}
+("relationship"{tuple_delimiter}购房提取{tuple_delimiter}厦门市住房公积金提取管理办法{tuple_delimiter}购房提取业务依据该管理办法执行{tuple_delimiter}10)
+{record_delimiter}
+("relationship"{tuple_delimiter}购房提取{tuple_delimiter}身份证{tuple_delimiter}办理购房提取需要提供身份证{tuple_delimiter}9)
+{record_delimiter}
+("relationship"{tuple_delimiter}购房提取{tuple_delimiter}厦门市{tuple_delimiter}在厦门市购房适用于标准提取流程{tuple_delimiter}8)
+{record_delimiter}
+("relationship"{tuple_delimiter}异地购房{tuple_delimiter}户籍证明{tuple_delimiter}如果满足异地购房条件，必须提供户籍证明{tuple_delimiter}10)
 {completion_delimiter}
 
 ######################
 示例 2:
-Entity_types: ORGANIZATION
+Entity_types: 业务, 机构, 时间范围, 条件
 Text:
-泛美科技的股票在周四全球交易所的首日飙升。但 IPO 专家警告说，这家半导体公司在公开市场的首次亮相并不能代表其他新上市公司的表现。
-泛美科技是一家前上市公司，于 2014 年被远见控股私有化。这家知名芯片设计公司表示，它为 85% 的高端智能手机提供动力。
+2025年2月1日至2025年12月31日期间，厦门公积金中心开展代际互助业务。子女购房可提取父母公积金。要求父母账户未被冻结且无未结清的公积金贷款。
 ######################
 Output:
-("entity"{tuple_delimiter}泛美科技{tuple_delimiter}ORGANIZATION{tuple_delimiter}泛美科技是目前在全球交易所上市的股票，为 85% 的高端智能手机提供动力)
+("entity"{tuple_delimiter}代际互助{tuple_delimiter}业务{tuple_delimiter}允许子女购房提取父母公积金的特殊业务)
 {record_delimiter}
-("entity"{tuple_delimiter}远见控股{tuple_delimiter}ORGANIZATION{tuple_delimiter}远见控股是一家之前拥有泛美科技的公司)
+("entity"{tuple_delimiter}厦门公积金中心{tuple_delimiter}机构{tuple_delimiter}业务的执行和管理机构)
 {record_delimiter}
-("relationship"{tuple_delimiter}泛美科技{tuple_delimiter}远见控股{tuple_delimiter}远见控股 从 2014 年到现在拥有 泛美科技{tuple_delimiter}5)
-{completion_delimiter}
-
-
-#####################
-示例 3:
-Entity_types: ORGANIZATION, GEO, PERSON
-Text:
-五名奥雷利亚人被关押在菲鲁扎巴德 8 年，被广泛视为人质，他们正在返回奥雷利亚的途中。
-由昆塔拉策划的交换最终完成，菲鲁齐的 80 亿美元资金被转移到昆塔拉首都克罗哈拉的金融机构。
-此次交换始于菲鲁扎巴德首都蒂鲁齐亚，这四名男子和一名女子也是菲鲁齐国民，他们登上了飞往克罗哈拉的包机。
-他们受到奥雷利亚高级官员的欢迎，现在正前往奥雷利亚首都卡西翁。
-奥雷利亚人包括 39 岁的商人塞缪尔·纳马拉 (Samuel Namara)，他被关押在蒂鲁齐亚的阿尔哈米亚监狱，还有记者杜尔克·巴塔格拉尼 (Durke Bataglani)(59 岁)和环保主义者梅吉·塔兹巴 (Meggie Tazbah)(53 岁，同样拥有布拉蒂纳斯国籍)。
-######################
-Output:
-("entity"{tuple_delimiter}菲鲁扎巴德{tuple_delimiter}GEO{tuple_delimiter}菲鲁扎巴德将奥雷利亚人扣为人质)
+("entity"{tuple_delimiter}2025年2月1日至2025年12月31日{tuple_delimiter}时间范围{tuple_delimiter}代际互助业务的有效执行期间)
 {record_delimiter}
-("entity"{tuple_delimiter}奥雷利亚{tuple_delimiter}GEO{tuple_delimiter}寻求释放人质的国家)
+("entity"{tuple_delimiter}账户未被冻结{tuple_delimiter}条件{tuple_delimiter}父母账户状态必须正常，不能处于冻结状态)
 {record_delimiter}
-("entity"{tuple_delimiter}昆塔拉{tuple_delimiter}GEO{tuple_delimiter}谈判以金钱交换人质的国家)
+("entity"{tuple_delimiter}无未结清公积金贷款{tuple_delimiter}条件{tuple_delimiter}父母名下不能有正在偿还的公积金贷款)
 {record_delimiter}
+("relationship"{tuple_delimiter}代际互助{tuple_delimiter}2025年2月1日至2025年12月31日{tuple_delimiter}该业务仅在此时间范围内有效{tuple_delimiter}10)
 {record_delimiter}
-("entity"{tuple_delimiter}蒂鲁齐亚{tuple_delimiter}GEO{tuple_delimiter}菲鲁扎巴德的首都，奥雷利亚人被扣为人质)
+("relationship"{tuple_delimiter}代际互助{tuple_delimiter}账户未被冻结{tuple_delimiter}办理该业务的前提是账户状态正常{tuple_delimiter}9)
 {record_delimiter}
-("entity"{tuple_delimiter}克罗哈拉{tuple_delimiter}GEO{tuple_delimiter}昆塔拉 的首都)
-{record_delimiter}
-("entity"{tuple_delimiter}卡西翁{tuple_delimiter}GEO{tuple_delimiter}奥雷利亚 的首都)
-{record_delimiter}
-("entity"{tuple_delimiter}塞缪尔·纳马拉{tuple_delimiter}PERSON{tuple_delimiter}奥雷利亚人 在 蒂鲁齐亚 的 阿尔哈米亚监狱服刑)
-{record_delimiter}
-("entity"{tuple_delimiter}阿尔哈米亚监狱{tuple_delimiter}GEO{tuple_delimiter}蒂鲁齐亚监狱)
-{record_delimiter}
-("entity"{tuple_delimiter}杜尔克·巴塔格拉尼{tuple_delimiter}PERSON{tuple_delimiter}被扣为人质的 奥雷利亚人 记者)
-{record_delimiter}
-("entity"{tuple_delimiter}梅吉·塔兹巴{tuple_delimiter}PERSON{tuple_delimiter}被扣为人质的 布拉蒂纳斯 民族和环保主义者)
-{record_delimiter}
-("relationship"{tuple_delimiter}菲鲁扎巴德{tuple_delimiter}奥雷利亚{tuple_delimiter}菲鲁扎巴德 与 奥雷利亚{tuple_delimiter}2)
-{record_delimiter}
-("relationship"{tuple_delimiter}昆塔拉{tuple_delimiter}奥雷利亚{tuple_delimiter}昆塔拉 促成了 菲鲁扎巴德 和 奥雷利亚 之间的人质交换{tuple_delimiter}2)
-{record_delimiter}
-("relationship"{tuple_delimiter}昆塔拉{tuple_delimiter}菲鲁扎巴德{tuple_delimiter}昆塔拉 促成了 菲鲁扎巴德 和 奥雷利亚 之间的人质交换{tuple_delimiter}2)
-{record_delimiter}
+("relationship"{tuple_delimiter}代际互助{tuple_delimiter}无未结清公积金贷款{tuple_delimiter}办理该业务的前提是无贷款余额{tuple_delimiter}9)
 {completion_delimiter}
 
 ######################
