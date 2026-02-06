@@ -359,7 +359,7 @@ export function VoteStatsTableOptimized({ className }: VoteStatsTableOptimizedPr
                 <SelectItem value="h5">H5</SelectItem>
                 <SelectItem value="miniprogram">小程序</SelectItem>
                 <SelectItem value="mp">公众号</SelectItem>
-                <SelectItem value="医保">医保</SelectItem>
+                <SelectItem value="公积金">公积金</SelectItem>
                 <SelectItem value="rexian">热线</SelectItem>
               </SelectContent>
             </Select>

@@ -1,0 +1,34 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+.vscode
+.idea
+/data
+/docker
+/logs
+/pg
+
+# Environment files
+.env
+
+# Zip files
+*.zip
+
+# Analysis scripts (temporary)
+analyze_*.py
+process_*.py
+read_*.py
+simple_read.py
+
+# Assistant improve directory
+assistant_improve/
+
+# UI directory
+ui/

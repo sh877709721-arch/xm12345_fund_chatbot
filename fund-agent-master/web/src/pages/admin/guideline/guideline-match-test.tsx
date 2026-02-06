@@ -68,7 +68,7 @@ export function GuidelineMatchTestPage() {
           <div className="flex-4 max-w-6xl">
             <div className="flex gap-2">
               <Input
-                placeholder="输入对话上下文或用户查询，例如：为什么今年医保缴费变多了"
+                placeholder="输入对话上下文或用户查询，例如：为什么今年公积金缴存基数调整了"
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
                 onKeyDown={handleKeyPress}

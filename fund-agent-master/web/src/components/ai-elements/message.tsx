@@ -107,7 +107,7 @@ export const Message = ({
           <div className="mt-2 space-y-2">
             <div className="flex items-center gap-2 px-2 sm:px-3 py-2 rounded-md bg-muted/50 border border-border/50">
               <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed break-words">
-                以上信息仅供参考，医保政策解读及业务办理以现行政策和厦门市医保机构最终审核结果为准，试运行期间，若有不明请至窗口或拨打12345人工服务。如遇访问链接无法打开情况，请复制链接地址到浏览器中打开。
+                以上信息仅供参考，公积金政策解读及业务办理以现行政策和厦门市公积金机构最终审核结果为准，试运行期间，若有不明请至窗口或拨打12345人工服务。如遇访问链接无法打开情况，请复制链接地址到浏览器中打开。
               </p>
             </div>
             <MessageActions

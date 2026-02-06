@@ -12,14 +12,14 @@
  * - miniprogram: 微信小程序
  * - mp: 微信公众号
  */
-export type TrafficSource = 'web' | 'h5' | 'miniprogram' | 'mp' | '医保' | 'rexian' | 'test' | 'admin';
+export type TrafficSource = 'web' | 'h5' | 'miniprogram' | 'mp' | '公积金' | 'rexian' | 'test' | 'admin';
 
 // ==================== 常量定义 ====================
 
 /**
  * 默认流量来源
  */
-export const DEFAULT_SOURCE: TrafficSource = '医保'; // web
+export const DEFAULT_SOURCE: TrafficSource = '公积金'; // web
 
 /**
  * localStorage 存储键名
@@ -29,7 +29,7 @@ export const TRAFFIC_SOURCE_KEY = 'traffic_source';
 /**
  * 有效的流量来源列表
  */
-export const VALID_SOURCES: TrafficSource[] = ['web', 'h5', 'miniprogram', 'mp', '医保', 'rexian', 'test', 'admin'];
+export const VALID_SOURCES: TrafficSource[] = ['web', 'h5', 'miniprogram', 'mp', '公积金', 'rexian', 'test', 'admin'];
 
 // ==================== 工具函数 ====================
 

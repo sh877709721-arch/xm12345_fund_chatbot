@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 # Original Source: Based on qwen-agent framework
+# 指南
 
 import copy
 import json
@@ -327,11 +328,6 @@ class GuidelineAssistant(FnCallAgent):
         #logger.info(f'最后提示词:{messages[0][CONTENT]}')
         return messages
     
-
-
-
-        
-    
     def _run_openai_format(
         self,
         messages: List[Message],
@@ -371,8 +367,7 @@ class GuidelineAssistant(FnCallAgent):
         else:
             logger.info('Skipping obs chunk due to insufficient content')
 
-        
-
+    
         # 调用父类的 _run 方法，但转换输出格式为 OpenAI 流式格式
         chunk_id = f"chatcmpl-{uuid.uuid4().hex}"
         model = "xmtelecom"

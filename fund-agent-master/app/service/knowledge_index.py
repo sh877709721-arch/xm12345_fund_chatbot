@@ -146,10 +146,10 @@ class KnowledgeIndexService:
             elif knowledge_type == 'document':
                 # 文档类型：需要分块处理
                 text_splitter = RecursiveCharacterTextSplitter(
-                    chunk_size=1200,
-                    chunk_overlap=200,
+                    chunk_size=4000,
+                    chunk_overlap=1000,
                     length_function=len,
-                    separators=["######"]
+                    separators=["###"]
                 )
 
                 # 分块

@@ -71,7 +71,7 @@ export interface VoteStatsQuery {
   start_date?: string | null;  // 开始时间 (YYYY-MM-DD HH:MM:SS)
   end_date?: string | null;    // 结束时间 (YYYY-MM-DD HH:MM:SS)
   searchKeyword?: string | null; // 搜索关键词（搜索问题和回答）
-  client_type?: string | null; // 请求来源过滤 (web/h5/miniprogram/mp/医保/rexian)
+  client_type?: string | null; // 请求来源过滤 (web/h5/miniprogram/mp/公积金/rexian)
 }
 
 // 对assistant消息进行投票
