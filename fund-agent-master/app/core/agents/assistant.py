@@ -230,13 +230,31 @@ DEFAULT_SYSTEM_MESSAGE='''你是厦门市公积金政务服务助手小金灵。
         - **港澳台和外籍人士提取**：
             - 港澳台同胞及持外国人永久居留身份证的职工与用人单位终止劳动关系未再就业的，在住房公积金账户封存后，即可申请提取住房公积金
         - **退休提取**：
-            - 条件：缴存人已取得退休证，缴存单位已为职工办理住房公积金账户离退休封存手续
-            - 材料：缴存职工有效身份证件、缴存职工一类银行储蓄卡、退休证
-            - 办理渠道：应到厦门公积金窗口或线上渠道办理，银行无法办理退休提取公积金
+            - 条件：缴存人已取得退休证，缴存单位已为职工办理住房公积金账户离退休封存手续；或年满58周岁且账户已封存
+            - 材料：缴存职工有效身份证件、缴存职工一类银行储蓄卡、退休证（58周岁以上且账户封存的可无需退休证）
+            - 办理渠道：
+                - 线上：厦门市住房公积金微信小程序、公众号、官网
+                - 线下：岛内厦门市行政服务中心公积金窗口、岛外各区行政服务中心公积金窗口
+                - 跨省通办：可在当地公积金中心窗口办理跨省通办
             - 退休提取公积金可以代办，无需公证，代办时需提供提取人及代办人的有效身份证件、提取人的一类银行储蓄卡以及退休证等材料
-            - **重要说明**：退休提取厦门公积金只能在厦门办理，不能在外地公积金中心办理
-            - 线上办理渠道：厦门市住房公积金微信小程序、公众号、官网
-            - 线下办理地点：岛内厦门市行政服务中心公积金窗口、岛外各区行政服务中心公积金窗口
+        - **跨省通办**：
+            - 支持业务：
+                1. 个人住房公积金缴存贷款等信息查询
+                2. 出具贷款职工住房公积金缴存使用证明
+                3. 正常退休提取住房公积金
+                4. 提前退休提取住房公积金
+                5. 住房公积金单位登记开户
+                6. 住房公积金单位及个人缴存信息变更
+                7. 开具住房公积金个人住房贷款全部还清证明
+                8. 提前还清住房公积金贷款
+                9. 购房提取住房公积金
+                10. 住房公积金汇缴
+                11. 住房公积金补缴
+                12. 提前部分偿还住房公积金贷款
+                13. 租房提取住房公积金
+            - 办理渠道：可在当地公积金中心窗口申请跨省通办
+            - 跨省通办购房提取：支持在购房地公积金中心办理
+            - 异地购房提取：线上办理需提供借款合同
         - **死亡提取规则**：
             - 继承人都没办法到场，能代办，需办理委托公证
             - 办理死亡提取公积金，需要托人办理，需要公证书
@@ -273,10 +291,12 @@ DEFAULT_SYSTEM_MESSAGE='''你是厦门市公积金政务服务助手小金灵。
         - **单位开户**：
             - 单位设立公积金账户无需提供材料，只需注册登录公积金中心单位网上办事大厅申请"单位缴存登记"即可
         - **抵首付规则**：
-            - 提取公积金抵首付仅适用于以下情况：
+            - 提取公积金抵首付适用于以下情况：
                 - 厦门预售一手房：支持提取公积金抵首付，需到公积金窗口办理，线上无法办理，且无法代办
+                - 厦门现售一手房：支持提取公积金抵首付
+                - 厦门二手房：支持提取公积金抵首付
                 - 厦门保障房：支持提取公积金抵首付，直接联系保障办咨询办理流程
-            - 二手房无法办理公积金抵首付业务
+            - 异地购房：无法提取公积金抵首付
             - 办理抵首付需满足公积金提取条件，提供购房合同、发票等相关材料
         - **代办规则**：
             - 本市购房报销提取可以代办
@@ -298,8 +318,24 @@ DEFAULT_SYSTEM_MESSAGE='''你是厦门市公积金政务服务助手小金灵。
             - 商住性质的房产无法申请公积金逐月还贷业务，但可办理一次性冲抵本金
             - 租住商住公寓可正常申请租房提取公积金
         - **拆迁安置房提取规则**：
-            - 拆迁安置房仍需提供异地证明
+            - 提取材料：需提供拆迁安置协议、购房合同、发票等相关材料
+            - 提取步骤：
+                1. 准备相关材料
+                2. 到公积金窗口办理提取手续
+                3. 审核通过后，资金将转入指定账户
+            - 2025年2月1日-2025年12月31日内的拆迁安置房补平方数差额部分，作为被征收人的父母或子女，也可提取公积金账户的金额
             - 银行无法办理购房提取公积金的业务
+        - **异地购房提取规则**：
+            - 线上办理需提供借款合同
+            - 需符合异地购房提取条件
+        - **按月还贷提取规则**：
+            - 月供还款后再还本金，对按月还贷提取无影响
+        - **共同购房提取规则**：
+            - 与父母、子女、配偶共同购房：可同时办理购房提取
+            - 与非直系亲属共同购房：需线下办理，且需符合相关条件
+        - **异地公积金提取规则**：
+            - 可通过跨省通办在当地公积金中心办理提取厦门公积金
+            - 也可在厦门公积金窗口办理提取异地公积金
         - **产假期间提取规则**：
             - 产假无法提取公积金
         - **加装电梯提取**：
@@ -343,7 +379,7 @@ DEFAULT_SYSTEM_MESSAGE='''你是厦门市公积金政务服务助手小金灵。
                     - 线下：厦门市行政服务中心公积金窗口（不包含贷款银行）
         - **办理渠道补充**：
             - 银行网点无法办理拆迁提取公积金
-            - 购房提取应到公积金窗口，不是缴存银行
+            - 购房提取应到公积金窗口，不是缴存银行在
             - 贷款银行或缴存银行都无法办理公积金金额冲抵贷款本金的业务
             - 银行无法办理还贷提取公积金业务
         - **厦门买房提取公积金还贷政策**：
@@ -734,6 +770,10 @@ class Assistant(FnCallAgent):
             prev_full_text: 之前的文本内容（避免重复输出时使用）
             is_supplement: 是否为补充说明
         """
+        # 初始化完整文本
+        self.full_text = ""
+        
+        # 生成流式响应
         for message_batch in super()._run(messages=messages, lang=lang, **kwargs):
             if message_batch and message_batch[-1]:
                 content = message_batch[-1].get(CONTENT, '')
@@ -747,9 +787,13 @@ class Assistant(FnCallAgent):
                             if hasattr(item, 'text'):
                                 text_content += item.text
 
+                    # 累积完整文本
+                    self.full_text += text_content
                     
-                    self.full_text = text_content
-                    self.sources = self._extract_content_ref(text_content)
+                    # 提取引用
+                    self.sources = self._extract_content_ref(self.full_text)
+                    
+                    # 生成当前chunk
                     delta = {"content": text_content}
                     chunk = {
                         "id": chunk_id,
@@ -763,35 +807,38 @@ class Assistant(FnCallAgent):
                         }]
                     }
                     yield f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
-        # 带索引：
         
-        if self.sources:
-            references = [k['reference'] for k in self.knowledge_data if k['url'] in self.sources and k['reference'] is not None]
-            reference = []
-            for k in references:
-                item = k.split('\n')
-                for i in item:
-                    if i not in reference:
-                        reference.append(i)
-            self.supp_text = "\n\n".join(reference)
-            if len(reference):
-                delta = {"content": f'{self.full_text}\n\n**参考出处**\n\n{self.supp_text}'}
-            else:
-                delta = {"content": f'{self.full_text}\n\n'}
-            #delta = { "content": f'{self.full_text}',"source": reference}
+        # 处理参考出处（如果有）
+        if self.sources and hasattr(self, 'knowledge_data') and self.knowledge_data:
+            # 收集所有相关引用
+            references = []
+            seen_references = set()
             
-            chunk = {
-                "id": chunk_id,
-                "object": "chat.completion.chunk",
-                "created": int(time.time()),
-                "model": model,
-                "choices": [{
-                    "index": 0,
-                    "delta": delta,
-                    "finish_reason": None
-                }]
-            }
-            yield f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
+            for k in self.knowledge_data:
+                if k['url'] in self.sources and k.get('reference'):
+                    ref_items = k['reference'].split('\n')
+                    for ref in ref_items:
+                        ref = ref.strip()
+                        if ref and ref not in seen_references:
+                            seen_references.add(ref)
+                            references.append(ref)
+            
+            # 如果有引用，生成参考出处chunk
+            if references:
+                self.supp_text = "\n\n**参考出处**\n\n" + "\n\n".join(references)
+                delta = {"content": self.supp_text}
+                chunk = {
+                    "id": chunk_id,
+                    "object": "chat.completion.chunk",
+                    "created": int(time.time()),
+                    "model": model,
+                    "choices": [{
+                        "index": 0,
+                        "delta": delta,
+                        "finish_reason": None
+                    }]
+                }
+                yield f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
 
     def _extract_content_ref(self, full_text: str) -> List[str]:
         """正则表达式提取所有的字符串
@@ -807,21 +854,33 @@ class Assistant(FnCallAgent):
         result = []
         seen = set()
 
-        # 模式1: 匹配 [来源: [内容](链接)] 格式
-        pattern1 = r'\[来源:\s*\[([^\]]+)\]\([^)]+\)\]'
+        # 模式1: 匹配 [来源: [内容1](链接1), [内容2](链接2), ...] 格式
+        pattern1 = r'\[来源:\s*((?:\[[^\]]+\]\([^)]+\),?\s*)+)(?:\+more\]|\])'
         matches1 = re.findall(pattern1, full_text)
-
-        # 模式2:
-        pattern2 = r'(?:doc_\d{5}|\d{5})'
+        
+        # 提取单个引用内容
+        for match_group in matches1:
+            # 匹配每个 [内容](链接) 对
+            single_refs = re.findall(r'\[([^\]]+)\]\([^)]+\)', match_group)
+            for ref in single_refs:
+                if ref not in seen:
+                    seen.add(ref)
+                    result.append(ref)
+        
+        # 模式2: 匹配 [来源: [内容]] 格式
+        pattern2 = r'\[来源:\s*\[([^\]]+)\]\]'
         matches2 = re.findall(pattern2, full_text)
-
-        # 合并所有匹配结果
-        all_matches = matches1 + matches2
-
-        # 去重并保持顺序
-        for match in all_matches:
-            if match not in seen:
-                seen.add(match)
-                result.append(match)
+        for ref in matches2:
+            if ref not in seen:
+                seen.add(ref)
+                result.append(ref)
+        
+        # 模式3: 匹配 doc_xxxx 或 graph_chunk 等直接引用
+        pattern3 = r'(doc_\d+|graph_chunk|graph_\d+|data_\d+)'
+        matches3 = re.findall(pattern3, full_text)
+        for ref in matches3:
+            if ref not in seen:
+                seen.add(ref)
+                result.append(ref)
 
         return result

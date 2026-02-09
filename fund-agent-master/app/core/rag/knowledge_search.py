@@ -162,30 +162,32 @@ class KnowledgeSearchService:
         graph_data = []
         excel_data = []
 
-
-        # 1. 文档检索
-        doc_results, doc_keywords = KnowledgeSearchService._search_documents(
-            query, doc_top_n
-        )
-        knowledge_data.extend(doc_results)
-
-
-        # 2. Excel 数据检索
-        if enable_data_search:
-            data_results, _ = KnowledgeSearchService._search_knowledge_data(
-                query, top_n=10
+        try:
+            # 1. 文档检索
+            doc_results, doc_keywords = KnowledgeSearchService._search_documents(
+                query, doc_top_n
             )
-            excel_data.extend(data_results)
+            knowledge_data.extend(doc_results)
 
-        # 3. 知识图谱检索
-        if enable_graph_search:
-            graph_results, graph_keywords = KnowledgeSearchService._search_knowledge_graph(
-                query, graph_top_n
-            )
-            graph_data.extend(graph_results)
+            # 2. Excel 数据检索
+            if enable_data_search:
+                data_results, _ = KnowledgeSearchService._search_knowledge_data(
+                    query, top_n=10
+                )
+                excel_data.extend(data_results)
 
+            # 3. 知识图谱检索
+            if enable_graph_search:
+                graph_results, graph_keywords = KnowledgeSearchService._search_knowledge_graph(
+                    query, graph_top_n
+                )
+                graph_data.extend(graph_results)
+        except Exception as e:
+            logger.error(f"知识检索整合过程出错: {e}")
+            # 确保即使出错也返回合理的默认值
+            pass
 
-        return knowledge_data, graph_data,excel_data
+        return knowledge_data, graph_data, excel_data
 
     @staticmethod
     def _search_documents(
@@ -208,10 +210,18 @@ class KnowledgeSearchService:
         search_results = []
 
         try:
-            # 查询改写
-            search_results = SearchService.doc_hybrid_search_vec_rff_with_fallback(query, top_n=top_n)
+            # 查询改写和文档检索
+            try:
+                search_results = SearchService.doc_hybrid_search_vec_rff_with_fallback(query, top_n=top_n)
+            except Exception as e:
+                logger.error(f"文档混合搜索失败: {e}，尝试使用备用搜索方式")
+                # 尝试使用备用搜索方式
+                try:
+                    search_results = SearchService.doc_hybrid_search_vec_rff(query)
+                except Exception as fallback_e:
+                    logger.error(f"备用搜索方式也失败: {fallback_e}")
+                    return knowledge_data, response_keywords
 
-            # 最后的 search_results 也要重排
             # 提取文档内容用于重排
             documents = []
             for result in search_results:
@@ -237,20 +247,24 @@ class KnowledgeSearchService:
                             reranked_results.append(reranked_result)
 
                     search_results = reranked_results[:top_n]
-                    #logger.info(f"文档重排完成，重排了 {len(search_results)} 个结果")
                 else:
                     logger.warning("文档重排失败，使用原始搜索结果")
             except Exception as e:
                 logger.error(f"文档重排过程出错: {e}，使用原始搜索结果")
+            
             # 转换文档检索结果为标准格式
             for result in search_results:
-                reference = f'doc_{result["id"]}' #result['reference'] if result['reference'] else f'doc_{result["id"]}'
-                knowledge_data.append({
-                    'url':reference,
-                    'text': [result.get('title', '') + result.get('question', '') + '\n' + result.get('answer', '')],
-                    'reference':result.get('reference', ''),
-                    'reference_id':result["id"],
-                })
+                try:
+                    reference = f'doc_{result["id"]}'
+                    knowledge_data.append({
+                        'url': reference,
+                        'text': [result.get('title', '') + result.get('question', '') + '\n' + result.get('answer', '')],
+                        'reference': result.get('reference', ''),
+                        'reference_id': result["id"],
+                    })
+                except Exception as e:
+                    logger.error(f"处理检索结果时出错: {e}")
+                    continue
 
         except Exception as e:
             logger.error(f"文档检索失败: {e}")
@@ -277,55 +291,41 @@ class KnowledgeSearchService:
 
         try:
             # 获取知识图谱上下文
-            graph_context,system_prompt = get_local_search_context(query)
-            graph_contenxt_chunk = graph_context.context_chunks
-            graph_context_records = graph_context.context_records
+            try:
+                graph_context, system_prompt = get_local_search_context(query)
+                graph_contenxt_chunk = graph_context.context_chunks
+                graph_context_records = graph_context.context_records
+            except Exception as e:
+                logger.error(f"获取知识图谱上下文失败: {e}")
+                return knowledge_data, response_keywords
             
-            #import pdb;pdb.set_trace()
-            search_results = graph_context_records["sources"].to_dict(orient="records")
-            documents = []
-            for result in search_results:
-                # 组合 title 和 answer 作为重排的文本内容
-                text_content = f"{result.get('text', '')}".strip()
-                documents.append(text_content)
-
-            # 调用重排API
-            # try:
-            #     from app.config.llm_client import rerank_client_instance
-            #     rerank_results = rerank_client_instance.rerank_sync(query, documents)
-            #     if rerank_results:
-            #         # 根据重排结果重新排序
-            #         reranked_results = []
-            #         for item in rerank_results:
-            #             idx = item["index"]
-            #             score = item.get("score", 0)
-
-            #             if idx < len(search_results):
-            #                 # 复制原始结果并更新分数
-            #                 reranked_result = search_results[idx].copy()
-            #                 reranked_result["rerank_score"] = score
-            #                 reranked_results.append(reranked_result)
-
-            #         search_results = reranked_results[:top_n]
-            #         #logger.info(f"文档重排完成，重排了 {len(search_results)} 个结果")
-            #     else:
-            #         logger.warning("文档重排失败，使用原始搜索结果")
-            # except Exception as e:
-            #     logger.error(f"文档重排过程出错: {e}，使用原始搜索结果")
-
+            # 处理图谱记录
+            try:
+                search_results = graph_context_records["sources"].to_dict(orient="records")
+            except Exception as e:
+                logger.error(f"处理图谱记录失败: {e}")
+                return knowledge_data, response_keywords
+            
             # 转换文档检索结果为标准格式
-            for result in search_results:
-                reference = result.get('reference') if result.get('reference') else f'graph_{result["id"]}'
-                knowledge_data.append({
-                    'url': reference,
-                    'text': [result.get('title', '') + result.get('question', '') + '\n' + result.get('text', '')]
-                })
+            for result in search_results[:top_n]:
+                try:
+                    reference = result.get('reference') if result.get('reference') else f'graph_{result["id"]}'
+                    knowledge_data.append({
+                        'url': reference,
+                        'text': [result.get('title', '') + result.get('question', '') + '\n' + result.get('text', '')]
+                    })
+                except Exception as e:
+                    logger.error(f"处理图谱结果时出错: {e}")
+                    continue
             
-            knowledge_data.append({
-                'url': f'graph_chunk',
-                'text': [graph_contenxt_chunk]
-            })
-
+            # 添加图谱 chunk
+            try:
+                knowledge_data.append({
+                    'url': f'graph_chunk',
+                    'text': [graph_contenxt_chunk]
+                })
+            except Exception as e:
+                logger.error(f"添加图谱 chunk 时出错: {e}")
 
         except Exception as e:
             logger.error(f"知识图谱检索失败: {e}")

@@ -100,17 +100,17 @@ class SearchConfig:
     DOC_SEARCH_CONFIG = {
         "bm25": {
             "b": 0.75,              # BM25 参数 b（文档长度归一化）
-            "top_k": 20
+            "top_k": 30             # 增加BM25搜索结果数量，提高召回率
         },
         "vector": {
-            "similarity_threshold": 0.8,
-            "top_k": 20
+            "similarity_threshold": 0.75,  # 降低相似度阈值，提高向量搜索召回率
+            "top_k": 30             # 增加向量搜索结果数量
         },
         "rrf": {
-            "k": 60,               # RRF 平滑参数
-            "weight_bm25": 0.4,    # BM25 权重
-            "weight_vec": 0.6,     # 向量搜索权重
-            "final_top_k": 3
+            "k": 40,               # 降低RRF平滑参数，提高排名靠前结果的权重
+            "weight_bm25": 0.5,    # 调整BM25权重，提高精确匹配的重要性
+            "weight_vec": 0.5,     # 调整向量搜索权重，平衡精确匹配和语义匹配
+            "final_top_k": 10      # 增加最终结果数量，提高召回率
         }
     }
 
@@ -118,16 +118,16 @@ class SearchConfig:
     QA_SEARCH_CONFIG = {
         "bm25": {
             "b": 0.75,
-            "top_k": 20
+            "top_k": 30
         },
         "vector": {
-            "similarity_threshold": 0.95,
-            "top_k": 1
+            "similarity_threshold": 0.90,  # 降低相似度阈值，提高召回率
+            "top_k": 5             # 增加向量搜索结果数量
         },
         "rrf": {
-            "k": 60,
-            "weight_fts": 0.4,
-            "weight_vec": 0.6,
-            "final_top_k": 5
+            "k": 40,
+            "weight_fts": 0.5,      # 调整全文搜索权重，提高精确匹配的重要性
+            "weight_vec": 0.5,      # 调整向量搜索权重，平衡精确匹配和语义匹配
+            "final_top_k": 10       # 增加最终结果数量
         }
     }
