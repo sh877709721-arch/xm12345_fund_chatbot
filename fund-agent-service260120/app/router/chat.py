@@ -260,5 +260,3 @@ def get_reference_content(request:ChatRefRequest,
 
     except:
         return BaseResponse(data="无法获取上下文")
-
-    
